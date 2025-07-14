@@ -19,5 +19,7 @@ const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
 const functions = getFunctions(app);
+// Use default React Native Firebase JS SDK auth without custom persistence.
+// Do not switch to initializeAuth with AsyncStorage as it is unnecessary.
 const auth = getAuth(app);
 export { app, auth, db, storage, functions };

@@ -16,7 +16,10 @@ This example React Native project demonstrates integrating Firebase, Stripe and 
 
 ## Firebase Cloud Functions
 
-Firebase functions live in the `functions` folder. The `scanReceipt` function proxies requests to the TagGun API to parse receipt images.
+Firebase functions live in the `functions` folder. Each feature has its own
+subdirectory with an `index.js` that exports its functions. See
+`functions/README.md` for details on the layout. The `scanReceipt` function
+proxies requests to the TagGun API to parse receipt images.
 Deploy with the Firebase CLI after configuring credentials:
 
 ```sh

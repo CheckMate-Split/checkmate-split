@@ -2,6 +2,7 @@
 node_modules/
 functions/node_modules/
 checkmate/checkmate-split/node_modules/
+.yarn/
 
 # production
 build/

@@ -2,6 +2,8 @@ const functions = require('firebase-functions');
 const fetch = require('node-fetch');
 
 // HTTP function to proxy requests to TagGun API for receipt scanning
+const TAGGUN_KEY = '9eb1290f9f204bfca1c477905c74e0df';
+
 exports.scanReceipt = functions.https.onRequest(async (req, res) => {
   const image = req.body.image;
   if (!image) {
@@ -14,7 +16,7 @@ exports.scanReceipt = functions.https.onRequest(async (req, res) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'apikey': functions.config().taggun.key
+        'apikey': TAGGUN_KEY
       },
       body: JSON.stringify({
         file: image,

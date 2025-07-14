@@ -6,7 +6,8 @@ import { ref, uploadString } from 'firebase/storage';
 import Button from '../components/Button';
 import Text from '../components/Text';
 import { colors, spacing } from '../constants';
-import { auth, db, storage } from '../firebaseConfig';
+import { db, storage } from '../firebaseConfig';
+import auth from '@react-native-firebase/auth';
 
 export type CreateParams = {
   CreateReceipt: { data: any; image: string };
@@ -19,15 +20,16 @@ export default function CreateReceiptScreen() {
   const [name, setName] = useState('');
 
   const handleSave = async () => {
-    if (!auth.currentUser) return;
+    const user = auth().currentUser;
+    if (!user) return;
     try {
       const lineItems = (data?.lineItems || []).map((item: any) => ({
         ...item,
-        responsible: auth.currentUser?.uid,
+        responsible: user.uid,
       }));
       const docRef = await addDoc(collection(db, 'receipts'), {
         name,
-        payer: auth.currentUser.uid,
+        payer: user.uid,
         data: { ...data, lineItems },
         createdAt: serverTimestamp(),
       });

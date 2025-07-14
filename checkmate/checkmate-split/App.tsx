@@ -9,8 +9,7 @@ import CreateReceiptScreen from './screens/CreateReceiptScreen';
 import ReceiptScreen from './screens/ReceiptScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import { colors } from './constants';
-import { signInAnonymously } from 'firebase/auth';
-import { auth } from './firebaseConfig';
+import auth from '@react-native-firebase/auth';
 
 export type RootStackParamList = {
   Tabs: undefined;
@@ -56,8 +55,10 @@ function MainTabs() {
 
 export default function App() {
   useEffect(() => {
-    if (!auth.currentUser) {
-      signInAnonymously(auth).catch(console.error);
+    if (!auth().currentUser) {
+      auth()
+        .signInAnonymously()
+        .catch(console.error);
     }
   }, []);
 

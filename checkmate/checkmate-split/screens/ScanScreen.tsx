@@ -4,9 +4,9 @@ import { StyleSheet, View, FlatList } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { httpsCallable } from 'firebase/functions';
 import { useNavigation } from '@react-navigation/native';
-import { auth, db, functions } from '../firebaseConfig';
+import { db, functions } from '../firebaseConfig';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
-import { signInAnonymously } from 'firebase/auth';
+import auth from '@react-native-firebase/auth';
 import Button from '../components/Button';
 import { colors, spacing } from '../constants';
 import Text from '../components/Text';
@@ -17,8 +17,10 @@ export default function ScanScreen() {
   const navigation = useNavigation<any>();
 
   useEffect(() => {
-    if (!auth.currentUser) {
-      signInAnonymously(auth).catch(console.error);
+    if (!auth().currentUser) {
+      auth()
+        .signInAnonymously()
+        .catch(console.error);
     }
   }, []);
 

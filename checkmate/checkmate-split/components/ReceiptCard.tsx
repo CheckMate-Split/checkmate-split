@@ -19,6 +19,8 @@ export default function ReceiptCard({ receipt, onPress }: Props) {
       {/* placeholders for additional receipt stats */}
       <Text>Subtotal: --</Text>
       <Text>Tax: --</Text>
+      <Text>Tip: --</Text>
+      <Text>Participants: --</Text>
     </TouchableOpacity>
   );
 }
@@ -34,8 +36,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
-    marginVertical: spacing.m,
-    minHeight: 150,
+    marginVertical: spacing.l,
+    minHeight: 220,
     width: '90%',
     alignSelf: 'center',
     alignItems: 'center',

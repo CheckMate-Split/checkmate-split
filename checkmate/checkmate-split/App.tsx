@@ -12,6 +12,7 @@ import CreateReceiptScreen from './screens/CreateReceiptScreen';
 import ReceiptScreen from './screens/ReceiptScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import { colors } from './constants';
+import '@react-native-firebase/app';
 import auth from '@react-native-firebase/auth';
 
 export type RootStackParamList = {

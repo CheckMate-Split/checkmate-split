@@ -95,7 +95,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   scanButton: {
-    width: '80%',
+    width: '90%',
+    alignSelf: 'center',
   },
 });
 

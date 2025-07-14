@@ -21,10 +21,14 @@ export default function CreateReceiptScreen() {
   const handleSave = async () => {
     if (!auth.currentUser) return;
     try {
+      const lineItems = (data?.lineItems || []).map((item: any) => ({
+        ...item,
+        responsible: auth.currentUser?.uid,
+      }));
       const docRef = await addDoc(collection(db, 'receipts'), {
         name,
         payer: auth.currentUser.uid,
-        data,
+        data: { ...data, lineItems },
         createdAt: serverTimestamp(),
       });
       await uploadString(ref(storage, `receipts/${docRef.id}.jpg`), image, 'base64');
@@ -74,6 +78,6 @@ const styles = StyleSheet.create({
     padding: spacing.m,
     alignItems: 'center',
   },
-  saveButton: { width: '80%' },
+  saveButton: { width: '90%', alignSelf: 'center' },
 });
 

@@ -16,6 +16,9 @@ export default function ReceiptCard({ receipt, onPress }: Props) {
       <Text style={styles.title}>{receipt.name || receipt.data?.merchantName || 'Receipt'}</Text>
       {total !== undefined && <Text>Total: {total}</Text>}
       {paid !== undefined && <Text>Paid: {paid}</Text>}
+      {/* placeholders for additional receipt stats */}
+      <Text>Subtotal: --</Text>
+      <Text>Tax: --</Text>
     </TouchableOpacity>
   );
 }
@@ -31,7 +34,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
-    marginBottom: spacing.m,
+    marginVertical: spacing.m,
+    minHeight: 150,
     width: '90%',
     alignSelf: 'center',
     alignItems: 'center',

@@ -27,7 +27,7 @@ const Tab = createBottomTabNavigator();
 
 function ScanStack() {
   return (
-    <ScanStackNav.Navigator>
+    <ScanStackNav.Navigator screenOptions={{ headerBackTitleVisible: false }}>
       <ScanStackNav.Screen name="Scan" component={ScanScreen} options={{ headerShown: false }} />
       <ScanStackNav.Screen name="CreateReceipt" component={CreateReceiptScreen} options={{ title: 'Create Receipt' }} />
       <ScanStackNav.Screen name="Confirm" component={ConfirmScreen} options={{ title: 'Confirm Items' }} />
@@ -55,7 +55,7 @@ function MainTabs() {
 export default function App() {
   return (
     <NavigationContainer>
-      <RootStack.Navigator>
+      <RootStack.Navigator screenOptions={{ headerBackTitleVisible: false }}>
         <RootStack.Screen name="Tabs" component={MainTabs} options={{ headerShown: false }} />
         <RootStack.Screen name="Receipt" component={ReceiptScreen} options={{ title: 'Receipt' }} />
       </RootStack.Navigator>

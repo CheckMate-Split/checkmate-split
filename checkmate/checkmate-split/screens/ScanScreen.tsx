@@ -93,6 +93,7 @@ const styles = StyleSheet.create({
   footer: {
     padding: spacing.m,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   scanButton: {
     width: '90%',

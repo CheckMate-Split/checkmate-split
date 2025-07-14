@@ -7,7 +7,7 @@ import Button from '../components/Button';
 import Text from '../components/Text';
 import { colors, spacing } from '../constants';
 import { db, storage } from '../firebaseConfig';
-import auth from '@react-native-firebase/auth';
+import { auth } from '../firebaseConfig';
 
 export type CreateParams = {
   CreateReceipt: { data: any; image: string };
@@ -20,7 +20,7 @@ export default function CreateReceiptScreen() {
   const [name, setName] = useState('');
 
   const handleSave = async () => {
-    const user = auth().currentUser;
+    const user = auth.currentUser;
     if (!user) return;
     try {
       const lineItems = (data?.lineItems || []).map((item: any) => ({

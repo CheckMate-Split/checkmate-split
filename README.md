@@ -14,10 +14,6 @@ This example React Native project demonstrates integrating Firebase, Stripe and 
    yarn start
    ```
 
-If using EAS build or running on a device, the project relies on React Native
-Firebase. The required native modules are added via Expo config plugins in
-`app.json`. Run `npx expo prebuild` once to generate the native projects if they
-don't already exist.
 
 ## Firebase Cloud Functions
 

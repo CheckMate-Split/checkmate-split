@@ -6,7 +6,6 @@ import { httpsCallable } from 'firebase/functions';
 import { useNavigation } from '@react-navigation/native';
 import { db, functions } from '../firebaseConfig';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
-import auth from '@react-native-firebase/auth';
 import Button from '../components/Button';
 import { colors, spacing } from '../constants';
 import Text from '../components/Text';
@@ -16,13 +15,6 @@ export default function ScanScreen() {
   const [receipts, setReceipts] = useState<any[]>([]);
   const navigation = useNavigation<any>();
 
-  useEffect(() => {
-    if (!auth().currentUser) {
-      auth()
-        .signInAnonymously()
-        .catch(console.error);
-    }
-  }, []);
 
   useEffect(() => {
     const q = query(collection(db, 'receipts'), orderBy('createdAt', 'desc'));

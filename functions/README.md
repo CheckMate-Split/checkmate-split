@@ -12,3 +12,10 @@ Current structure:
 
 Add new functionality by creating a folder with an `index.js` and exporting your
 function in `functions/index.js`.
+
+Stripe functions expect a secret key provided via `functions.config().stripe.secret`.
+Set this with the Firebase CLI:
+
+```sh
+firebase functions:config:set stripe.secret="<YOUR_SECRET_KEY>"
+```

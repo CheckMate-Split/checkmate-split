@@ -32,3 +32,9 @@ firebase deploy --only functions
 
 Edit `checkmate/checkmate-split/firebaseConfig.ts` with your Firebase project settings and supply a Stripe publishable key in `checkmate/checkmate-split/stripe.ts`.
 You will also need a TagGun API key configured as `functions.config().taggun.key` when deploying the cloud function.
+The Stripe secret key should be set using the Firebase CLI:
+
+```sh
+firebase functions:config:set stripe.secret="<YOUR_SECRET_KEY>"
+```
+Optionally configure onboarding URLs with `stripe.return_url` and `stripe.refresh_url`.

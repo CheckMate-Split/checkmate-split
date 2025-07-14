@@ -11,7 +11,7 @@ import { colors, spacing } from '../constants';
 import Text from '../components/Text';
 import ReceiptCard from '../components/ReceiptCard';
 
-export default function ScanScreen() {
+export default function HomeScreen() {
   const [receipts, setReceipts] = useState<any[]>([]);
   const navigation = useNavigation<any>();
 

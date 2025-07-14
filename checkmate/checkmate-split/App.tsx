@@ -1,9 +1,12 @@
 import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
+import * as Linking from 'expo-linking';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import ScanScreen from './screens/ScanScreen';
+import HomeScreen from './screens/HomeScreen';
+import HistoryScreen from './screens/HistoryScreen';
+import ProfileScreen from './screens/ProfileScreen';
 import ConfirmScreen from './screens/ConfirmScreen';
 import CreateReceiptScreen from './screens/CreateReceiptScreen';
 import ReceiptScreen from './screens/ReceiptScreen';
@@ -16,23 +19,27 @@ export type RootStackParamList = {
   Receipt: { id: string; receipt: any };
 };
 
-export type ScanStackParamList = {
-  Scan: undefined;
+export type HomeStackParamList = {
+  Home: undefined;
   CreateReceipt: { data: any; image: string };
   Confirm: { result: any };
 };
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
-const ScanStackNav = createNativeStackNavigator<ScanStackParamList>();
+const HomeStackNav = createNativeStackNavigator<HomeStackParamList>();
 const Tab = createBottomTabNavigator();
 
-function ScanStack() {
+const linking = {
+  prefixes: [Linking.createURL('/')],
+};
+
+function HomeStack() {
   return (
-    <ScanStackNav.Navigator screenOptions={{ headerBackTitleVisible: false }}>
-      <ScanStackNav.Screen name="Scan" component={ScanScreen} options={{ headerShown: false }} />
-      <ScanStackNav.Screen name="CreateReceipt" component={CreateReceiptScreen} options={{ title: 'Create Receipt' }} />
-      <ScanStackNav.Screen name="Confirm" component={ConfirmScreen} options={{ title: 'Confirm Items' }} />
-    </ScanStackNav.Navigator>
+    <HomeStackNav.Navigator screenOptions={{ headerBackTitleVisible: false }}>
+      <HomeStackNav.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
+      <HomeStackNav.Screen name="CreateReceipt" component={CreateReceiptScreen} options={{ title: 'Create Receipt' }} />
+      <HomeStackNav.Screen name="Confirm" component={ConfirmScreen} options={{ title: 'Confirm Items' }} />
+    </HomeStackNav.Navigator>
   );
 }
 
@@ -41,13 +48,18 @@ function MainTabs() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ color, size }) => {
-          let icon = route.name === 'ScanTab' ? 'scan' : 'settings';
+          let icon = 'home';
+          if (route.name === 'History') icon = 'time';
+          else if (route.name === 'Profile') icon = 'person';
+          else if (route.name === 'Settings') icon = 'settings';
           return <Ionicons name={icon as any} size={size} color={color} />;
         },
         tabBarActiveTintColor: colors.primary,
       })}
     >
-      <Tab.Screen name="ScanTab" component={ScanStack} options={{ title: 'Scan' }} />
+      <Tab.Screen name="HomeTab" component={HomeStack} options={{ title: 'Home' }} />
+      <Tab.Screen name="History" component={HistoryScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   );
@@ -63,7 +75,7 @@ export default function App() {
   }, []);
 
   return (
-    <NavigationContainer>
+    <NavigationContainer linking={linking}>
       <RootStack.Navigator screenOptions={{ headerBackTitleVisible: false }}>
         <RootStack.Screen name="Tabs" component={MainTabs} options={{ headerShown: false }} />
         <RootStack.Screen name="Receipt" component={ReceiptScreen} options={{ title: 'Receipt' }} />

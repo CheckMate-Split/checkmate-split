@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, View, Linking } from 'react-native';
+import * as ExpoLinking from 'expo-linking';
 import Text from '../components/Text';
 import Button from '../components/Button';
 import { httpsCallable } from 'firebase/functions';
@@ -7,11 +8,9 @@ import { functions } from '../firebaseConfig';
 import { colors, spacing } from '../constants';
 
 export default function SettingsScreen() {
-  const scheme = 'checkmate';
-
   useEffect(() => {
     const sub = Linking.addEventListener('url', event => {
-      if (event.url.startsWith(`${scheme}://stripe-return`)) {
+      if (event.url.includes('stripe-return')) {
         // In a real app you might refresh user data here
         console.log('Stripe onboarding complete');
       }
@@ -23,8 +22,8 @@ export default function SettingsScreen() {
     try {
       const callable = httpsCallable(functions, 'createStripeConnectLink');
       const res: any = await callable({
-        returnUrl: `${scheme}://stripe-return`,
-        refreshUrl: `${scheme}://stripe-refresh`,
+        returnUrl: ExpoLinking.createURL('stripe-return'),
+        refreshUrl: ExpoLinking.createURL('stripe-refresh'),
       });
       const url = res.data.url;
       if (url) Linking.openURL(url);

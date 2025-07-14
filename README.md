@@ -1,6 +1,6 @@
 # Checkmate Split
 
-This example React Native project demonstrates integrating Firebase, Stripe and a receipt scanning cloud function. The project uses Expo and TypeScript.
+This example React Native project demonstrates integrating Firebase, Stripe and a receipt scanning cloud function. The project uses Expo and TypeScript. A simple navigation flow lets you scan a receipt and confirm the parsed result.
 
 ## Running the app
 
@@ -28,3 +28,4 @@ firebase deploy --only functions
 ## Configuration
 
 Edit `checkmate/checkmate-split/firebaseConfig.ts` with your Firebase project settings and supply a Stripe publishable key in `checkmate/checkmate-split/stripe.ts`.
+You will also need a TagGun API key configured as `functions.config().taggun.key` when deploying the cloud function.

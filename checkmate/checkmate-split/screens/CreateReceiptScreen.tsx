@@ -14,7 +14,7 @@ export type CreateParams = {
 
 export default function CreateReceiptScreen() {
   const route = useRoute<RouteProp<CreateParams, 'CreateReceipt'>>();
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const { data, image } = route.params;
   const [name, setName] = useState('');
 

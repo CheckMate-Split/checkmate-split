@@ -13,6 +13,7 @@
     "@react-navigation/bottom-tabs": "^7.4.2",
     "@react-navigation/native": "^6.2.10",
     "@react-navigation/native-stack": "^6.9.17",
+    "@stripe/stripe-react-native": "^0.49.0",
     "eas-cli": "^16.15.0",
     "expo": "~53.0.17",
     "expo-image-picker": "^16.1.4",

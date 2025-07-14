@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -9,6 +9,8 @@ import CreateReceiptScreen from './screens/CreateReceiptScreen';
 import ReceiptScreen from './screens/ReceiptScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import { colors } from './constants';
+import { signInAnonymously } from 'firebase/auth';
+import { auth } from './firebaseConfig';
 
 export type RootStackParamList = {
   Tabs: undefined;
@@ -53,6 +55,12 @@ function MainTabs() {
 }
 
 export default function App() {
+  useEffect(() => {
+    if (!auth.currentUser) {
+      signInAnonymously(auth).catch(console.error);
+    }
+  }, []);
+
   return (
     <NavigationContainer>
       <RootStack.Navigator screenOptions={{ headerBackTitleVisible: false }}>

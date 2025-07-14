@@ -3,7 +3,7 @@ import { StripeProvider } from '@stripe/stripe-react-native';
 
 export const STRIPE_PUBLISHABLE_KEY = 'YOUR_STRIPE_PUBLISHABLE_KEY';
 
-export const Stripe = ({ children }: { children: React.ReactNode }) => (
+export const Stripe = ({ children }: { children: React.ReactElement | React.ReactElement[] }) => (
   <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY}>
     {children}
   </StripeProvider>

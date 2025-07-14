@@ -14,7 +14,7 @@ import ReceiptCard from '../components/ReceiptCard';
 
 export default function ScanScreen() {
   const [receipts, setReceipts] = useState<any[]>([]);
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
 
   useEffect(() => {
     if (!auth.currentUser) {

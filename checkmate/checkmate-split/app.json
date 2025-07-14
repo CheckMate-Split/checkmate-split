@@ -24,6 +24,18 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "d0748037-8071-46ae-9a2b-d795ec396623"
+      }
+    },
+    "owner": "brandonring",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/d0748037-8071-46ae-9a2b-d795ec396623"
     }
   }
 }

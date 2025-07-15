@@ -5,7 +5,6 @@ import {
   TextInput,
   ScrollView,
   TouchableOpacity,
-  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
@@ -16,7 +15,7 @@ import OutlineButton from '../components/OutlineButton';
 import Text from '../components/Text';
 import PageHeader from '../components/PageHeader';
 import Checkbox from '../components/Checkbox';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateInput from '../components/DateInput';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing } from '../constants';
 import { db, storage } from '../firebaseConfig';
@@ -97,13 +96,7 @@ export default function CreateReceiptScreen() {
               style={styles.input}
             />
             <Text style={styles.label}>Date</Text>
-            <DateTimePicker
-              mode="date"
-              value={date}
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              onChange={(e, d) => d && setDate(d)}
-              style={styles.datePicker}
-            />
+            <DateInput value={date} onChange={setDate} style={styles.datePicker} />
             <Text style={[styles.sectionHeader, { marginTop: spacing.l }]}>Line Items</Text>
             {items.map((item, idx) => (
               <View key={idx} style={styles.itemContainer}>

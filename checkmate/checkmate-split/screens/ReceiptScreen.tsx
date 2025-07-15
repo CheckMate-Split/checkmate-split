@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import Text from '../components/Text';
 import { colors, spacing } from '../constants';
@@ -13,16 +14,21 @@ export default function ReceiptScreen() {
   const { receipt } = route.params;
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text>{JSON.stringify(receipt, null, 2)}</Text>
-    </ScrollView>
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scroll}>
+        <Text>{JSON.stringify(receipt, null, 2)}</Text>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
+    flex: 1,
     backgroundColor: colors.background,
+  },
+  scroll: {
+    flexGrow: 1,
     padding: spacing.m,
   },
 });

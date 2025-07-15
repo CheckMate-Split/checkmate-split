@@ -1,11 +1,11 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ViewStyle } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, ViewStyle, StyleProp } from 'react-native';
 import { colors, spacing } from '../constants';
 
 interface Props {
   title: string;
   onPress: () => void;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 }
 
 export default function OutlineButton({ title, onPress, style }: Props) {
@@ -21,12 +21,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderColor: '#ccc',
     borderWidth: 1,
-    padding: spacing.m,
+    padding: spacing.l,
     borderRadius: 4,
   },
   text: {
     color: colors.text,
     fontWeight: 'bold',
+    fontSize: 18,
     textAlign: 'center',
   },
 });

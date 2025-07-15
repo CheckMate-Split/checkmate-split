@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, TextInput, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadString } from 'firebase/storage';
@@ -43,7 +44,7 @@ export default function CreateReceiptScreen() {
   const lineItems = data?.lineItems || [];
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll}>
         {lineItems.length > 0 ? (
           lineItems.map((item: any, idx: number) => (
@@ -62,7 +63,7 @@ export default function CreateReceiptScreen() {
       <View style={styles.footer}>
         <Button title="Save" onPress={handleSave} disabled={!name} style={styles.saveButton} />
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 

@@ -19,11 +19,11 @@ export default function PageHeader({ title }: Props) {
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    marginTop: spacing.l,
-    marginBottom: spacing.m,
+    marginTop: spacing.xl,
+    marginBottom: spacing.l,
   },
   title: {
-    fontSize: 20,
+    fontSize: 28,
     fontWeight: 'bold',
     color: colors.text,
   },
@@ -31,6 +31,6 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#ccc',
     alignSelf: 'stretch',
-    marginTop: spacing.s,
+    marginTop: spacing.m,
   },
 });

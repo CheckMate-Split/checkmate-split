@@ -56,10 +56,10 @@ const linking = {
 
 function HomeStack() {
   return (
-    <HomeStackNav.Navigator screenOptions={{ headerBackTitleVisible: false }}>
-      <HomeStackNav.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-      <HomeStackNav.Screen name="CreateReceipt" component={CreateReceiptScreen} options={{ title: 'Create Receipt' }} />
-      <HomeStackNav.Screen name="Confirm" component={ConfirmScreen} options={{ title: 'Confirm Items' }} />
+    <HomeStackNav.Navigator screenOptions={{ headerShown: false }}>
+      <HomeStackNav.Screen name="Home" component={HomeScreen} />
+      <HomeStackNav.Screen name="CreateReceipt" component={CreateReceiptScreen} />
+      <HomeStackNav.Screen name="Confirm" component={ConfirmScreen} />
     </HomeStackNav.Navigator>
   );
 }
@@ -116,9 +116,9 @@ export default function App() {
 
   return (
     <NavigationContainer linking={linking}>
-      <RootStack.Navigator screenOptions={{ headerBackTitleVisible: false }}>
-        <RootStack.Screen name="Tabs" component={MainTabs} options={{ headerShown: false }} />
-        <RootStack.Screen name="Receipt" component={ReceiptScreen} options={{ title: 'Receipt' }} />
+      <RootStack.Navigator screenOptions={{ headerShown: false }}>
+        <RootStack.Screen name="Tabs" component={MainTabs} />
+        <RootStack.Screen name="Receipt" component={ReceiptScreen} />
       </RootStack.Navigator>
     </NavigationContainer>
   );

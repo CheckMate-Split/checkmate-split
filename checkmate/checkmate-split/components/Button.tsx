@@ -1,12 +1,12 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ViewStyle } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, ViewStyle, StyleProp } from 'react-native';
 import { colors, spacing } from '../constants';
 
 interface Props {
   title: string;
   onPress: () => void;
   disabled?: boolean;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 }
 
 export default function Button({ title, onPress, disabled, style }: Props) {
@@ -24,7 +24,7 @@ export default function Button({ title, onPress, disabled, style }: Props) {
 const styles = StyleSheet.create({
   button: {
     backgroundColor: colors.primary,
-    padding: spacing.m,
+    padding: spacing.l,
     borderRadius: 4,
     alignSelf: 'stretch',
   },
@@ -34,6 +34,7 @@ const styles = StyleSheet.create({
   text: {
     color: '#fff',
     fontWeight: 'bold',
+    fontSize: 18,
     textAlign: 'center',
   },
 });

@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, StyleSheet, Image } from 'react-native';
+import { StyleSheet, Image } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import PageHeader from '../components/PageHeader';
 import MenuItem from '../components/MenuItem';
@@ -8,7 +9,7 @@ import { colors, spacing } from '../constants';
 export default function ProfileScreen() {
   const navigation = useNavigation<any>();
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Image source={require('../assets/icon.png')} style={styles.avatar} />
       <PageHeader title="Profile" />
       <MenuItem
@@ -21,7 +22,7 @@ export default function ProfileScreen() {
         icon="card"
         onPress={() => navigation.navigate('PaymentMethods')}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 

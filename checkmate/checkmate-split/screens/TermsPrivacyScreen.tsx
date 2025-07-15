@@ -1,13 +1,14 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import PageHeader from '../components/PageHeader';
 import { colors, spacing } from '../constants';
 
 export default function TermsPrivacyScreen() {
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <PageHeader title="Terms & Privacy" />
-    </View>
+    </SafeAreaView>
   );
 }
 

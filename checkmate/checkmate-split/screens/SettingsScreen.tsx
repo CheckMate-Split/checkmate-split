@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
+import { StyleSheet, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { signOut } from 'firebase/auth';
 import PageHeader from '../components/PageHeader';
@@ -18,7 +19,7 @@ export default function SettingsScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <PageHeader title="Settings" />
       <MenuItem
         title="Notifications"
@@ -40,7 +41,7 @@ export default function SettingsScreen() {
         icon="log-out"
         onPress={handleLogout}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 

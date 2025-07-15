@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: spacing.m,
+    paddingVertical: spacing.l,
     paddingHorizontal: spacing.m,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '500',
   },
   subRow: {
@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
     marginRight: spacing.s / 2,
   },
   subText: {
-    fontSize: 14,
+    fontSize: 16,
   },
   chevron: {
     marginLeft: spacing.m,

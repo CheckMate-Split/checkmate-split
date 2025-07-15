@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, FlatList, Image } from 'react-native';
+import { StyleSheet, FlatList, Image, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { httpsCallable } from 'firebase/functions';
 import { useNavigation } from '@react-navigation/native';
@@ -80,7 +81,7 @@ export default function HomeScreen() {
   );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <FlatList
         data={receipts}
         renderItem={renderItem}
@@ -96,12 +97,20 @@ export default function HomeScreen() {
       <View style={styles.footer}>
         <Button title="Scan Receipt" onPress={handleScan} style={styles.scanButton} />
         <View style={styles.extraRow}>
-          <OutlineButton title="Upload Receipt" onPress={handleUpload} style={styles.extraButton} />
-          <OutlineButton title="Enter Manually" onPress={handleManual} style={styles.extraButton} />
+          <OutlineButton
+            title="Upload Receipt"
+            onPress={handleUpload}
+            style={[styles.extraButton, { marginRight: spacing.s / 2 }]}
+          />
+          <OutlineButton
+            title="Enter Manually"
+            onPress={handleManual}
+            style={[styles.extraButton, { marginLeft: spacing.s / 2 }]}
+          />
         </View>
       </View>
       <StatusBar style="dark" />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -136,6 +145,7 @@ const styles = StyleSheet.create({
   tagline: {
     marginTop: spacing.s,
     fontWeight: '500',
+    fontSize: 16,
   },
   scanButton: {
     width: '90%',
@@ -143,13 +153,11 @@ const styles = StyleSheet.create({
   },
   extraRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     marginTop: spacing.m,
     width: '90%',
   },
   extraButton: {
     flex: 1,
-    marginHorizontal: spacing.s,
   },
 });
 

@@ -14,7 +14,6 @@ import Button from '../components/Button';
 import OutlineButton from '../components/OutlineButton';
 import Text from '../components/Text';
 import PageHeader from '../components/PageHeader';
-import Checkbox from '../components/Checkbox';
 import DateInput from '../components/DateInput';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing } from '../constants';
@@ -123,15 +122,6 @@ export default function CreateReceiptScreen() {
                     keyboardType="numeric"
                     style={[styles.input, styles.itemPrice]}
                   />
-                  <Checkbox
-                    value={item.shared}
-                    onValueChange={v => {
-                      const copy = [...items];
-                      copy[idx].shared = v;
-                      setItems(copy);
-                    }}
-                    style={styles.checkboxBox}
-                  />
                   <TouchableOpacity
                     onPress={() => setItems(items.filter((_, i) => i !== idx))}
                     style={[styles.input, styles.removeButton]}
@@ -193,7 +183,6 @@ const styles = StyleSheet.create({
   },
   itemName: { flex: 1, marginRight: spacing.s / 2 },
   itemPrice: { width: 80, marginRight: spacing.s / 2 },
-  checkboxBox: { marginRight: spacing.s / 2, alignItems: 'center', justifyContent: 'center', marginTop: 0 },
   removeButton: { width: 40, alignItems: 'center', justifyContent: 'center', marginTop: 0 },
   footer: {
     padding: spacing.m,

@@ -9,9 +9,18 @@ interface Props {
 }
 
 export default function ReceiptCard({ receipt, onPress }: Props) {
+  const total = receipt.data?.totalAmount?.data ?? receipt.data?.total?.data;
+  const paid = receipt.data?.amountToPay?.data ?? receipt.data?.amountPaid?.data;
   return (
     <TouchableOpacity style={styles.card} onPress={onPress}>
       <Text style={styles.title}>{receipt.name || receipt.data?.merchantName || 'Receipt'}</Text>
+      {total !== undefined && <Text>Total: {total}</Text>}
+      {paid !== undefined && <Text>Paid: {paid}</Text>}
+      {/* placeholders for additional receipt stats */}
+      <Text>Subtotal: --</Text>
+      <Text>Tax: --</Text>
+      <Text>Tip: --</Text>
+      <Text>Participants: --</Text>
     </TouchableOpacity>
   );
 }
@@ -22,8 +31,16 @@ const styles = StyleSheet.create({
     padding: spacing.m,
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: colors.primary,
-    marginBottom: spacing.m,
+    borderColor: '#ddd',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+    marginVertical: spacing.l,
+    minHeight: 220,
+    width: '90%',
+    alignSelf: 'center',
+    alignItems: 'center',
   },
   title: {
     fontWeight: 'bold',

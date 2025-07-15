@@ -4,23 +4,17 @@ import { StyleSheet, View, FlatList } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { httpsCallable } from 'firebase/functions';
 import { useNavigation } from '@react-navigation/native';
-import { auth, db, functions } from '../firebaseConfig';
+import { db, functions } from '../firebaseConfig';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
-import { signInAnonymously } from 'firebase/auth';
 import Button from '../components/Button';
 import { colors, spacing } from '../constants';
 import Text from '../components/Text';
 import ReceiptCard from '../components/ReceiptCard';
 
-export default function ScanScreen() {
+export default function HomeScreen() {
   const [receipts, setReceipts] = useState<any[]>([]);
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
 
-  useEffect(() => {
-    if (!auth.currentUser) {
-      signInAnonymously(auth).catch(console.error);
-    }
-  }, []);
 
   useEffect(() => {
     const q = query(collection(db, 'receipts'), orderBy('createdAt', 'desc'));
@@ -93,9 +87,11 @@ const styles = StyleSheet.create({
   footer: {
     padding: spacing.m,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   scanButton: {
-    width: '80%',
+    width: '90%',
+    alignSelf: 'center',
   },
 });
 

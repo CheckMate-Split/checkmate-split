@@ -6,7 +6,8 @@ import { ref, uploadString } from 'firebase/storage';
 import Button from '../components/Button';
 import Text from '../components/Text';
 import { colors, spacing } from '../constants';
-import { auth, db, storage } from '../firebaseConfig';
+import { db, storage } from '../firebaseConfig';
+import { auth } from '../firebaseConfig';
 
 export type CreateParams = {
   CreateReceipt: { data: any; image: string };
@@ -14,17 +15,22 @@ export type CreateParams = {
 
 export default function CreateReceiptScreen() {
   const route = useRoute<RouteProp<CreateParams, 'CreateReceipt'>>();
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const { data, image } = route.params;
   const [name, setName] = useState('');
 
   const handleSave = async () => {
-    if (!auth.currentUser) return;
+    const user = auth.currentUser;
+    if (!user) return;
     try {
+      const lineItems = (data?.lineItems || []).map((item: any) => ({
+        ...item,
+        responsible: user.uid,
+      }));
       const docRef = await addDoc(collection(db, 'receipts'), {
         name,
-        payer: auth.currentUser.uid,
-        data,
+        payer: user.uid,
+        data: { ...data, lineItems },
         createdAt: serverTimestamp(),
       });
       await uploadString(ref(storage, `receipts/${docRef.id}.jpg`), image, 'base64');
@@ -74,6 +80,6 @@ const styles = StyleSheet.create({
     padding: spacing.m,
     alignItems: 'center',
   },
-  saveButton: { width: '80%' },
+  saveButton: { width: '90%', alignSelf: 'center' },
 });
 

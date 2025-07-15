@@ -14,9 +14,13 @@ This example React Native project demonstrates integrating Firebase, Stripe and 
    yarn start
    ```
 
+
 ## Firebase Cloud Functions
 
-Firebase functions live in the `functions` folder. The `scanReceipt` function proxies requests to the TagGun API to parse receipt images.
+Firebase functions live in the `functions` folder. Each feature has its own
+subdirectory with an `index.js` that exports its functions. See
+`functions/README.md` for details on the layout. The `scanReceipt` function
+proxies requests to the TagGun API to parse receipt images.
 Deploy with the Firebase CLI after configuring credentials:
 
 ```sh
@@ -29,3 +33,12 @@ firebase deploy --only functions
 
 Edit `checkmate/checkmate-split/firebaseConfig.ts` with your Firebase project settings and supply a Stripe publishable key in `checkmate/checkmate-split/stripe.ts`.
 You will also need a TagGun API key configured as `functions.config().taggun.key` when deploying the cloud function.
+The Stripe secret key should be set using the Firebase CLI:
+
+```sh
+firebase functions:config:set stripe.secret="<YOUR_SECRET_KEY>"
+```
+Optionally configure onboarding URLs with `stripe.return_url` and `stripe.refresh_url`.
+
+The mobile app initializes Firebase Auth using AsyncStorage persistence so users
+remain signed in across sessions.

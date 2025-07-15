@@ -5,6 +5,7 @@ import {
   TextInput,
   ScrollView,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
@@ -15,6 +16,7 @@ import OutlineButton from '../components/OutlineButton';
 import Text from '../components/Text';
 import PageHeader from '../components/PageHeader';
 import Checkbox from '../components/Checkbox';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing } from '../constants';
 import { db, storage } from '../firebaseConfig';
@@ -31,6 +33,7 @@ export default function CreateReceiptScreen() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [items, setItems] = useState<{ name: string; price: string; shared: boolean }[]>([]);
+  const [date, setDate] = useState(new Date());
   const valid = name && items.every(i => i.name && i.price);
 
   const handleSave = async () => {
@@ -51,6 +54,7 @@ export default function CreateReceiptScreen() {
       const docRef = await addDoc(collection(db, 'receipts'), {
         name,
         description,
+        date: date.toISOString(),
         payer: user.uid,
         data: { ...data, description, lineItems: parsedItems },
         createdAt: serverTimestamp(),
@@ -92,22 +96,29 @@ export default function CreateReceiptScreen() {
               onChangeText={setDescription}
               style={styles.input}
             />
+            <Text style={styles.label}>Date</Text>
+            <DateTimePicker
+              mode="date"
+              value={date}
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              onChange={(e, d) => d && setDate(d)}
+              style={styles.datePicker}
+            />
             <Text style={[styles.sectionHeader, { marginTop: spacing.l }]}>Line Items</Text>
             {items.map((item, idx) => (
               <View key={idx} style={styles.itemContainer}>
-                <Text style={styles.label}>{`Item ${idx + 1} Name`}</Text>
-                <TextInput
-                  placeholder="Name"
-                  value={item.name}
-                  onChangeText={t => {
-                    const copy = [...items];
-                    copy[idx].name = t;
-                    setItems(copy);
-                  }}
-                  style={[styles.input, styles.itemName]}
-                />
-                <Text style={styles.label}>Price</Text>
-                <View style={styles.row}>
+                <Text style={styles.label}>{`Item ${idx + 1}`}</Text>
+                <View style={styles.itemRow}>
+                  <TextInput
+                    placeholder="Name"
+                    value={item.name}
+                    onChangeText={t => {
+                      const copy = [...items];
+                      copy[idx].name = t;
+                      setItems(copy);
+                    }}
+                    style={[styles.input, styles.itemName]}
+                  />
                   <TextInput
                     placeholder="0.00"
                     value={item.price}
@@ -119,18 +130,19 @@ export default function CreateReceiptScreen() {
                     keyboardType="numeric"
                     style={[styles.input, styles.itemPrice]}
                   />
-                  <View style={styles.checkboxRow}>
-                    <Checkbox
-                      value={item.shared}
-                      onValueChange={v => {
-                        const copy = [...items];
-                        copy[idx].shared = v;
-                        setItems(copy);
-                      }}
-                    />
-                    <Text style={styles.checkboxLabel}>Shared</Text>
-                  </View>
-                  <TouchableOpacity onPress={() => setItems(items.filter((_, i) => i !== idx))}>
+                  <Checkbox
+                    value={item.shared}
+                    onValueChange={v => {
+                      const copy = [...items];
+                      copy[idx].shared = v;
+                      setItems(copy);
+                    }}
+                    style={styles.checkboxBox}
+                  />
+                  <TouchableOpacity
+                    onPress={() => setItems(items.filter((_, i) => i !== idx))}
+                    style={[styles.input, styles.removeButton]}
+                  >
                     <Ionicons name="close" size={20} color={colors.text} />
                   </TouchableOpacity>
                 </View>
@@ -181,19 +193,20 @@ const styles = StyleSheet.create({
     marginTop: spacing.m,
   },
   itemContainer: { marginTop: spacing.m },
-  row: {
+  itemRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: spacing.s,
   },
   itemName: { flex: 1, marginRight: spacing.s / 2 },
   itemPrice: { width: 80, marginRight: spacing.s / 2 },
-  checkboxRow: { flexDirection: 'row', alignItems: 'center', marginRight: spacing.s },
-  checkboxLabel: { marginLeft: spacing.s / 2 },
+  checkboxBox: { marginRight: spacing.s / 2, alignItems: 'center', justifyContent: 'center', marginTop: 0 },
+  removeButton: { width: 40, alignItems: 'center', justifyContent: 'center', marginTop: 0 },
   footer: {
     padding: spacing.m,
     alignItems: 'center',
   },
   saveButton: { width: '90%', alignSelf: 'center' },
+  datePicker: { marginTop: spacing.m },
 });
 

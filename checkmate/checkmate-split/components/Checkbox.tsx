@@ -1,17 +1,19 @@
 import React from 'react';
-import { TouchableOpacity, View, StyleSheet } from 'react-native';
+import { TouchableOpacity, StyleSheet, StyleProp, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants';
+
 
 interface Props {
   value: boolean;
   onValueChange: (v: boolean) => void;
+  style?: StyleProp<ViewStyle>;
 }
 
-export default function Checkbox({ value, onValueChange }: Props) {
+export default function Checkbox({ value, onValueChange, style }: Props) {
   return (
     <TouchableOpacity
-      style={[styles.box, value && styles.checked]}
+      style={[styles.box, style, value && styles.checked]}
       onPress={() => onValueChange(!value)}
     >
       {value && <Ionicons name="checkmark" size={16} color="#fff" />}

@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: colors.primary,
     padding: spacing.l,
-    borderRadius: 4,
+    borderRadius: 8,
     alignSelf: 'stretch',
   },
   disabled: {

@@ -27,7 +27,7 @@ export default function ReceiptCard({ receipt, onPress }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.primaryBackground,
     padding: spacing.m,
     borderRadius: 4,
     borderWidth: 1,

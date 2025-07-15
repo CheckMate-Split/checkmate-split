@@ -18,11 +18,11 @@ export default function OutlineButton({ title, onPress, style }: Props) {
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.primaryBackground,
     borderColor: '#ccc',
     borderWidth: 1,
     padding: spacing.l,
-    borderRadius: 4,
+    borderRadius: 8,
   },
   text: {
     color: colors.text,

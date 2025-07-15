@@ -1,13 +1,15 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import PageHeader from '../components/PageHeader';
 import { colors, spacing } from '../constants';
 
 export default function AccountScreen() {
+  const navigation = useNavigation<any>();
   return (
     <SafeAreaView style={styles.container}>
-      <PageHeader title="Account" />
+      <PageHeader title="Account" onBack={navigation.goBack} />
     </SafeAreaView>
   );
 }

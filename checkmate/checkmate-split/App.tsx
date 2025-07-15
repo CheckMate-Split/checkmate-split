@@ -99,7 +99,11 @@ function MainTabs() {
         tabBarActiveTintColor: colors.primary,
       })}
     >
-      <Tab.Screen name="HomeTab" component={HomeStack} options={{ title: 'Home' }} />
+      <Tab.Screen
+        name="HomeTab"
+        component={HomeStack}
+        options={{ title: 'Home', headerShown: false }}
+      />
       <Tab.Screen name="History" component={HistoryScreen} options={{ headerShown: false }} />
       <Tab.Screen name="Profile" component={ProfileStack} options={{ headerShown: false }} />
       <Tab.Screen name="Settings" component={SettingsStack} options={{ headerShown: false }} />

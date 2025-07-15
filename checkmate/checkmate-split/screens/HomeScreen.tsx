@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
   tagline: {
     marginTop: spacing.s,
     fontWeight: '500',
-    fontSize: 16,
+    fontSize: 24,
   },
   scanButton: {
     width: '90%',

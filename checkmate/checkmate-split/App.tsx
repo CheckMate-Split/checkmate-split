@@ -97,7 +97,7 @@ function MainTabs() {
           return <Ionicons name={icon as any} size={size} color={color} />;
         },
         tabBarActiveTintColor: colors.primary,
-        tabBarStyle: { borderTopWidth: 2, borderColor: '#ccc' },
+        tabBarStyle: { borderTopWidth: 1, borderColor: '#ccc' },
       })}
     >
       <Tab.Screen

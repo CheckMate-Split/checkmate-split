@@ -4,7 +4,7 @@ import {
   StyleSheet,
   TextInput,
   ScrollView,
-  Switch,
+  TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
@@ -14,6 +14,8 @@ import Button from '../components/Button';
 import OutlineButton from '../components/OutlineButton';
 import Text from '../components/Text';
 import PageHeader from '../components/PageHeader';
+import Checkbox from '../components/Checkbox';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing } from '../constants';
 import { db, storage } from '../firebaseConfig';
 import { auth } from '../firebaseConfig';
@@ -27,7 +29,9 @@ export default function CreateReceiptScreen() {
   const navigation = useNavigation<any>();
   const { data, image, manual } = route.params;
   const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
   const [items, setItems] = useState<{ name: string; price: string; shared: boolean }[]>([]);
+  const valid = name && items.every(i => i.name && i.price);
 
   const handleSave = async () => {
     const user = auth.currentUser;
@@ -46,8 +50,9 @@ export default function CreateReceiptScreen() {
           }));
       const docRef = await addDoc(collection(db, 'receipts'), {
         name,
+        description,
         payer: user.uid,
-        data: { ...data, lineItems: parsedItems },
+        data: { ...data, description, lineItems: parsedItems },
         createdAt: serverTimestamp(),
       });
       if (image) {
@@ -57,7 +62,10 @@ export default function CreateReceiptScreen() {
           'base64'
         );
       }
-      navigation.navigate('Receipt', { id: docRef.id, receipt: { id: docRef.id, name, data } });
+      navigation.navigate('Receipt', {
+        id: docRef.id,
+        receipt: { id: docRef.id, name, description, data: { ...data, description, lineItems: parsedItems } },
+      });
     } catch (e) {
       console.error(e);
     }
@@ -69,6 +77,7 @@ export default function CreateReceiptScreen() {
       <ScrollView contentContainerStyle={styles.scroll}>
         {manual ? (
           <>
+            <Text style={styles.sectionHeader}>Receipt Info</Text>
             <Text style={styles.label}>Receipt Name</Text>
             <TextInput
               placeholder="Receipt Name"
@@ -76,9 +85,17 @@ export default function CreateReceiptScreen() {
               onChangeText={setName}
               style={styles.input}
             />
-            <Text style={[styles.label, { marginTop: spacing.l }]}>Line Items</Text>
+            <Text style={styles.label}>Receipt Description</Text>
+            <TextInput
+              placeholder="Description"
+              value={description}
+              onChangeText={setDescription}
+              style={styles.input}
+            />
+            <Text style={[styles.sectionHeader, { marginTop: spacing.l }]}>Line Items</Text>
             {items.map((item, idx) => (
-              <View key={idx} style={styles.itemRow}>
+              <View key={idx} style={styles.itemContainer}>
+                <Text style={styles.label}>{`Item ${idx + 1} Name`}</Text>
                 <TextInput
                   placeholder="Name"
                   value={item.name}
@@ -89,25 +106,34 @@ export default function CreateReceiptScreen() {
                   }}
                   style={[styles.input, styles.itemName]}
                 />
-                <TextInput
-                  placeholder="Price"
-                  value={item.price}
-                  onChangeText={t => {
-                    const copy = [...items];
-                    copy[idx].price = t;
-                    setItems(copy);
-                  }}
-                  keyboardType="numeric"
-                  style={[styles.input, styles.itemPrice]}
-                />
-                <Switch
-                  value={item.shared}
-                  onValueChange={v => {
-                    const copy = [...items];
-                    copy[idx].shared = v;
-                    setItems(copy);
-                  }}
-                />
+                <Text style={styles.label}>Price</Text>
+                <View style={styles.row}>
+                  <TextInput
+                    placeholder="0.00"
+                    value={item.price}
+                    onChangeText={t => {
+                      const copy = [...items];
+                      copy[idx].price = t;
+                      setItems(copy);
+                    }}
+                    keyboardType="numeric"
+                    style={[styles.input, styles.itemPrice]}
+                  />
+                  <View style={styles.checkboxRow}>
+                    <Checkbox
+                      value={item.shared}
+                      onValueChange={v => {
+                        const copy = [...items];
+                        copy[idx].shared = v;
+                        setItems(copy);
+                      }}
+                    />
+                    <Text style={styles.checkboxLabel}>Shared</Text>
+                  </View>
+                  <TouchableOpacity onPress={() => setItems(items.filter((_, i) => i !== idx))}>
+                    <Ionicons name="close" size={20} color={colors.text} />
+                  </TouchableOpacity>
+                </View>
               </View>
             ))}
             <OutlineButton
@@ -132,7 +158,7 @@ export default function CreateReceiptScreen() {
         )}
       </ScrollView>
       <View style={styles.footer}>
-        <Button title="Save" onPress={handleSave} disabled={!name} style={styles.saveButton} />
+        <Button title="Save" onPress={handleSave} disabled={!valid} style={styles.saveButton} />
       </View>
     </SafeAreaView>
   );
@@ -142,6 +168,11 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   scroll: { padding: spacing.m },
   label: { marginTop: spacing.m, fontWeight: '500' },
+  sectionHeader: {
+    marginTop: spacing.l,
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
   input: {
     borderColor: '#ccc',
     borderWidth: 1,
@@ -149,13 +180,16 @@ const styles = StyleSheet.create({
     padding: spacing.m,
     marginTop: spacing.m,
   },
-  itemRow: {
+  itemContainer: { marginTop: spacing.m },
+  row: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: spacing.m,
+    marginTop: spacing.s,
   },
   itemName: { flex: 1, marginRight: spacing.s / 2 },
   itemPrice: { width: 80, marginRight: spacing.s / 2 },
+  checkboxRow: { flexDirection: 'row', alignItems: 'center', marginRight: spacing.s },
+  checkboxLabel: { marginLeft: spacing.s / 2 },
   footer: {
     padding: spacing.m,
     alignItems: 'center',

@@ -48,7 +48,7 @@ export default function HomeScreen() {
   };
 
   const handleManual = () => {
-    navigation.navigate('CreateReceipt', { data: {}, image: '' });
+    navigation.navigate('CreateReceipt', { data: {}, image: '', manual: true });
   };
 
   const renderHeader = () => (

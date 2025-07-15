@@ -27,7 +27,7 @@ export type RootStackParamList = {
 
 export type HomeStackParamList = {
   Home: undefined;
-  CreateReceipt: { data: any; image: string };
+  CreateReceipt: { data: any; image: string; manual?: boolean };
   Confirm: { result: any };
 };
 

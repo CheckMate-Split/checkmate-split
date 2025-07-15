@@ -6,7 +6,14 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import HomeScreen from './screens/HomeScreen';
 import HistoryScreen from './screens/HistoryScreen';
+import CurrentReceiptsScreen from './screens/CurrentReceiptsScreen';
+import PastReceiptsScreen from './screens/PastReceiptsScreen';
 import ProfileScreen from './screens/ProfileScreen';
+import AccountScreen from './screens/AccountScreen';
+import PaymentMethodsScreen from './screens/PaymentMethodsScreen';
+import NotificationsScreen from './screens/NotificationsScreen';
+import TermsPrivacyScreen from './screens/TermsPrivacyScreen';
+import SupportFaqScreen from './screens/SupportFaqScreen';
 import ConfirmScreen from './screens/ConfirmScreen';
 import CreateReceiptScreen from './screens/CreateReceiptScreen';
 import ReceiptScreen from './screens/ReceiptScreen';
@@ -22,12 +29,34 @@ export type RootStackParamList = {
 
 export type HomeStackParamList = {
   Home: undefined;
-  CreateReceipt: { data: any; image: string };
+  CreateReceipt: { data: any; image: string; manual?: boolean };
   Confirm: { result: any };
+};
+
+export type ProfileStackParamList = {
+  Profile: undefined;
+  Account: undefined;
+  PaymentMethods: undefined;
+};
+
+export type SettingsStackParamList = {
+  Settings: undefined;
+  Notifications: undefined;
+  Terms: undefined;
+  Support: undefined;
+};
+
+export type HistoryStackParamList = {
+  History: undefined;
+  CurrentReceipts: undefined;
+  PastReceipts: undefined;
 };
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const HomeStackNav = createNativeStackNavigator<HomeStackParamList>();
+const ProfileStackNav = createNativeStackNavigator<ProfileStackParamList>();
+const SettingsStackNav = createNativeStackNavigator<SettingsStackParamList>();
+const HistoryStackNav = createNativeStackNavigator<HistoryStackParamList>();
 const Tab = createBottomTabNavigator();
 
 const linking = {
@@ -36,11 +65,42 @@ const linking = {
 
 function HomeStack() {
   return (
-    <HomeStackNav.Navigator screenOptions={{ headerBackTitleVisible: false }}>
-      <HomeStackNav.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-      <HomeStackNav.Screen name="CreateReceipt" component={CreateReceiptScreen} options={{ title: 'Create Receipt' }} />
-      <HomeStackNav.Screen name="Confirm" component={ConfirmScreen} options={{ title: 'Confirm Items' }} />
+    <HomeStackNav.Navigator screenOptions={{ headerShown: false }}>
+      <HomeStackNav.Screen name="Home" component={HomeScreen} />
+      <HomeStackNav.Screen name="CreateReceipt" component={CreateReceiptScreen} />
+      <HomeStackNav.Screen name="Confirm" component={ConfirmScreen} />
     </HomeStackNav.Navigator>
+  );
+}
+
+function ProfileStack() {
+  return (
+    <ProfileStackNav.Navigator screenOptions={{ headerShown: false }}>
+      <ProfileStackNav.Screen name="Profile" component={ProfileScreen} />
+      <ProfileStackNav.Screen name="Account" component={AccountScreen} />
+      <ProfileStackNav.Screen name="PaymentMethods" component={PaymentMethodsScreen} />
+    </ProfileStackNav.Navigator>
+  );
+}
+
+function SettingsStack() {
+  return (
+    <SettingsStackNav.Navigator screenOptions={{ headerShown: false }}>
+      <SettingsStackNav.Screen name="Settings" component={SettingsScreen} />
+      <SettingsStackNav.Screen name="Notifications" component={NotificationsScreen} />
+      <SettingsStackNav.Screen name="Terms" component={TermsPrivacyScreen} />
+      <SettingsStackNav.Screen name="Support" component={SupportFaqScreen} />
+    </SettingsStackNav.Navigator>
+  );
+}
+
+function HistoryStack() {
+  return (
+    <HistoryStackNav.Navigator screenOptions={{ headerShown: false }}>
+      <HistoryStackNav.Screen name="History" component={HistoryScreen} />
+      <HistoryStackNav.Screen name="CurrentReceipts" component={CurrentReceiptsScreen} />
+      <HistoryStackNav.Screen name="PastReceipts" component={PastReceiptsScreen} />
+    </HistoryStackNav.Navigator>
   );
 }
 
@@ -56,12 +116,17 @@ function MainTabs() {
           return <Ionicons name={icon as any} size={size} color={color} />;
         },
         tabBarActiveTintColor: colors.primary,
+        tabBarStyle: { borderTopWidth: 1, borderColor: '#ccc' },
       })}
     >
-      <Tab.Screen name="HomeTab" component={HomeStack} options={{ title: 'Home' }} />
-      <Tab.Screen name="History" component={HistoryScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
-      <Tab.Screen name="Settings" component={SettingsScreen} />
+      <Tab.Screen
+        name="HomeTab"
+        component={HomeStack}
+        options={{ title: 'Home', headerShown: false }}
+      />
+      <Tab.Screen name="History" component={HistoryStack} options={{ headerShown: false }} />
+      <Tab.Screen name="Profile" component={ProfileStack} options={{ headerShown: false }} />
+      <Tab.Screen name="Settings" component={SettingsStack} options={{ headerShown: false }} />
     </Tab.Navigator>
   );
 }
@@ -75,9 +140,9 @@ export default function App() {
 
   return (
     <NavigationContainer linking={linking}>
-      <RootStack.Navigator screenOptions={{ headerBackTitleVisible: false }}>
-        <RootStack.Screen name="Tabs" component={MainTabs} options={{ headerShown: false }} />
-        <RootStack.Screen name="Receipt" component={ReceiptScreen} options={{ title: 'Receipt' }} />
+      <RootStack.Navigator screenOptions={{ headerShown: false }}>
+        <RootStack.Screen name="Tabs" component={MainTabs} />
+        <RootStack.Screen name="Receipt" component={ReceiptScreen} />
       </RootStack.Navigator>
     </NavigationContainer>
   );

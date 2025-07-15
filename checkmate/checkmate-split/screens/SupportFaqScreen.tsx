@@ -3,16 +3,13 @@ import { StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import PageHeader from '../components/PageHeader';
-import MenuItem from '../components/MenuItem';
-import { colors } from '../constants';
+import { colors, spacing } from '../constants';
 
-export default function HistoryScreen() {
+export default function SupportFaqScreen() {
   const navigation = useNavigation<any>();
   return (
     <SafeAreaView style={styles.container}>
-      <PageHeader title="History" />
-      <MenuItem title="Current" onPress={() => navigation.navigate('CurrentReceipts')} />
-      <MenuItem title="Past" onPress={() => navigation.navigate('PastReceipts')} />
+      <PageHeader title="Support & FAQ" onBack={navigation.goBack} />
     </SafeAreaView>
   );
 }
@@ -21,5 +18,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+    padding: spacing.m,
   },
 });

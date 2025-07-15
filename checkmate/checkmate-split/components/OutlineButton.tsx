@@ -5,17 +5,12 @@ import { colors, spacing } from '../constants';
 interface Props {
   title: string;
   onPress: () => void;
-  disabled?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
-export default function Button({ title, onPress, disabled, style }: Props) {
+export default function OutlineButton({ title, onPress, style }: Props) {
   return (
-    <TouchableOpacity
-      style={[styles.button, style, disabled && styles.disabled]}
-      onPress={onPress}
-      disabled={disabled}
-    >
+    <TouchableOpacity style={[styles.button, style]} onPress={onPress}>
       <Text style={styles.text}>{title}</Text>
     </TouchableOpacity>
   );
@@ -23,16 +18,14 @@ export default function Button({ title, onPress, disabled, style }: Props) {
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.primaryBackground,
+    borderColor: '#ccc',
+    borderWidth: 1,
     padding: spacing.l,
     borderRadius: 8,
-    alignSelf: 'stretch',
-  },
-  disabled: {
-    opacity: 0.5,
   },
   text: {
-    color: '#fff',
+    color: colors.text,
     fontWeight: 'bold',
     fontSize: 18,
     textAlign: 'center',

@@ -39,3 +39,6 @@ The Stripe secret key should be set using the Firebase CLI:
 firebase functions:config:set stripe.secret="<YOUR_SECRET_KEY>"
 ```
 Optionally configure onboarding URLs with `stripe.return_url` and `stripe.refresh_url`.
+
+The mobile app initializes Firebase Auth using AsyncStorage persistence so users
+remain signed in across sessions.

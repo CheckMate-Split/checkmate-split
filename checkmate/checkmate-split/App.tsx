@@ -6,6 +6,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import HomeScreen from './screens/HomeScreen';
 import HistoryScreen from './screens/HistoryScreen';
+import CurrentReceiptsScreen from './screens/CurrentReceiptsScreen';
+import PastReceiptsScreen from './screens/PastReceiptsScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import AccountScreen from './screens/AccountScreen';
 import PaymentMethodsScreen from './screens/PaymentMethodsScreen';
@@ -44,10 +46,17 @@ export type SettingsStackParamList = {
   Support: undefined;
 };
 
+export type HistoryStackParamList = {
+  History: undefined;
+  CurrentReceipts: undefined;
+  PastReceipts: undefined;
+};
+
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const HomeStackNav = createNativeStackNavigator<HomeStackParamList>();
 const ProfileStackNav = createNativeStackNavigator<ProfileStackParamList>();
 const SettingsStackNav = createNativeStackNavigator<SettingsStackParamList>();
+const HistoryStackNav = createNativeStackNavigator<HistoryStackParamList>();
 const Tab = createBottomTabNavigator();
 
 const linking = {
@@ -85,6 +94,16 @@ function SettingsStack() {
   );
 }
 
+function HistoryStack() {
+  return (
+    <HistoryStackNav.Navigator screenOptions={{ headerShown: false }}>
+      <HistoryStackNav.Screen name="History" component={HistoryScreen} />
+      <HistoryStackNav.Screen name="CurrentReceipts" component={CurrentReceiptsScreen} />
+      <HistoryStackNav.Screen name="PastReceipts" component={PastReceiptsScreen} />
+    </HistoryStackNav.Navigator>
+  );
+}
+
 function MainTabs() {
   return (
     <Tab.Navigator
@@ -105,7 +124,7 @@ function MainTabs() {
         component={HomeStack}
         options={{ title: 'Home', headerShown: false }}
       />
-      <Tab.Screen name="History" component={HistoryScreen} options={{ headerShown: false }} />
+      <Tab.Screen name="History" component={HistoryStack} options={{ headerShown: false }} />
       <Tab.Screen name="Profile" component={ProfileStack} options={{ headerShown: false }} />
       <Tab.Screen name="Settings" component={SettingsStack} options={{ headerShown: false }} />
     </Tab.Navigator>

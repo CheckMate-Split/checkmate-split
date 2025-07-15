@@ -1,41 +1,45 @@
-import React, { useEffect } from 'react';
-import { StyleSheet, View, Linking } from 'react-native';
-import * as ExpoLinking from 'expo-linking';
-import Text from '../components/Text';
-import Button from '../components/Button';
-import { httpsCallable } from 'firebase/functions';
-import { functions } from '../firebaseConfig';
-import { colors, spacing } from '../constants';
+import React from 'react';
+import { View, StyleSheet, Alert } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { signOut } from 'firebase/auth';
+import PageHeader from '../components/PageHeader';
+import MenuItem from '../components/MenuItem';
+import { colors } from '../constants';
+import { auth } from '../firebaseConfig';
 
 export default function SettingsScreen() {
-  useEffect(() => {
-    const sub = Linking.addEventListener('url', event => {
-      if (event.url.includes('stripe-return')) {
-        // In a real app you might refresh user data here
-        console.log('Stripe onboarding complete');
-      }
-    });
-    return () => sub.remove();
-  }, []);
+  const navigation = useNavigation<any>();
 
-  const handleConnect = async () => {
-    try {
-      const callable = httpsCallable(functions, 'createStripeConnectLink');
-      const res: any = await callable({
-        returnUrl: ExpoLinking.createURL('stripe-return'),
-        refreshUrl: ExpoLinking.createURL('stripe-refresh'),
-      });
-      const url = res.data.url;
-      if (url) Linking.openURL(url);
-    } catch (e) {
-      console.error(e);
-    }
+  const handleLogout = () => {
+    Alert.alert('Logout', 'Are you sure you want to logout?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Logout', style: 'destructive', onPress: () => signOut(auth) },
+    ]);
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Settings</Text>
-      <Button title="Stripe Connect Signup" onPress={handleConnect} style={styles.button} />
+      <PageHeader title="Settings" />
+      <MenuItem
+        title="Notifications"
+        icon="notifications"
+        onPress={() => navigation.navigate('Notifications')}
+      />
+      <MenuItem
+        title="Terms & Privacy"
+        icon="document-text"
+        onPress={() => navigation.navigate('Terms')}
+      />
+      <MenuItem
+        title="Support & FAQ"
+        icon="help-circle"
+        onPress={() => navigation.navigate('Support')}
+      />
+      <MenuItem
+        title="Logout"
+        icon="log-out"
+        onPress={handleLogout}
+      />
     </View>
   );
 }
@@ -44,10 +48,5 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    padding: spacing.m,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
-  title: { marginBottom: spacing.m },
-  button: { width: '90%' },
 });

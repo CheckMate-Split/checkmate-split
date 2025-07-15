@@ -7,6 +7,11 @@ import { Ionicons } from '@expo/vector-icons';
 import HomeScreen from './screens/HomeScreen';
 import HistoryScreen from './screens/HistoryScreen';
 import ProfileScreen from './screens/ProfileScreen';
+import AccountScreen from './screens/AccountScreen';
+import PaymentMethodsScreen from './screens/PaymentMethodsScreen';
+import NotificationsScreen from './screens/NotificationsScreen';
+import TermsPrivacyScreen from './screens/TermsPrivacyScreen';
+import SupportFaqScreen from './screens/SupportFaqScreen';
 import ConfirmScreen from './screens/ConfirmScreen';
 import CreateReceiptScreen from './screens/CreateReceiptScreen';
 import ReceiptScreen from './screens/ReceiptScreen';
@@ -26,8 +31,23 @@ export type HomeStackParamList = {
   Confirm: { result: any };
 };
 
+export type ProfileStackParamList = {
+  Profile: undefined;
+  Account: undefined;
+  PaymentMethods: undefined;
+};
+
+export type SettingsStackParamList = {
+  Settings: undefined;
+  Notifications: undefined;
+  Terms: undefined;
+  Support: undefined;
+};
+
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const HomeStackNav = createNativeStackNavigator<HomeStackParamList>();
+const ProfileStackNav = createNativeStackNavigator<ProfileStackParamList>();
+const SettingsStackNav = createNativeStackNavigator<SettingsStackParamList>();
 const Tab = createBottomTabNavigator();
 
 const linking = {
@@ -41,6 +61,27 @@ function HomeStack() {
       <HomeStackNav.Screen name="CreateReceipt" component={CreateReceiptScreen} options={{ title: 'Create Receipt' }} />
       <HomeStackNav.Screen name="Confirm" component={ConfirmScreen} options={{ title: 'Confirm Items' }} />
     </HomeStackNav.Navigator>
+  );
+}
+
+function ProfileStack() {
+  return (
+    <ProfileStackNav.Navigator screenOptions={{ headerShown: false }}>
+      <ProfileStackNav.Screen name="Profile" component={ProfileScreen} />
+      <ProfileStackNav.Screen name="Account" component={AccountScreen} />
+      <ProfileStackNav.Screen name="PaymentMethods" component={PaymentMethodsScreen} />
+    </ProfileStackNav.Navigator>
+  );
+}
+
+function SettingsStack() {
+  return (
+    <SettingsStackNav.Navigator screenOptions={{ headerShown: false }}>
+      <SettingsStackNav.Screen name="Settings" component={SettingsScreen} />
+      <SettingsStackNav.Screen name="Notifications" component={NotificationsScreen} />
+      <SettingsStackNav.Screen name="Terms" component={TermsPrivacyScreen} />
+      <SettingsStackNav.Screen name="Support" component={SupportFaqScreen} />
+    </SettingsStackNav.Navigator>
   );
 }
 
@@ -60,8 +101,8 @@ function MainTabs() {
     >
       <Tab.Screen name="HomeTab" component={HomeStack} options={{ title: 'Home' }} />
       <Tab.Screen name="History" component={HistoryScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
-      <Tab.Screen name="Settings" component={SettingsScreen} />
+      <Tab.Screen name="Profile" component={ProfileStack} options={{ headerShown: false }} />
+      <Tab.Screen name="Settings" component={SettingsStack} options={{ headerShown: false }} />
     </Tab.Navigator>
   );
 }

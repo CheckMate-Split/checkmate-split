@@ -3,10 +3,10 @@ import { View, StyleSheet } from 'react-native';
 import PageHeader from '../components/PageHeader';
 import { colors, spacing } from '../constants';
 
-export default function HistoryScreen() {
+export default function NotificationsScreen() {
   return (
     <View style={styles.container}>
-      <PageHeader title="History" />
+      <PageHeader title="Notifications" />
     </View>
   );
 }
@@ -18,4 +18,3 @@ const styles = StyleSheet.create({
     padding: spacing.m,
   },
 });
-

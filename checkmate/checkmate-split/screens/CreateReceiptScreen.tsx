@@ -180,18 +180,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: spacing.s,
+    width: '100%',
   },
   // Inputs inside the line item row should not have extra top margin so that
   // they align vertically. The name input also uses slightly less width now
   // that the checkbox has been removed.
-  itemName: { flex: 0.8, marginRight: spacing.s / 2, marginTop: 0 },
+  itemName: { flex: 1, marginRight: spacing.s / 2, marginTop: 0 },
   itemPrice: { width: 80, marginRight: spacing.s / 2, marginTop: 0 },
   // The remove button should be the same height as the inputs while keeping the
   // icon fully visible. By clearing only the horizontal padding we maintain the
   // vertical padding from `input` so the heights match.
   removeButton: {
     width: 40,
-    paddingHorizontal: 0,
+    paddingHorizontal: spacing.s / 2,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 0,

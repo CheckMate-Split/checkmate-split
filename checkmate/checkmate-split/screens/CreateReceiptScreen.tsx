@@ -185,15 +185,22 @@ const styles = StyleSheet.create({
   // Inputs inside the line item row should not have extra top margin so that
   // they align vertically. The name input also uses slightly less width now
   // that the checkbox has been removed.
-  itemName: { flex: 1, marginRight: spacing.s / 2, marginTop: 0 },
+  // Give the name field slightly less width so the price field and remove
+  // button can fit on one line without overflowing.
+  itemName: {
+    flex: 1,
+    flexBasis: '60%',
+    marginRight: spacing.s / 2,
+    marginTop: 0,
+  },
   itemPrice: { width: 80, marginRight: spacing.s / 2, marginTop: 0 },
   // Make the remove button square so the "X" is centered and fully visible.
   // By overriding the input padding we ensure the width and height match.
   removeButton: {
-    width: 40,
-    height: 40,
+    height: 48,
+    width: 48,
     paddingVertical: 0,
-    paddingHorizontal: spacing.s / 2,
+    paddingHorizontal: spacing.s,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 0,

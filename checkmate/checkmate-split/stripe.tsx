@@ -8,6 +8,7 @@ export const Stripe = ({ children }: { children: React.ReactElement | React.Reac
   <StripeProvider
     publishableKey={STRIPE_PUBLISHABLE_KEY}
     merchantIdentifier="merchant.com.checkmate"
+    urlScheme="checkmate"
   >
     {children}
   </StripeProvider>

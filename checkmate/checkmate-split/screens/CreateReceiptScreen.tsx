@@ -187,11 +187,12 @@ const styles = StyleSheet.create({
   // that the checkbox has been removed.
   itemName: { flex: 1, marginRight: spacing.s / 2, marginTop: 0 },
   itemPrice: { width: 80, marginRight: spacing.s / 2, marginTop: 0 },
-  // The remove button should be the same height as the inputs while keeping the
-  // icon fully visible. By clearing only the horizontal padding we maintain the
-  // vertical padding from `input` so the heights match.
+  // Make the remove button square so the "X" is centered and fully visible.
+  // By overriding the input padding we ensure the width and height match.
   removeButton: {
     width: 40,
+    height: 40,
+    paddingVertical: 0,
     paddingHorizontal: spacing.s / 2,
     alignItems: 'center',
     justifyContent: 'center',

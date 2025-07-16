@@ -9,7 +9,7 @@ import ReceiptCard from '../components/ReceiptCard';
 import Text from '../components/Text';
 import { colors, spacing } from '../constants';
 
-export default function CurrentReceiptsScreen() {
+export default function ReceiptsScreen() {
   const [receipts, setReceipts] = useState<any[]>([]);
   const navigation = useNavigation<any>();
 
@@ -23,13 +23,13 @@ export default function CurrentReceiptsScreen() {
   const renderItem = ({ item }: { item: any }) => (
     <ReceiptCard
       receipt={item}
-      onPress={() => navigation.navigate('Receipt', { id: item.id, receipt: item })}
+      onPress={() => navigation.navigate('ManageReceipt', { receipt: item })}
     />
   );
 
   return (
     <SafeAreaView style={styles.container}>
-      <PageHeader title="Current" onBack={navigation.goBack} />
+      <PageHeader title="Receipts" />
       <FlatList
         data={receipts}
         renderItem={renderItem}

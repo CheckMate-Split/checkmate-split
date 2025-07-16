@@ -48,6 +48,7 @@ export default function CreateReceiptScreen() {
         : (data?.lineItems || []).map((item: any) => ({
             ...item,
             responsible: user.uid,
+            shared: false,
           }));
       const docRef = await addDoc(collection(db, 'receipts'), {
         name,
@@ -64,10 +65,14 @@ export default function CreateReceiptScreen() {
           'base64'
         );
       }
-      navigation.navigate('Receipt', {
+      const localReceipt = {
         id: docRef.id,
-        receipt: { id: docRef.id, name, description, data: { ...data, description, lineItems: parsedItems } },
-      });
+        name,
+        description,
+        data: { ...data, description, lineItems: parsedItems },
+        createdAt: new Date().toISOString(),
+      };
+      navigation.navigate('ClaimItems', { receipt: localReceipt });
     } catch (e) {
       console.error(e);
     }
@@ -133,7 +138,7 @@ export default function CreateReceiptScreen() {
             ))}
             <OutlineButton
               title="Add Item"
-              onPress={() => setItems([...items, { name: '', price: '', shared: true }])}
+              onPress={() => setItems([...items, { name: '', price: '', shared: false }])}
               style={{ marginTop: spacing.m }}
             />
           </>

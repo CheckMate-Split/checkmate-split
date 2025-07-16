@@ -1,18 +1,15 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
 import PageHeader from '../components/PageHeader';
-import MenuItem from '../components/MenuItem';
-import { colors } from '../constants';
+import Text from '../components/Text';
+import { colors, spacing } from '../constants';
 
 export default function HistoryScreen() {
-  const navigation = useNavigation<any>();
   return (
     <SafeAreaView style={styles.container}>
       <PageHeader title="History" />
-      <MenuItem title="Current" onPress={() => navigation.navigate('CurrentReceipts')} />
-      <MenuItem title="Past" onPress={() => navigation.navigate('PastReceipts')} />
+      <Text style={styles.empty}>no past receipts</Text>
     </SafeAreaView>
   );
 }
@@ -21,5 +18,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+    padding: spacing.m,
+  },
+  empty: {
+    marginTop: spacing.m,
+    textAlign: 'center',
   },
 });

@@ -55,7 +55,7 @@ export default function ManageReceiptScreen() {
           title="Share Link"
           onPress={() => {}}
           style={styles.shareButton}
-          icon="link"
+          icon="link-outline"
         />
       </View>
     </SafeAreaView>

@@ -130,6 +130,9 @@ exports.createPaymentIntent = functions.https.onCall(async (data, context) => {
       currency: 'usd',
       payment_method_types: cashAppOnly ? ['cashapp'] : ['card', 'cashapp'],
     };
+    if (!cashAppOnly) {
+      params.automatic_payment_methods = { enabled: true };
+    }
     const intent = await stripe.paymentIntents.create(params);
     return { clientSecret: intent.client_secret };
   } catch (err) {

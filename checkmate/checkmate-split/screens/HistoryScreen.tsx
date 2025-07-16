@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
+import * as Linking from 'expo-linking';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { httpsCallable } from 'firebase/functions';
 import { useStripe } from '@stripe/stripe-react-native';
@@ -22,6 +23,9 @@ export default function HistoryScreen() {
       const { error } = await initPaymentSheet({
         merchantDisplayName: 'CheckMate',
         paymentIntentClientSecret: clientSecret,
+        returnURL: Linking.createURL('/payment-complete'),
+        applePay: { merchantCountryCode: 'US' },
+        allowsDelayedPaymentMethods: true,
       });
       if (error) {
         console.error(error);

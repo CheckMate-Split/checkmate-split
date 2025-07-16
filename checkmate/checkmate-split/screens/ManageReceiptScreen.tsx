@@ -1,10 +1,11 @@
-import React from 'react';
-import { StyleSheet, View, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View, ScrollView, Modal, Share, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import Text from '../components/Text';
 import PageHeader from '../components/PageHeader';
 import OutlineButton from '../components/OutlineButton';
+import QRCode from 'react-native-qrcode-svg';
 import { colors, spacing } from '../constants';
 
 export type ManageReceiptParams = {
@@ -15,6 +16,8 @@ export default function ManageReceiptScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<RouteProp<ManageReceiptParams, 'ManageReceipt'>>();
   const { receipt } = route.params;
+
+  const [qrVisible, setQrVisible] = useState(false);
 
   const created = receipt.createdAt
     ? new Date(receipt.createdAt.seconds
@@ -47,17 +50,30 @@ export default function ManageReceiptScreen() {
       <View style={styles.footer}>
         <OutlineButton
           title="Share QR"
-          onPress={() => {}}
+          onPress={() => setQrVisible(true)}
           style={styles.shareButton}
           icon="qr-code"
         />
         <OutlineButton
           title="Share Link"
-          onPress={() => {}}
+          onPress={() => Share.share({ message: receipt.id })}
           style={styles.shareButton}
           icon="link-outline"
         />
       </View>
+      <Modal
+        visible={qrVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setQrVisible(false)}
+      >
+        <TouchableOpacity style={styles.modalOverlay} onPress={() => setQrVisible(false)}>
+          <View style={styles.modalContent}>
+            <QRCode value={receipt.id} size={200} />
+            <OutlineButton title="Close" onPress={() => setQrVisible(false)} style={styles.closeButton} />
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -95,4 +111,20 @@ const styles = StyleSheet.create({
     padding: spacing.m,
   },
   shareButton: { flex: 1, marginHorizontal: spacing.s / 2 },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+    backgroundColor: colors.background,
+    padding: spacing.l,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+    alignItems: 'center',
+  },
+  closeButton: {
+    marginTop: spacing.l,
+    alignSelf: 'stretch',
+  },
 });

@@ -181,9 +181,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: spacing.s,
   },
-  itemName: { flex: 1, marginRight: spacing.s / 2 },
-  itemPrice: { width: 80, marginRight: spacing.s / 2 },
-  removeButton: { width: 40, alignItems: 'center', justifyContent: 'center', marginTop: 0 },
+  // Inputs inside the line item row should not have extra top margin so that
+  // they align vertically. The name input also uses slightly less width now
+  // that the checkbox has been removed.
+  itemName: { flex: 0.8, marginRight: spacing.s / 2, marginTop: 0 },
+  itemPrice: { width: 80, marginRight: spacing.s / 2, marginTop: 0 },
+  // The remove button needs no padding so the "X" icon is fully visible and it
+  // sits centered beside the inputs.
+  removeButton: {
+    width: 40,
+    padding: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 0,
+  },
   footer: {
     padding: spacing.m,
     alignItems: 'center',

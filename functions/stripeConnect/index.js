@@ -33,7 +33,7 @@ exports.createStripeConnectLink = functions.https.onCall(async (data, context) =
     }
     if (!accountId) {
       const account = await stripe.accounts.create({
-        type: 'custom',
+        type: 'express',
         country: 'US',
         business_type: 'individual',
         business_profile: {

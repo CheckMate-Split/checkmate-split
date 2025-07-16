@@ -23,7 +23,8 @@ export default function HistoryScreen() {
       if (cashAppOnly) {
         const { error } = await confirmPayment(clientSecret, {
           paymentMethodType: 'CashApp',
-        });
+          returnURL: Linking.createURL('/payment-complete'),
+        } as any);
         if (error) console.error(error);
       } else {
         const { error } = await initPaymentSheet({

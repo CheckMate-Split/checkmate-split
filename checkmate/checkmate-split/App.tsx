@@ -15,6 +15,8 @@ import SupportFaqScreen from './screens/SupportFaqScreen';
 import ConfirmScreen from './screens/ConfirmScreen';
 import CreateReceiptScreen from './screens/CreateReceiptScreen';
 import ReceiptScreen from './screens/ReceiptScreen';
+import ClaimItemsScreen from './screens/ClaimItemsScreen';
+import ManageReceiptScreen from './screens/ManageReceiptScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import { colors } from './constants';
 import { auth } from './firebaseConfig';
@@ -23,12 +25,14 @@ import { signInAnonymously } from 'firebase/auth';
 export type RootStackParamList = {
   Tabs: undefined;
   Receipt: { id: string; receipt: any };
+  ManageReceipt: { receipt: any };
 };
 
 export type HomeStackParamList = {
   Home: undefined;
   CreateReceipt: { data: any; image: string; manual?: boolean };
   Confirm: { result: any };
+  ClaimItems: { receipt: any };
 };
 
 
@@ -66,6 +70,7 @@ function HomeStack() {
       <HomeStackNav.Screen name="Home" component={HomeScreen} />
       <HomeStackNav.Screen name="CreateReceipt" component={CreateReceiptScreen} />
       <HomeStackNav.Screen name="Confirm" component={ConfirmScreen} />
+      <HomeStackNav.Screen name="ClaimItems" component={ClaimItemsScreen} />
     </HomeStackNav.Navigator>
   );
 }
@@ -139,6 +144,7 @@ export default function App() {
       <RootStack.Navigator screenOptions={{ headerShown: false }}>
         <RootStack.Screen name="Tabs" component={MainTabs} />
         <RootStack.Screen name="Receipt" component={ReceiptScreen} />
+        <RootStack.Screen name="ManageReceipt" component={ManageReceiptScreen} />
       </RootStack.Navigator>
     </NavigationContainer>
   );

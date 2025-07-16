@@ -23,7 +23,7 @@ export default function ReceiptsScreen() {
   const renderItem = ({ item }: { item: any }) => (
     <ReceiptCard
       receipt={item}
-      onPress={() => navigation.navigate('Receipt', { id: item.id, receipt: item })}
+      onPress={() => navigation.navigate('ManageReceipt', { receipt: item })}
     />
   );
 

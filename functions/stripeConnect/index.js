@@ -67,3 +67,14 @@ exports.getBalance = functions.https.onCall(async () => {
     throw new functions.https.HttpsError('internal', 'failed to retrieve balance');
   }
 });
+
+exports.getConnectStatus = functions.https.onCall(async () => {
+  try {
+    const accounts = await stripe.accounts.list({ limit: 1 });
+    const connected = accounts.data.length > 0;
+    return { connected };
+  } catch (err) {
+    console.error(err);
+    throw new functions.https.HttpsError('internal', 'failed to check connect status');
+  }
+});

@@ -19,6 +19,7 @@ export default function PaymentMethodsScreen() {
   const [balance, setBalance] = useState<number>(0);
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [methods, setMethods] = useState<Array<{ id: string; brand: string; last4: string }>>([]);
+  const [achConnected, setAchConnected] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -35,6 +36,19 @@ export default function PaymentMethodsScreen() {
       console.error(e);
     }
     fetchBalance();
+    fetchAchStatus();
+  };
+
+  const fetchAchStatus = async () => {
+    try {
+      const fn = httpsCallable(functions, 'getConnectStatus');
+      const res: any = await fn();
+      if (res?.data?.connected != null) {
+        setAchConnected(res.data.connected);
+      }
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const fetchBalance = async () => {
@@ -96,6 +110,7 @@ export default function PaymentMethodsScreen() {
       const res: any = await createLink({});
       if (res?.data?.url) {
         Linking.openURL(res.data.url);
+        fetchAchStatus();
       }
     } catch (e) {
       console.error(e);
@@ -121,13 +136,18 @@ export default function PaymentMethodsScreen() {
         ListFooterComponent={
           <View style={styles.footer}>
             <Button title="Add Payment Method" onPress={handleAddMethod} />
-            <OutlineButton title="Fund" onPress={() => {}} style={styles.button} />
-            <OutlineButton title="Withdraw" onPress={() => {}} style={styles.button} />
-            <OutlineButton
-              title="Connect ACH"
-              onPress={handleConnectAch}
-              style={styles.button}
-            />
+            {achConnected ? (
+              <>
+                <OutlineButton title="Fund" onPress={() => {}} style={styles.button} />
+                <OutlineButton title="Withdraw" onPress={() => {}} style={styles.button} />
+              </>
+            ) : (
+              <OutlineButton
+                title="Connect ACH"
+                onPress={handleConnectAch}
+                style={styles.button}
+              />
+            )}
           </View>
         }
       />
@@ -142,7 +162,7 @@ const styles = StyleSheet.create({
     padding: spacing.m,
   },
   balance: {
-    fontSize: 40,
+    fontSize: 60,
     fontWeight: 'bold',
     textAlign: 'center',
     marginTop: spacing.l,

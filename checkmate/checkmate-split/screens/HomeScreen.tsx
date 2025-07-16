@@ -64,7 +64,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>{renderHeader()}</View>
+      {renderHeader()}
       <View style={styles.footer}>
         <Button title="Scan Receipt" onPress={handleScan} style={styles.scanButton} />
         <View style={styles.extraRow}>
@@ -88,11 +88,8 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    flexDirection: 'column',
     backgroundColor: colors.background,
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
   },
   footer: {
     padding: spacing.m,
@@ -100,6 +97,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   header: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
     marginVertical: spacing.l,
   },

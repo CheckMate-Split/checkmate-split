@@ -5,6 +5,7 @@ const {
   listPaymentMethods,
   getBalance,
   getConnectStatus,
+  createPaymentIntent,
 } = require('./stripeConnect');
 
 exports.scanReceipt = scanReceipt;
@@ -13,3 +14,4 @@ exports.createSetupIntent = createSetupIntent;
 exports.listPaymentMethods = listPaymentMethods;
 exports.getBalance = getBalance;
 exports.getConnectStatus = getConnectStatus;
+exports.createPaymentIntent = createPaymentIntent;

@@ -121,3 +121,19 @@ exports.getConnectStatus = functions.https.onCall(async (data, context) => {
     throw new functions.https.HttpsError('internal', 'failed to check connect status');
   }
 });
+
+exports.createPaymentIntent = functions.https.onCall(async (data, context) => {
+  try {
+    const cashAppOnly = data && data.cashAppOnly;
+    const params = {
+      amount: 1000,
+      currency: 'usd',
+      payment_method_types: cashAppOnly ? ['cashapp'] : ['card', 'cashapp'],
+    };
+    const intent = await stripe.paymentIntents.create(params);
+    return { clientSecret: intent.client_secret };
+  } catch (err) {
+    console.error(err);
+    throw new functions.https.HttpsError('internal', 'failed to create payment intent');
+  }
+});

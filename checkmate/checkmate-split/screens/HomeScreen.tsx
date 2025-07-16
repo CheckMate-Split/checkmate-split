@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
   },
   logo: {
     width: '90%',
-    aspectRatio: 3 / 2,
+    // keep natural height so the logo stays within 90% width
   },
   tagline: {
     marginTop: spacing.s,

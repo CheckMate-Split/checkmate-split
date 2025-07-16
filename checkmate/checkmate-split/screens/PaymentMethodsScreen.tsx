@@ -13,10 +13,12 @@ import MenuItem from '../components/MenuItem';
 import Text from '../components/Text';
 import { colors, spacing } from '../constants';
 import { functions } from '../firebaseConfig';
+import { useConnectLink } from '../connectLink';
 
 export default function PaymentMethodsScreen() {
   const navigation = useNavigation<any>();
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
+  const { link, refresh: refreshLink } = useConnectLink();
   const [balance, setBalance] = useState<number>(0);
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [methods, setMethods] = useState<Array<{ id: string; brand: string; last4: string }>>([]);
@@ -105,13 +107,20 @@ export default function PaymentMethodsScreen() {
     }
   };
 
-  const handleConnectAch = async () => {
+  const handleConnectAch = async (test = false) => {
     try {
-      const createLink = httpsCallable(functions, 'createStripeConnectLink');
-      const res: any = await createLink({});
-      if (res?.data?.url) {
-        await WebBrowser.openBrowserAsync(res.data.url);
+      let url = link;
+      if (test) {
+        url = await refreshLink(true);
+      } else if (!url) {
+        url = await refreshLink();
+      }
+      if (url) {
+        await WebBrowser.openBrowserAsync(url);
         fetchAchStatus();
+        if (!test) {
+          refreshLink();
+        }
       }
     } catch (e) {
       console.error(e);

@@ -22,6 +22,15 @@ exports.createStripeConnectLink = functions.https.onCall(async (data, context) =
     if (existing.exists) {
       accountId = existing.data().accountId;
     }
+    if (data && data.test && accountId) {
+      try {
+        await stripe.accounts.del(accountId);
+      } catch (e) {
+        console.error('Failed to delete Stripe account', e);
+      }
+      await ref.delete();
+      accountId = undefined;
+    }
     if (!accountId) {
       const account = await stripe.accounts.create({
         type: 'custom',

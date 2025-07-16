@@ -24,11 +24,15 @@ exports.createStripeConnectLink = functions.https.onCall(async (data, context) =
     }
     if (!accountId) {
       const account = await stripe.accounts.create({
-        type: 'express',
+        type: 'custom',
         country: 'US',
         business_type: 'individual',
         business_profile: {
           product_description: 'using checkmate app to split payments',
+        },
+        capabilities: {
+          card_payments: { requested: true },
+          transfers: { requested: true },
         },
       });
       accountId = account.id;

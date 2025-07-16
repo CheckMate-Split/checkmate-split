@@ -26,11 +26,16 @@ export default function ManageReceiptScreen() {
     : new Date();
 
   const people = [{ id: 'me', name: 'You', status: 'Paid' }];
+  const total =
+    receipt.data?.totalAmount?.data ?? receipt.data?.total?.data ?? null;
 
   const renderPerson = (p: any) => (
     <View key={p.id} style={styles.personRow}>
       <View style={styles.avatar} />
       <Text style={styles.personName}>{p.name}</Text>
+      {total !== null && (
+        <Text style={styles.amount}>{`$${Number(total).toFixed(2)}`}</Text>
+      )}
       <View
         style={[styles.tag, p.status === 'Paid' ? styles.tagPaid : p.status === 'Viewed' ? styles.tagViewed : styles.tagUnpaid]}
       >
@@ -80,9 +85,9 @@ export default function ManageReceiptScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  scroll: { padding: spacing.m },
-  subheader: { color: '#666', marginTop: spacing.s },
-  desc: { marginTop: spacing.s },
+  scroll: { paddingHorizontal: spacing.m, paddingBottom: spacing.m },
+  subheader: { color: '#666', fontSize: 28 },
+  desc: { marginTop: spacing.s, fontSize: 28 },
   personRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -95,13 +100,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#ccc',
     marginRight: spacing.m,
   },
-  personName: { flex: 1 },
+  personName: { flex: 1, fontSize: 28 },
   tag: {
     paddingHorizontal: spacing.m,
     paddingVertical: spacing.s / 2,
     borderRadius: 12,
   },
-  tagText: { color: '#fff', fontSize: 12 },
+  tagText: { color: '#fff', fontSize: 21 },
+  amount: { marginRight: spacing.m, fontSize: 28, fontWeight: '600' },
   tagUnpaid: { backgroundColor: '#999' },
   tagViewed: { backgroundColor: '#f88' },
   tagPaid: { backgroundColor: '#4c9a4c' },

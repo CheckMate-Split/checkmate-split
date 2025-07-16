@@ -28,7 +28,7 @@ export default function SettingsScreen() {
         onPress={() => navigation.navigate('Account')}
       />
       <MenuItem
-        title="Payment Methods"
+        title="Payments & Balance"
         icon="card"
         onPress={() => navigation.navigate('PaymentMethods')}
       />

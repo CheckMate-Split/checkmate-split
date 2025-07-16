@@ -11,7 +11,7 @@ export default function TermsPrivacyScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <PageHeader title="Terms & Privacy" onBack={navigation.goBack} />
-      <ScrollView>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
         <Text style={styles.section}>1. Terms of Use</Text>
         <Text style={styles.paragraph}>
           By using CheckMate, you agree to our Terms of Use. CheckMate provides tools
@@ -62,6 +62,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  scrollContent: {
     padding: spacing.m,
   },
   section: {

@@ -14,7 +14,6 @@ import Button from '../components/Button';
 import OutlineButton from '../components/OutlineButton';
 import Text from '../components/Text';
 import PageHeader from '../components/PageHeader';
-import Checkbox from '../components/Checkbox';
 import DateInput from '../components/DateInput';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing } from '../constants';
@@ -123,15 +122,6 @@ export default function CreateReceiptScreen() {
                     keyboardType="numeric"
                     style={[styles.input, styles.itemPrice]}
                   />
-                  <Checkbox
-                    value={item.shared}
-                    onValueChange={v => {
-                      const copy = [...items];
-                      copy[idx].shared = v;
-                      setItems(copy);
-                    }}
-                    style={styles.checkboxBox}
-                  />
                   <TouchableOpacity
                     onPress={() => setItems(items.filter((_, i) => i !== idx))}
                     style={[styles.input, styles.removeButton]}
@@ -190,11 +180,34 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: spacing.s,
+    width: '100%',
   },
-  itemName: { flex: 1, marginRight: spacing.s / 2 },
-  itemPrice: { width: 80, marginRight: spacing.s / 2 },
-  checkboxBox: { marginRight: spacing.s / 2, alignItems: 'center', justifyContent: 'center', marginTop: 0 },
-  removeButton: { width: 40, alignItems: 'center', justifyContent: 'center', marginTop: 0 },
+  // Inputs inside the line item row should not have extra top margin so that
+  // they align vertically. The name input also uses slightly less width now
+  // that the checkbox has been removed.
+  // Give the name field slightly less width so the price field and remove
+  // button can fit on one line without overflowing.
+  itemName: {
+    flex: 1,
+    flexBasis: '60%',
+    marginRight: spacing.s / 2,
+    marginTop: 0,
+  },
+  itemPrice: { width: 80, marginRight: spacing.s / 2, marginTop: 0 },
+  // Make the remove button square so the "X" is centered and fully visible.
+  // By overriding the input padding we ensure the width and height match.
+  removeButton: {
+    // Match the height of the inputs by stretching vertically and use
+    // aspectRatio to keep the button square. This avoids hard-coding the
+    // height so it stays in sync if the input style changes.
+    alignSelf: 'stretch',
+    aspectRatio: 1,
+    paddingVertical: 0,
+    paddingHorizontal: spacing.s,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 0,
+  },
   footer: {
     padding: spacing.m,
     alignItems: 'center',

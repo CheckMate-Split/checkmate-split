@@ -14,6 +14,7 @@ import Text from '../components/Text';
 import { colors, spacing } from '../constants';
 import { functions } from '../firebaseConfig';
 import { useConnectLink } from '../connectLink';
+import { TEST_MODE } from '../testMode';
 
 export default function PaymentMethodsScreen() {
   const navigation = useNavigation<any>();
@@ -107,7 +108,7 @@ export default function PaymentMethodsScreen() {
     }
   };
 
-  const handleConnectAch = async (test = false) => {
+  const handleConnectAch = async (test = TEST_MODE) => {
     try {
       let url = link;
       if (test) {

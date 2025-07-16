@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from './firebaseConfig';
+import { TEST_MODE } from './testMode';
 
 interface Context {
   link: string | null;
@@ -15,7 +16,7 @@ const ConnectLinkContext = createContext<Context>({
 export const ConnectLinkProvider = ({ children }: { children: React.ReactNode }) => {
   const [link, setLink] = useState<string | null>(null);
 
-  const refresh = async (test = false) => {
+  const refresh = async (test = TEST_MODE) => {
     try {
       const callable = httpsCallable(functions, 'createStripeConnectLink');
       const res: any = await callable({ test });
@@ -31,7 +32,7 @@ export const ConnectLinkProvider = ({ children }: { children: React.ReactNode })
   };
 
   useEffect(() => {
-    refresh();
+    refresh(TEST_MODE);
   }, []);
 
   return (

@@ -54,7 +54,7 @@ export default function HomeScreen() {
   const renderHeader = () => (
     <View style={styles.header}>
       <Image
-        source={require('../assets/icon.png')}
+        source={require('../assets/logo-full.jpeg')}
         style={styles.logo}
         resizeMode="contain"
       />
@@ -64,7 +64,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>{renderHeader()}</View>
+      {renderHeader()}
       <View style={styles.footer}>
         <Button title="Scan Receipt" onPress={handleScan} style={styles.scanButton} />
         <View style={styles.extraRow}>
@@ -88,11 +88,8 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    flexDirection: 'column',
     backgroundColor: colors.background,
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
   },
   footer: {
     padding: spacing.m,
@@ -100,12 +97,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   header: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
     marginVertical: spacing.l,
   },
   logo: {
     width: '90%',
-    height: 80,
+    // keep natural height so the logo stays within 90% width
   },
   tagline: {
     marginTop: spacing.s,

@@ -45,8 +45,18 @@ export default function ManageReceiptScreen() {
         {people.map(renderPerson)}
       </ScrollView>
       <View style={styles.footer}>
-        <OutlineButton title="Share QR" onPress={() => {}} style={styles.shareButton} />
-        <OutlineButton title="Share Link" onPress={() => {}} style={styles.shareButton} />
+        <OutlineButton
+          title="Share QR"
+          onPress={() => {}}
+          style={styles.shareButton}
+          icon="qr-code"
+        />
+        <OutlineButton
+          title="Share Link"
+          onPress={() => {}}
+          style={styles.shareButton}
+          icon="link"
+        />
       </View>
     </SafeAreaView>
   );

@@ -6,8 +6,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import HomeScreen from './screens/HomeScreen';
 import HistoryScreen from './screens/HistoryScreen';
-import CurrentReceiptsScreen from './screens/CurrentReceiptsScreen';
-import PastReceiptsScreen from './screens/PastReceiptsScreen';
+import ReceiptsScreen from './screens/ReceiptsScreen';
 import AccountScreen from './screens/AccountScreen';
 import PaymentMethodsScreen from './screens/PaymentMethodsScreen';
 import NotificationsScreen from './screens/NotificationsScreen';
@@ -42,16 +41,19 @@ export type SettingsStackParamList = {
   Support: undefined;
 };
 
+export type ReceiptsStackParamList = {
+  Receipts: undefined;
+};
+
 export type HistoryStackParamList = {
   History: undefined;
-  CurrentReceipts: undefined;
-  PastReceipts: undefined;
 };
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const HomeStackNav = createNativeStackNavigator<HomeStackParamList>();
 const SettingsStackNav = createNativeStackNavigator<SettingsStackParamList>();
 const HistoryStackNav = createNativeStackNavigator<HistoryStackParamList>();
+const ReceiptsStackNav = createNativeStackNavigator<ReceiptsStackParamList>();
 const Tab = createBottomTabNavigator();
 
 const linking = {
@@ -82,12 +84,18 @@ function SettingsStack() {
   );
 }
 
+function ReceiptsStack() {
+  return (
+    <ReceiptsStackNav.Navigator screenOptions={{ headerShown: false }}>
+      <ReceiptsStackNav.Screen name="Receipts" component={ReceiptsScreen} />
+    </ReceiptsStackNav.Navigator>
+  );
+}
+
 function HistoryStack() {
   return (
     <HistoryStackNav.Navigator screenOptions={{ headerShown: false }}>
       <HistoryStackNav.Screen name="History" component={HistoryScreen} />
-      <HistoryStackNav.Screen name="CurrentReceipts" component={CurrentReceiptsScreen} />
-      <HistoryStackNav.Screen name="PastReceipts" component={PastReceiptsScreen} />
     </HistoryStackNav.Navigator>
   );
 }
@@ -98,7 +106,8 @@ function MainTabs() {
       screenOptions={({ route }) => ({
         tabBarIcon: ({ color, size }) => {
           let icon = 'home';
-          if (route.name === 'History') icon = 'time';
+          if (route.name === 'Receipts') icon = 'receipt';
+          else if (route.name === 'History') icon = 'time';
           else if (route.name === 'Settings') icon = 'settings';
           return <Ionicons name={icon as any} size={size} color={color} />;
         },
@@ -111,6 +120,7 @@ function MainTabs() {
         component={HomeStack}
         options={{ title: 'Home', headerShown: false }}
       />
+      <Tab.Screen name="Receipts" component={ReceiptsStack} options={{ headerShown: false }} />
       <Tab.Screen name="History" component={HistoryStack} options={{ headerShown: false }} />
       <Tab.Screen name="Settings" component={SettingsStack} options={{ headerShown: false }} />
     </Tab.Navigator>

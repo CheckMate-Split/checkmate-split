@@ -105,7 +105,6 @@ const styles = StyleSheet.create({
   },
   logo: {
     width: '90%',
-    height: undefined,
   },
   tagline: {
     marginTop: spacing.s,

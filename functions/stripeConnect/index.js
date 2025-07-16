@@ -74,10 +74,17 @@ exports.getBalance = functions.https.onCall(async () => {
 exports.getConnectStatus = functions.https.onCall(async () => {
   try {
     const accounts = await stripe.accounts.list({ limit: 1 });
-    const connected = accounts.data.length > 0;
+    let connected = false;
+    if (accounts.data.length > 0) {
+      const account = accounts.data[0];
+      connected = account.charges_enabled || account.payouts_enabled;
+    }
     return { connected };
   } catch (err) {
     console.error(err);
-    throw new functions.https.HttpsError('internal', 'failed to check connect status');
+    throw new functions.https.HttpsError(
+      'internal',
+      'failed to check connect status'
+    );
   }
 });

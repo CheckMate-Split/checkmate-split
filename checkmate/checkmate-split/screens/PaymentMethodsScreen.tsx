@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, FlatList, View, Linking } from 'react-native';
+import { StyleSheet, FlatList, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { httpsCallable } from 'firebase/functions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useStripe } from '@stripe/stripe-react-native';
+import * as WebBrowser from 'expo-web-browser';
 import PageHeader from '../components/PageHeader';
 import Button from '../components/Button';
 import OutlineButton from '../components/OutlineButton';
@@ -109,7 +110,7 @@ export default function PaymentMethodsScreen() {
       const createLink = httpsCallable(functions, 'createStripeConnectLink');
       const res: any = await createLink({});
       if (res?.data?.url) {
-        Linking.openURL(res.data.url);
+        await WebBrowser.openBrowserAsync(res.data.url);
         fetchAchStatus();
       }
     } catch (e) {

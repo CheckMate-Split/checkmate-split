@@ -197,8 +197,11 @@ const styles = StyleSheet.create({
   // Make the remove button square so the "X" is centered and fully visible.
   // By overriding the input padding we ensure the width and height match.
   removeButton: {
-    height: 48,
-    width: 48,
+    // Match the height of the inputs by stretching vertically and use
+    // aspectRatio to keep the button square. This avoids hard-coding the
+    // height so it stays in sync if the input style changes.
+    alignSelf: 'stretch',
+    aspectRatio: 1,
     paddingVertical: 0,
     paddingHorizontal: spacing.s,
     alignItems: 'center',

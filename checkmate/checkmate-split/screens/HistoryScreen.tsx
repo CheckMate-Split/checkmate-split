@@ -12,7 +12,7 @@ import { colors, spacing } from '../constants';
 import { functions } from '../firebaseConfig';
 
 export default function HistoryScreen() {
-  const { initPaymentSheet, presentPaymentSheet } = useStripe();
+  const { initPaymentSheet, presentPaymentSheet, confirmPayment } = useStripe();
 
   const handleCheckout = async (cashAppOnly?: boolean) => {
     try {
@@ -20,19 +20,26 @@ export default function HistoryScreen() {
       const res: any = await createIntent({ cashAppOnly });
       const clientSecret = res?.data?.clientSecret;
       if (!clientSecret) return;
-      const { error } = await initPaymentSheet({
-        merchantDisplayName: 'CheckMate',
-        paymentIntentClientSecret: clientSecret,
-        returnURL: Linking.createURL('/payment-complete'),
-        applePay: { merchantCountryCode: 'US' },
-        allowsDelayedPaymentMethods: true,
-      });
-      if (error) {
-        console.error(error);
-        return;
+      if (cashAppOnly) {
+        const { error } = await confirmPayment(clientSecret, {
+          paymentMethodType: 'CashApp',
+        });
+        if (error) console.error(error);
+      } else {
+        const { error } = await initPaymentSheet({
+          merchantDisplayName: 'CheckMate',
+          paymentIntentClientSecret: clientSecret,
+          returnURL: Linking.createURL('/payment-complete'),
+          applePay: { merchantCountryCode: 'US' },
+          allowsDelayedPaymentMethods: true,
+        });
+        if (error) {
+          console.error(error);
+          return;
+        }
+        const { error: presentError } = await presentPaymentSheet();
+        if (presentError) console.error(presentError);
       }
-      const { error: presentError } = await presentPaymentSheet();
-      if (presentError) console.error(presentError);
     } catch (e) {
       console.error(e);
     }

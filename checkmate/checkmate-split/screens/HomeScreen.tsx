@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Image, View } from 'react-native';
+import { StyleSheet, Image, View, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { httpsCallable } from 'firebase/functions';
@@ -13,6 +13,16 @@ import Text from '../components/Text';
 
 export default function HomeScreen() {
   const navigation = useNavigation<any>();
+
+  const [logoSize, setLogoSize] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    const { width: screenWidth } = Dimensions.get('window');
+    const asset = Image.resolveAssetSource(require('../assets/logo-full.jpeg'));
+    const targetWidth = screenWidth * 0.9;
+    const targetHeight = (asset.height / asset.width) * targetWidth;
+    setLogoSize({ width: targetWidth, height: targetHeight });
+  }, []);
 
   const handleScan = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
@@ -55,7 +65,7 @@ export default function HomeScreen() {
     <View style={styles.header}>
       <Image
         source={require('../assets/logo-full.jpeg')}
-        style={styles.logo}
+        style={[styles.logo, { width: logoSize.width, height: logoSize.height }]}
         resizeMode="contain"
       />
       <Text style={styles.tagline}>Pay Your Part</Text>
@@ -104,7 +114,6 @@ const styles = StyleSheet.create({
   },
   logo: {
     width: '90%',
-    // keep natural height so the logo stays within 90% width
   },
   tagline: {
     marginTop: spacing.s,

@@ -8,7 +8,6 @@ import HomeScreen from './screens/HomeScreen';
 import HistoryScreen from './screens/HistoryScreen';
 import CurrentReceiptsScreen from './screens/CurrentReceiptsScreen';
 import PastReceiptsScreen from './screens/PastReceiptsScreen';
-import ProfileScreen from './screens/ProfileScreen';
 import AccountScreen from './screens/AccountScreen';
 import PaymentMethodsScreen from './screens/PaymentMethodsScreen';
 import NotificationsScreen from './screens/NotificationsScreen';
@@ -33,14 +32,11 @@ export type HomeStackParamList = {
   Confirm: { result: any };
 };
 
-export type ProfileStackParamList = {
-  Profile: undefined;
-  Account: undefined;
-  PaymentMethods: undefined;
-};
 
 export type SettingsStackParamList = {
   Settings: undefined;
+  Account: undefined;
+  PaymentMethods: undefined;
   Notifications: undefined;
   Terms: undefined;
   Support: undefined;
@@ -54,7 +50,6 @@ export type HistoryStackParamList = {
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const HomeStackNav = createNativeStackNavigator<HomeStackParamList>();
-const ProfileStackNav = createNativeStackNavigator<ProfileStackParamList>();
 const SettingsStackNav = createNativeStackNavigator<SettingsStackParamList>();
 const HistoryStackNav = createNativeStackNavigator<HistoryStackParamList>();
 const Tab = createBottomTabNavigator();
@@ -73,20 +68,13 @@ function HomeStack() {
   );
 }
 
-function ProfileStack() {
-  return (
-    <ProfileStackNav.Navigator screenOptions={{ headerShown: false }}>
-      <ProfileStackNav.Screen name="Profile" component={ProfileScreen} />
-      <ProfileStackNav.Screen name="Account" component={AccountScreen} />
-      <ProfileStackNav.Screen name="PaymentMethods" component={PaymentMethodsScreen} />
-    </ProfileStackNav.Navigator>
-  );
-}
 
 function SettingsStack() {
   return (
     <SettingsStackNav.Navigator screenOptions={{ headerShown: false }}>
       <SettingsStackNav.Screen name="Settings" component={SettingsScreen} />
+      <SettingsStackNav.Screen name="Account" component={AccountScreen} />
+      <SettingsStackNav.Screen name="PaymentMethods" component={PaymentMethodsScreen} />
       <SettingsStackNav.Screen name="Notifications" component={NotificationsScreen} />
       <SettingsStackNav.Screen name="Terms" component={TermsPrivacyScreen} />
       <SettingsStackNav.Screen name="Support" component={SupportFaqScreen} />
@@ -111,7 +99,6 @@ function MainTabs() {
         tabBarIcon: ({ color, size }) => {
           let icon = 'home';
           if (route.name === 'History') icon = 'time';
-          else if (route.name === 'Profile') icon = 'person';
           else if (route.name === 'Settings') icon = 'settings';
           return <Ionicons name={icon as any} size={size} color={color} />;
         },
@@ -125,7 +112,6 @@ function MainTabs() {
         options={{ title: 'Home', headerShown: false }}
       />
       <Tab.Screen name="History" component={HistoryStack} options={{ headerShown: false }} />
-      <Tab.Screen name="Profile" component={ProfileStack} options={{ headerShown: false }} />
       <Tab.Screen name="Settings" component={SettingsStack} options={{ headerShown: false }} />
     </Tab.Navigator>
   );

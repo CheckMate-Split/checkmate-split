@@ -1,11 +1,11 @@
 import React from 'react';
-import { StyleSheet, Alert } from 'react-native';
+import { StyleSheet, Alert, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { signOut } from 'firebase/auth';
 import PageHeader from '../components/PageHeader';
 import MenuItem from '../components/MenuItem';
-import { colors } from '../constants';
+import { colors, spacing } from '../constants';
 import { auth } from '../firebaseConfig';
 
 export default function SettingsScreen() {
@@ -20,7 +20,18 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <Image source={require('../assets/icon.png')} style={styles.avatar} />
       <PageHeader title="Settings" />
+      <MenuItem
+        title="Account"
+        icon="person"
+        onPress={() => navigation.navigate('Account')}
+      />
+      <MenuItem
+        title="Payment Methods"
+        icon="card"
+        onPress={() => navigation.navigate('PaymentMethods')}
+      />
       <MenuItem
         title="Notifications"
         icon="notifications"
@@ -49,5 +60,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  avatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 2,
+    borderColor: '#ccc',
+    alignSelf: 'center',
+    marginTop: spacing.l,
   },
 });

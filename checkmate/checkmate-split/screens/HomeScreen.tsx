@@ -54,7 +54,7 @@ export default function HomeScreen() {
   const renderHeader = () => (
     <View style={styles.header}>
       <Image
-        source={require('../assets/icon.png')}
+        source={require('../assets/logo-full.jpeg')}
         style={styles.logo}
         resizeMode="contain"
       />

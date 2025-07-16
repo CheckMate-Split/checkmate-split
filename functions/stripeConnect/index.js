@@ -7,7 +7,10 @@ const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' });
 
 exports.createStripeConnectLink = functions.https.onCall(async (data, context) => {
   try {
-    const account = await stripe.accounts.create({ type: 'express' });
+    const account = await stripe.accounts.create({
+      type: 'express',
+      business_type: 'individual',
+    });
     const accountLink = await stripe.accountLinks.create({
       account: account.id,
       refresh_url: data.refreshUrl || functions.config().stripe.refresh_url || 'https://example.com/reauth',

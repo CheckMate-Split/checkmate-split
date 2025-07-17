@@ -61,9 +61,12 @@ export default function ManageReceiptScreen() {
   const yourTotal = you ? you.amount : 0;
 
   const handleEdit = () => {
-    navigation.navigate('HomeTab', {
-      screen: 'CreateReceipt',
-      params: { data: receipt.data, manual: true, edit: true, receiptId: receipt.id },
+    navigation.navigate('Tabs', {
+      screen: 'HomeTab',
+      params: {
+        screen: 'CreateReceipt',
+        params: { data: receipt.data, manual: true, edit: true, receiptId: receipt.id },
+      },
     });
   };
 
@@ -114,7 +117,7 @@ export default function ManageReceiptScreen() {
         right={
           isOwner && (
             <TouchableOpacity onPress={handleEdit} style={styles.iconButton}>
-              <Ionicons name="pencil" size={24} color={colors.text} />
+              <Ionicons name="pencil-outline" size={24} color={colors.text} />
             </TouchableOpacity>
           )
         }
@@ -224,12 +227,12 @@ const styles = StyleSheet.create({
   payButton: { marginHorizontal: spacing.m, marginTop: spacing.l },
   claimButton: {
     alignSelf: 'center',
-    marginTop: spacing.m,
-    marginBottom: spacing.s,
+    marginTop: spacing.l,
+    marginBottom: spacing.m,
     width: '70%',
-    paddingVertical: 0,
+    paddingVertical: spacing.s,
   },
-  iconButton: { marginLeft: spacing.m },
+  iconButton: { marginRight: spacing.l },
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-around',

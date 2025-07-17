@@ -43,16 +43,16 @@ const styles = StyleSheet.create({
   },
   backButton: {
     position: 'absolute',
-    left: 0,
+    left: spacing.l,
   },
   placeholder: {
     width: 28,
     position: 'absolute',
-    right: 0,
+    right: spacing.l,
   },
   right: {
     position: 'absolute',
-    right: 0,
+    right: spacing.l,
   },
   title: {
     fontSize: 28,

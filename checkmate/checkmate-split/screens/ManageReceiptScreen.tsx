@@ -65,7 +65,7 @@ export default function ManageReceiptScreen() {
       screen: 'HomeTab',
       params: {
         screen: 'CreateReceipt',
-        params: { data: receipt.data, manual: true, edit: true, receiptId: receipt.id },
+        params: { edit: true, receipt },
       },
     });
   };
@@ -117,14 +117,19 @@ export default function ManageReceiptScreen() {
         right={
           isOwner && (
             <TouchableOpacity onPress={handleEdit} style={styles.iconButton}>
-              <Ionicons name="pencil-outline" size={24} color={colors.text} />
+              <Ionicons name="pencil" size={24} color={colors.text} />
             </TouchableOpacity>
           )
         }
       />
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Text style={styles.subheader}>{`shared on ${created.toLocaleDateString()}`}</Text>
-        {receipt.description ? <Text style={styles.desc}>{receipt.description}</Text> : null}
+        <Text style={styles.subheader}>{`Receipt Date ${created.toLocaleDateString()}`}</Text>
+        {receipt.description ? (
+          <>
+            <Text style={styles.descHeader}>Description</Text>
+            <Text style={styles.desc}>{receipt.description}</Text>
+          </>
+        ) : null}
         {you && (
           <>
             <Text style={styles.section}>You</Text>
@@ -134,7 +139,7 @@ export default function ManageReceiptScreen() {
         )}
         {others.length === 0 ? (
           <Text style={styles.noOthers}>
-            no others added yet, press the buttons below to share
+            No others added yet, press the buttons below to share
           </Text>
         ) : (
           others.map(renderPerson)
@@ -195,6 +200,11 @@ const styles = StyleSheet.create({
   scroll: { paddingHorizontal: spacing.m, paddingBottom: spacing.m },
   subheader: { color: '#666', fontSize: 28 },
   desc: { marginTop: spacing.s, fontSize: 28 },
+  descHeader: {
+    marginTop: spacing.m,
+    fontSize: 30,
+    fontWeight: '600',
+  },
   personContainer: {
     paddingVertical: spacing.m,
     borderBottomWidth: 1,
@@ -230,7 +240,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.l,
     marginBottom: spacing.m,
     width: '70%',
-    paddingVertical: spacing.s,
+    paddingVertical: spacing.m,
   },
   iconButton: { marginRight: spacing.l },
   footer: {

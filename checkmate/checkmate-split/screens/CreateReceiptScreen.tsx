@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { addDoc, collection, serverTimestamp, doc, deleteDoc } from 'firebase/firestore';
+import { addDoc, collection, serverTimestamp, doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { ref, uploadString } from 'firebase/storage';
 import Button from '../components/Button';
 import OutlineButton from '../components/OutlineButton';
@@ -23,29 +23,37 @@ import { auth } from '../firebaseConfig';
 
 export type CreateParams = {
   CreateReceipt: {
-    data: any;
-    image: string;
+    data?: any;
+    image?: string;
     manual?: boolean;
     edit?: boolean;
-    receiptId?: string;
+    receipt?: any;
   };
 };
 
 export default function CreateReceiptScreen() {
   const route = useRoute<RouteProp<CreateParams, 'CreateReceipt'>>();
   const navigation = useNavigation<any>();
-  const { data, image, manual, edit, receiptId } = route.params;
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [items, setItems] = useState<{ name: string; price: string; shared: boolean }[]>([]);
-  const [date, setDate] = useState(new Date());
+  const { data = {}, image = '', manual, edit, receipt } = route.params;
+  const [name, setName] = useState(receipt?.name || '');
+  const [description, setDescription] = useState(receipt?.description || '');
+  const [items, setItems] = useState<{ name: string; price: string; shared: boolean }[]>(
+    receipt?.data?.lineItems?.map((i: any) => ({
+      name: i.description,
+      price: String(i.amount?.data ?? ''),
+      shared: !!i.shared,
+    })) || []
+  );
+  const [date, setDate] = useState(
+    receipt?.date ? new Date(receipt.date) : new Date()
+  );
   const valid = name && items.every(i => i.name && i.price);
 
   const handleSave = async () => {
     const user = auth.currentUser;
     if (!user) return;
     try {
-      const parsedItems = manual
+      const parsedItems = manual !== false
         ? items.map(i => ({
             description: i.name,
             amount: { data: parseFloat(i.price) },
@@ -57,27 +65,38 @@ export default function CreateReceiptScreen() {
             responsible: user.uid,
             shared: false,
           }));
-      const docRef = await addDoc(collection(db, 'receipts'), {
-        name,
-        description,
-        date: date.toISOString(),
-        payer: user.uid,
-        data: { ...data, description, lineItems: parsedItems },
-        createdAt: serverTimestamp(),
-      });
-      if (image) {
-        await uploadString(
-          ref(storage, `receipts/${docRef.id}.jpg`),
-          image,
-          'base64'
-        );
+      let id = receipt?.id;
+      if (edit && id) {
+        await updateDoc(doc(db, 'receipts', id), {
+          name,
+          description,
+          date: date.toISOString(),
+          data: { ...data, description, lineItems: parsedItems },
+        });
+      } else {
+        const docRef = await addDoc(collection(db, 'receipts'), {
+          name,
+          description,
+          date: date.toISOString(),
+          payer: user.uid,
+          data: { ...data, description, lineItems: parsedItems },
+          createdAt: serverTimestamp(),
+        });
+        id = docRef.id;
+        if (image) {
+          await uploadString(
+            ref(storage, `receipts/${id}.jpg`),
+            image,
+            'base64'
+          );
+        }
       }
       const localReceipt = {
-        id: docRef.id,
+        id,
         name,
         description,
         data: { ...data, description, lineItems: parsedItems },
-        createdAt: new Date().toISOString(),
+        createdAt: receipt?.createdAt || new Date().toISOString(),
       };
       navigation.navigate('ClaimItems', { receipt: localReceipt });
     } catch (e) {
@@ -86,15 +105,15 @@ export default function CreateReceiptScreen() {
   };
 
   const handleDelete = async () => {
-    if (!receiptId) return;
-    Alert.alert('Delete Receipt', "Payments won't be reversed. Continue?", [
+    if (!receipt?.id) return;
+    Alert.alert('End Request', "Payments won't be reversed. Continue?", [
       { text: 'Cancel', style: 'cancel' },
       {
-        text: 'Delete',
+        text: 'End',
         style: 'destructive',
         onPress: async () => {
           try {
-            await deleteDoc(doc(db, 'receipts', receiptId));
+            await deleteDoc(doc(db, 'receipts', receipt.id));
             navigation.goBack();
           } catch (e) {
             console.error(e);
@@ -182,17 +201,17 @@ export default function CreateReceiptScreen() {
             />
           </>
         )}
+        <View style={styles.footer}>
+          <Button title="Save" onPress={handleSave} disabled={!valid} style={styles.saveButton} />
+          {edit && (
+            <Button
+              title="End Request"
+              onPress={handleDelete}
+              style={[styles.saveButton, styles.deleteButton]}
+            />
+          )}
+        </View>
       </ScrollView>
-      <View style={styles.footer}>
-        <Button title="Save" onPress={handleSave} disabled={!valid} style={styles.saveButton} />
-        {edit && (
-          <Button
-            title="Delete Receipt"
-            onPress={handleDelete}
-            style={[styles.saveButton, styles.deleteButton]}
-          />
-        )}
-      </View>
     </SafeAreaView>
   );
 }
@@ -252,7 +271,7 @@ const styles = StyleSheet.create({
   },
   saveButton: { width: '90%', alignSelf: 'center' },
   deleteButton: {
-    backgroundColor: 'red',
+    backgroundColor: '#ff6b81',
     marginTop: spacing.m,
   },
   datePicker: { marginTop: spacing.m },

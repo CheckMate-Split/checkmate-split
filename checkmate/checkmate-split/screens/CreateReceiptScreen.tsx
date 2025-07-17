@@ -124,9 +124,11 @@ export default function CreateReceiptScreen() {
     ]);
   };
 
+  const title = edit ? 'Edit Receipt' : 'Create Receipt';
+
   return (
     <SafeAreaView style={styles.container}>
-      <PageHeader title="Create Receipt" onBack={navigation.goBack} />
+      <PageHeader title={title} onBack={navigation.goBack} />
       <ScrollView contentContainerStyle={styles.scroll}>
         {manualMode ? (
           <>

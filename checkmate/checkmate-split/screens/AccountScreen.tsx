@@ -5,6 +5,7 @@ import {
   View,
   Image,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -38,6 +39,7 @@ export default function AccountScreen() {
   const [venmo, setVenmo] = useState('');
   const [cashapp, setCashapp] = useState('');
   const [photo, setPhoto] = useState<string | null>(null);
+  const emailValid = /^\S+@\S+\.\S+$/.test(email.trim());
 
   useEffect(() => {
     if (!user) return;
@@ -73,6 +75,10 @@ export default function AccountScreen() {
 
   const handleSave = async () => {
     if (!user) return;
+    if (!emailValid) {
+      Alert.alert('Invalid Email', 'Please enter a valid email address.');
+      return;
+    }
     if (!(await usernameAvailable(username))) {
       alert('Username already taken');
       return;
@@ -137,6 +143,8 @@ export default function AccountScreen() {
           placeholder="Email"
           value={email}
           onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
           style={styles.input}
         />
         <Text style={styles.label}>Venmo Username (optional)</Text>
@@ -157,7 +165,7 @@ export default function AccountScreen() {
       <Button
         title="Save"
         onPress={handleSave}
-        disabled={!first || !last || !username || !email}
+        disabled={!first || !last || !username || !emailValid}
         style={styles.saveButton}
       />
     </SafeAreaView>

@@ -69,24 +69,26 @@ export default function ManageReceiptScreen() {
 
 
   const renderPerson = (p: any) => (
-    <View key={p.id} style={styles.personContainer}>
-      <View style={styles.personRow}>
-        <View style={styles.avatar} />
-        <Text style={styles.personName}>{p.name}</Text>
-        <Text style={styles.amount}>{`$${p.amount.toFixed(2)}`}</Text>
-        <View
-          style={[
-            styles.tag,
-            p.status === 'Paid'
-              ? styles.tagPaid
-              : p.status === 'Viewed'
-              ? styles.tagViewed
-              : styles.tagUnpaid,
-          ]}
-        >
-          <Text style={styles.tagText}>
-            {p.status === 'Paid' ? 'Paid' : p.status === 'Viewed' ? 'Viewed' : 'Not Paid'}
-          </Text>
+    <View key={p.id}>
+      <View style={styles.personContainer}>
+        <View style={styles.personRow}>
+          <View style={styles.avatar} />
+          <Text style={styles.personName}>{p.name}</Text>
+          <Text style={styles.amount}>{`$${p.amount.toFixed(2)}`}</Text>
+          <View
+            style={[
+              styles.tag,
+              p.status === 'Paid'
+                ? styles.tagPaid
+                : p.status === 'Viewed'
+                ? styles.tagViewed
+                : styles.tagUnpaid,
+            ]}
+          >
+            <Text style={styles.tagText}>
+              {p.status === 'Paid' ? 'Paid' : p.status === 'Viewed' ? 'Viewed' : 'Not Paid'}
+            </Text>
+          </View>
         </View>
       </View>
       {p.id === auth.currentUser?.uid && (
@@ -110,16 +112,11 @@ export default function ManageReceiptScreen() {
         title={receipt.name || 'Receipt'}
         onBack={navigation.goBack}
         right={
-          <View style={styles.headerRight}>
-            <Text style={styles.headerAmount}>{`$${
-              (isOwner ? othersTotal : yourTotal).toFixed(2)
-            }`}</Text>
-            {isOwner && (
-              <TouchableOpacity onPress={handleEdit} style={styles.iconButton}>
-                <Ionicons name="pencil" size={24} color={colors.text} />
-              </TouchableOpacity>
-            )}
-          </View>
+          isOwner && (
+            <TouchableOpacity onPress={handleEdit} style={styles.iconButton}>
+              <Ionicons name="pencil" size={24} color={colors.text} />
+            </TouchableOpacity>
+          )
         }
       />
       <ScrollView contentContainerStyle={styles.scroll}>
@@ -227,17 +224,10 @@ const styles = StyleSheet.create({
   payButton: { marginHorizontal: spacing.m, marginTop: spacing.l },
   claimButton: {
     alignSelf: 'center',
-    marginTop: spacing.s,
+    marginTop: spacing.m,
+    marginBottom: spacing.s,
     width: '70%',
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerAmount: {
-    fontSize: 28,
-    fontWeight: '600',
-    marginRight: spacing.s,
+    paddingVertical: 0,
   },
   iconButton: { marginLeft: spacing.m },
   footer: {

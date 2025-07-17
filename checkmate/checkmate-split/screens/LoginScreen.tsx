@@ -187,8 +187,9 @@ const styles = StyleSheet.create({
   },
   box: {
     width: '90%',
-    borderWidth: 1,
-    borderColor: colors.primary,
+    borderWidth: 2,
+    borderColor: '#041036',
+    borderRadius: 12,
     padding: spacing.l,
     alignItems: 'stretch',
   },

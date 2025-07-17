@@ -5,10 +5,11 @@ import {
   TextInput,
   ScrollView,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { addDoc, collection, serverTimestamp, doc, deleteDoc } from 'firebase/firestore';
 import { ref, uploadString } from 'firebase/storage';
 import Button from '../components/Button';
 import OutlineButton from '../components/OutlineButton';
@@ -21,13 +22,19 @@ import { db, storage } from '../firebaseConfig';
 import { auth } from '../firebaseConfig';
 
 export type CreateParams = {
-  CreateReceipt: { data: any; image: string; manual?: boolean };
+  CreateReceipt: {
+    data: any;
+    image: string;
+    manual?: boolean;
+    edit?: boolean;
+    receiptId?: string;
+  };
 };
 
 export default function CreateReceiptScreen() {
   const route = useRoute<RouteProp<CreateParams, 'CreateReceipt'>>();
   const navigation = useNavigation<any>();
-  const { data, image, manual } = route.params;
+  const { data, image, manual, edit, receiptId } = route.params;
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [items, setItems] = useState<{ name: string; price: string; shared: boolean }[]>([]);
@@ -76,6 +83,25 @@ export default function CreateReceiptScreen() {
     } catch (e) {
       console.error(e);
     }
+  };
+
+  const handleDelete = async () => {
+    if (!receiptId) return;
+    Alert.alert('Delete Receipt', "Payments won't be reversed. Continue?", [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await deleteDoc(doc(db, 'receipts', receiptId));
+            navigation.goBack();
+          } catch (e) {
+            console.error(e);
+          }
+        },
+      },
+    ]);
   };
 
   return (
@@ -159,6 +185,13 @@ export default function CreateReceiptScreen() {
       </ScrollView>
       <View style={styles.footer}>
         <Button title="Save" onPress={handleSave} disabled={!valid} style={styles.saveButton} />
+        {edit && (
+          <Button
+            title="Delete Receipt"
+            onPress={handleDelete}
+            style={[styles.saveButton, styles.deleteButton]}
+          />
+        )}
       </View>
     </SafeAreaView>
   );
@@ -218,6 +251,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   saveButton: { width: '90%', alignSelf: 'center' },
+  deleteButton: {
+    backgroundColor: 'red',
+    marginTop: spacing.m,
+  },
   datePicker: { marginTop: spacing.m },
 });
 

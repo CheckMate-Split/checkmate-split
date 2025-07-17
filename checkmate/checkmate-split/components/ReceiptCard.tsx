@@ -13,6 +13,20 @@ interface Props {
 export default function ReceiptCard({ receipt, onPress }: Props) {
   const total = receipt.data?.totalAmount?.data ?? receipt.data?.total?.data;
   const isPayer = receipt.payer === auth.currentUser?.uid;
+  const items: any[] = receipt.data?.lineItems || [];
+  const totals: Record<string, number> = {};
+  items.forEach((item: any) => {
+    const resp = item.responsible || receipt.payer;
+    const amt = item.amount?.data || 0;
+    totals[resp] = (totals[resp] || 0) + amt;
+  });
+  if (!totals[receipt.payer]) {
+    totals[receipt.payer] = 0;
+  }
+  const youTotal = auth.currentUser ? totals[auth.currentUser.uid] || 0 : 0;
+  const othersTotal = Object.keys(totals)
+    .filter(id => id !== auth.currentUser?.uid)
+    .reduce((sum, id) => sum + totals[id], 0);
   return (
     <TouchableOpacity style={styles.card} onPress={onPress}>
       <View style={styles.iconWrapper}>
@@ -28,7 +42,11 @@ export default function ReceiptCard({ receipt, onPress }: Props) {
           )}
         </View>
         <View style={styles.row}>
-          <Text style={styles.label}>{isPayer ? 'Total Owed' : 'Total Due'}</Text>
+          <Text style={styles.label}>
+            {isPayer
+              ? `Others Owe $${othersTotal.toFixed(2)}`
+              : `You Owe $${youTotal.toFixed(2)}`}
+          </Text>
           <Text style={styles.action}>{isPayer ? 'Collect' : 'Settle Up'}</Text>
         </View>
       </View>

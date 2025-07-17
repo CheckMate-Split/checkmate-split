@@ -6,7 +6,6 @@ import {
   Modal,
   Share,
   TouchableOpacity,
-  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
@@ -16,9 +15,9 @@ import OutlineButton from '../components/OutlineButton';
 import QRCode from 'react-native-qrcode-svg';
 import { colors, spacing } from '../constants';
 import Button from '../components/Button';
-import { auth, db } from '../firebaseConfig';
+import { auth } from '../firebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
-import { doc, deleteDoc } from 'firebase/firestore';
+
 
 export type ManageReceiptParams = {
   ManageReceipt: { receipt: any };
@@ -64,31 +63,10 @@ export default function ManageReceiptScreen() {
   const handleEdit = () => {
     navigation.navigate('HomeTab', {
       screen: 'CreateReceipt',
-      params: { data: receipt.data, manual: true },
+      params: { data: receipt.data, manual: true, edit: true, receiptId: receipt.id },
     });
   };
 
-  const handleDelete = () => {
-    Alert.alert(
-      'Delete Receipt',
-      "Payments won't be reversed. Continue?",
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteDoc(doc(db, 'receipts', receipt.id));
-              navigation.goBack();
-            } catch (e) {
-              console.error(e);
-            }
-          },
-        },
-      ]
-    );
-  };
 
   const renderPerson = (p: any) => (
     <View key={p.id} style={styles.personRow}>
@@ -110,14 +88,9 @@ export default function ManageReceiptScreen() {
         onBack={navigation.goBack}
         right={
           isOwner && (
-            <View style={{ flexDirection: 'row' }}>
-              <TouchableOpacity onPress={handleEdit} style={styles.iconButton}>
-                <Ionicons name="pencil" size={24} color={colors.primary} />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleDelete} style={styles.iconButton}>
-                <Ionicons name="trash" size={24} color="red" />
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity onPress={handleEdit} style={styles.iconButton}>
+              <Ionicons name="pencil" size={24} color={colors.text} />
+            </TouchableOpacity>
           )
         }
       />
@@ -133,7 +106,7 @@ export default function ManageReceiptScreen() {
           <>
             <Text style={styles.section}>You</Text>
             {renderPerson(you)}
-            <Button
+            <OutlineButton
               title="Claim More"
               onPress={() =>
                 navigation.navigate('Tabs', {
@@ -146,7 +119,13 @@ export default function ManageReceiptScreen() {
             <Text style={styles.section}>Others</Text>
           </>
         )}
-        {others.map(renderPerson)}
+        {others.length === 0 ? (
+          <Text style={styles.noOthers}>
+            no others added yet, press the buttons below to share
+          </Text>
+        ) : (
+          others.map(renderPerson)
+        )}
       </ScrollView>
       {!isOwner && (
         <Button title="Pay" onPress={() => setPayVisible(true)} style={styles.payButton} />
@@ -231,13 +210,22 @@ const styles = StyleSheet.create({
   tagViewed: { backgroundColor: '#f88' },
   tagPaid: { backgroundColor: '#4c9a4c' },
   payButton: { marginHorizontal: spacing.m, marginTop: spacing.l },
-  claimButton: { alignSelf: 'flex-start', marginTop: spacing.s },
+  claimButton: {
+    alignSelf: 'center',
+    marginTop: spacing.s,
+    width: '70%',
+  },
   total: { marginTop: spacing.m, fontSize: 28, fontWeight: '600' },
   iconButton: { marginLeft: spacing.m },
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     padding: spacing.m,
+  },
+  noOthers: {
+    textAlign: 'center',
+    color: '#666',
+    marginTop: spacing.m,
   },
   shareButton: { flex: 1, marginHorizontal: spacing.s / 2 },
   modalOverlay: {

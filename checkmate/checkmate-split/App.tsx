@@ -30,14 +30,20 @@ export type RootStackParamList = {
 
 export type HomeStackParamList = {
   Home: undefined;
-  CreateReceipt: { data: any; image: string; manual?: boolean };
+  CreateReceipt: {
+    data?: any;
+    image?: string;
+    manual?: boolean;
+    edit?: boolean;
+    receipt?: any;
+  };
   Confirm: { result: any };
   ClaimItems: { receipt: any };
 };
 
 
 export type SettingsStackParamList = {
-  Settings: undefined;
+  SettingsHome: undefined;
   Account: undefined;
   PaymentMethods: undefined;
   Notifications: undefined;
@@ -46,11 +52,11 @@ export type SettingsStackParamList = {
 };
 
 export type ReceiptsStackParamList = {
-  Receipts: undefined;
+  ReceiptsHome: undefined;
 };
 
 export type HistoryStackParamList = {
-  History: undefined;
+  HistoryHome: undefined;
 };
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
@@ -79,7 +85,7 @@ function HomeStack() {
 function SettingsStack() {
   return (
     <SettingsStackNav.Navigator screenOptions={{ headerShown: false }}>
-      <SettingsStackNav.Screen name="Settings" component={SettingsScreen} />
+      <SettingsStackNav.Screen name="SettingsHome" component={SettingsScreen} />
       <SettingsStackNav.Screen name="Account" component={AccountScreen} />
       <SettingsStackNav.Screen name="PaymentMethods" component={PaymentMethodsScreen} />
       <SettingsStackNav.Screen name="Notifications" component={NotificationsScreen} />
@@ -92,7 +98,7 @@ function SettingsStack() {
 function ReceiptsStack() {
   return (
     <ReceiptsStackNav.Navigator screenOptions={{ headerShown: false }}>
-      <ReceiptsStackNav.Screen name="Receipts" component={ReceiptsScreen} />
+      <ReceiptsStackNav.Screen name="ReceiptsHome" component={ReceiptsScreen} />
     </ReceiptsStackNav.Navigator>
   );
 }
@@ -100,7 +106,7 @@ function ReceiptsStack() {
 function HistoryStack() {
   return (
     <HistoryStackNav.Navigator screenOptions={{ headerShown: false }}>
-      <HistoryStackNav.Screen name="History" component={HistoryScreen} />
+      <HistoryStackNav.Screen name="HistoryHome" component={HistoryScreen} />
     </HistoryStackNav.Navigator>
   );
 }

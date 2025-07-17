@@ -7,9 +7,10 @@ import { colors, spacing } from '../constants';
 interface Props {
   title: string;
   onBack?: () => void;
+  right?: React.ReactNode;
 }
 
-export default function PageHeader({ title, onBack }: Props) {
+export default function PageHeader({ title, onBack, right }: Props) {
   return (
     <View style={styles.container}>
       <View style={styles.row}>
@@ -19,7 +20,11 @@ export default function PageHeader({ title, onBack }: Props) {
           </TouchableOpacity>
         )}
         <Text style={styles.title}>{title}</Text>
-        {onBack && <View style={styles.placeholder} />}
+        {right ? (
+          <View style={styles.right}>{right}</View>
+        ) : (
+          onBack && <View style={styles.placeholder} />
+        )}
       </View>
       <View style={styles.divider} />
     </View>
@@ -38,12 +43,16 @@ const styles = StyleSheet.create({
   },
   backButton: {
     position: 'absolute',
-    left: 0,
+    left: spacing.l,
   },
   placeholder: {
     width: 28,
     position: 'absolute',
-    right: 0,
+    right: spacing.l,
+  },
+  right: {
+    position: 'absolute',
+    right: spacing.l,
   },
   title: {
     fontSize: 28,

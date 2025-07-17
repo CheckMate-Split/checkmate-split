@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, ScrollView } from 'react-native';
+import { StyleSheet, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import PageHeader from '../components/PageHeader';
@@ -11,7 +11,8 @@ export default function TermsPrivacyScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <PageHeader title="Terms & Privacy" onBack={navigation.goBack} />
-      <ScrollView>
+      <ScrollView contentContainerStyle={styles.scroll}>
+        <View style={styles.content}>
         <Text style={styles.section}>1. Terms of Use</Text>
         <Text style={styles.paragraph}>
           By using CheckMate, you agree to our Terms of Use. CheckMate provides tools
@@ -53,6 +54,7 @@ export default function TermsPrivacyScreen() {
           We may update these terms periodically. Continued use of the app signifies
           acceptance of any changes.
         </Text>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -62,6 +64,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  scroll: {
+    flexGrow: 1,
+  },
+  content: {
     padding: spacing.m,
   },
   section: {

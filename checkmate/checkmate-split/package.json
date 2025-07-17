@@ -1,7 +1,7 @@
 {
   "name": "checkmate-split",
   "version": "1.0.0",
-  "main": "index.ts",
+  "main": "index.tsx",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
@@ -21,6 +21,7 @@
     "expo-linking": "^5.0.1",
     "expo-status-bar": "~2.2.3",
     "expo-updates": "~0.28.17",
+    "expo-web-browser": "^14.2.0",
     "firebase": "^10.7.0",
     "qrcode": "^1.5.4",
     "react": "19.0.0",

@@ -105,14 +105,17 @@ export default function ClaimItemsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   scroll: { padding: spacing.m },
-  section: { marginTop: spacing.m, fontWeight: '600', fontSize: 18 },
+  section: { marginTop: spacing.m, fontWeight: '600', fontSize: 32 },
   itemRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: spacing.s,
+    paddingVertical: spacing.m,
+    borderBottomWidth: 1,
+    borderColor: '#eee',
   },
-  itemText: { flex: 1 },
+  itemText: { flex: 1, fontSize: 24 },
   actionRow: { flexDirection: 'row' },
   buttonRow: { flexDirection: 'row' },
   smallBtn: {

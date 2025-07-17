@@ -6,6 +6,7 @@ import {
   Modal,
   Share,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
@@ -15,7 +16,9 @@ import OutlineButton from '../components/OutlineButton';
 import QRCode from 'react-native-qrcode-svg';
 import { colors, spacing } from '../constants';
 import Button from '../components/Button';
-import { auth } from '../firebaseConfig';
+import { auth, db } from '../firebaseConfig';
+import { Ionicons } from '@expo/vector-icons';
+import { doc, deleteDoc } from 'firebase/firestore';
 
 export type ManageReceiptParams = {
   ManageReceipt: { receipt: any };
@@ -52,11 +55,40 @@ export default function ManageReceiptScreen() {
     status: id === receipt.payer ? 'Paid' : 'Not Paid',
   }));
 
-  const total = receipt.data?.totalAmount?.data ?? receipt.data?.total?.data ?? null;
-
   const you = people.find(p => p.id === auth.currentUser?.uid);
   const others = people.filter(p => p.id !== auth.currentUser?.uid);
   const isOwner = receipt.payer === auth.currentUser?.uid;
+  const othersTotal = others.reduce((sum, p) => sum + p.amount, 0);
+  const yourTotal = you ? you.amount : 0;
+
+  const handleEdit = () => {
+    navigation.navigate('HomeTab', {
+      screen: 'CreateReceipt',
+      params: { data: receipt.data, manual: true },
+    });
+  };
+
+  const handleDelete = () => {
+    Alert.alert(
+      'Delete Receipt',
+      "Payments won't be reversed. Continue?",
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteDoc(doc(db, 'receipts', receipt.id));
+              navigation.goBack();
+            } catch (e) {
+              console.error(e);
+            }
+          },
+        },
+      ]
+    );
+  };
 
   const renderPerson = (p: any) => (
     <View key={p.id} style={styles.personRow}>
@@ -73,25 +105,45 @@ export default function ManageReceiptScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <PageHeader title={receipt.name || 'Receipt'} onBack={navigation.goBack} />
+      <PageHeader
+        title={receipt.name || 'Receipt'}
+        onBack={navigation.goBack}
+        right={
+          isOwner && (
+            <View style={{ flexDirection: 'row' }}>
+              <TouchableOpacity onPress={handleEdit} style={styles.iconButton}>
+                <Ionicons name="pencil" size={24} color={colors.primary} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleDelete} style={styles.iconButton}>
+                <Ionicons name="trash" size={24} color="red" />
+              </TouchableOpacity>
+            </View>
+          )
+        }
+      />
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text style={styles.subheader}>{`shared on ${created.toLocaleDateString()}`}</Text>
         {receipt.description ? <Text style={styles.desc}>{receipt.description}</Text> : null}
+        <Text style={styles.total}>
+          {isOwner
+            ? `Others owe $${othersTotal.toFixed(2)}`
+            : `You owe $${yourTotal.toFixed(2)}`}
+        </Text>
         {you && (
           <>
             <Text style={styles.section}>You</Text>
             {renderPerson(you)}
-            <TouchableOpacity
+            <Button
+              title="Claim More"
               onPress={() =>
                 navigation.navigate('Tabs', {
                   screen: 'HomeTab',
                   params: { screen: 'ClaimItems', params: { receipt } },
                 })
               }
-            >
-              <Text style={styles.link}>claim more</Text>
-            </TouchableOpacity>
-            <View style={styles.divider} />
+              style={styles.claimButton}
+            />
+            <Text style={styles.section}>Others</Text>
           </>
         )}
         {others.map(renderPerson)}
@@ -168,7 +220,6 @@ const styles = StyleSheet.create({
   personName: { flex: 1, fontSize: 28 },
   section: { marginTop: spacing.l, fontSize: 32, fontWeight: '600' },
   link: { color: colors.primary, marginTop: spacing.s },
-  divider: { borderBottomWidth: 1, borderColor: '#000', marginVertical: spacing.m },
   tag: {
     paddingHorizontal: spacing.m,
     paddingVertical: spacing.s / 2,
@@ -180,6 +231,9 @@ const styles = StyleSheet.create({
   tagViewed: { backgroundColor: '#f88' },
   tagPaid: { backgroundColor: '#4c9a4c' },
   payButton: { marginHorizontal: spacing.m, marginTop: spacing.l },
+  claimButton: { alignSelf: 'flex-start', marginTop: spacing.s },
+  total: { marginTop: spacing.m, fontSize: 28, fontWeight: '600' },
+  iconButton: { marginLeft: spacing.m },
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-around',

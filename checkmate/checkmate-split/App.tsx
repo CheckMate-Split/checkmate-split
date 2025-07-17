@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import * as Linking from 'expo-linking';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -8,6 +8,7 @@ import HomeScreen from './screens/HomeScreen';
 import HistoryScreen from './screens/HistoryScreen';
 import ReceiptsScreen from './screens/ReceiptsScreen';
 import AccountScreen from './screens/AccountScreen';
+import LoginScreen from './screens/LoginScreen';
 import PaymentMethodsScreen from './screens/PaymentMethodsScreen';
 import NotificationsScreen from './screens/NotificationsScreen';
 import TermsPrivacyScreen from './screens/TermsPrivacyScreen';
@@ -19,10 +20,13 @@ import ClaimItemsScreen from './screens/ClaimItemsScreen';
 import ManageReceiptScreen from './screens/ManageReceiptScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import { colors } from './constants';
-import { auth } from './firebaseConfig';
-import { signInAnonymously } from 'firebase/auth';
+import { auth, db } from './firebaseConfig';
+import { onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 
 export type RootStackParamList = {
+  Login: undefined;
+  AccountSetup: undefined;
   Tabs: undefined;
   Receipt: { id: string; receipt: any };
   ManageReceipt: { receipt: any };
@@ -139,16 +143,35 @@ function MainTabs() {
 }
 
 export default function App() {
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    if (!auth.currentUser) {
-      signInAnonymously(auth).catch(console.error);
-    }
+    return onAuthStateChanged(auth, async (u) => {
+      setUser(u);
+      if (u) {
+        const snap = await getDoc(doc(db, 'users', u.uid));
+        setProfile(snap.exists() ? snap.data() : null);
+      } else {
+        setProfile(null);
+      }
+      setLoading(false);
+    });
   }, []);
+
+  if (loading) return null;
 
   return (
     <NavigationContainer linking={linking}>
       <RootStack.Navigator screenOptions={{ headerShown: false }}>
-        <RootStack.Screen name="Tabs" component={MainTabs} />
+        {!user && <RootStack.Screen name="Login" component={LoginScreen} />}
+        {user && (!profile || !profile.first || !profile.last || !profile.username || !profile.email) && (
+          <RootStack.Screen name="AccountSetup" component={AccountScreen} initialParams={{ initial: true }} />
+        )}
+        {user && profile && profile.first && profile.last && profile.username && profile.email && (
+          <RootStack.Screen name="Tabs" component={MainTabs} />
+        )}
         <RootStack.Screen name="Receipt" component={ReceiptScreen} />
         <RootStack.Screen name="ManageReceipt" component={ManageReceiptScreen} />
       </RootStack.Navigator>

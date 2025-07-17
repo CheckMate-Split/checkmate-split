@@ -225,7 +225,8 @@ const styles = StyleSheet.create({
   },
   link: {
     marginTop: spacing.m,
-    color: colors.primary,
+    color: '#041036',
     textAlign: 'center',
+    fontSize: 16,
   },
 });

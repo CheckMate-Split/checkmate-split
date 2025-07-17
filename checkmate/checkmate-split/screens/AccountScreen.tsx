@@ -79,7 +79,12 @@ export default function AccountScreen() {
       Alert.alert('Invalid Email', 'Please enter a valid email address.');
       return;
     }
-    if (!(await usernameAvailable(username))) {
+    const uname = username.trim();
+    if (!uname) {
+      Alert.alert('Invalid Username', 'Please choose a username.');
+      return;
+    }
+    if (!(await usernameAvailable(uname))) {
       alert('Username already taken');
       return;
     }
@@ -95,7 +100,7 @@ export default function AccountScreen() {
       {
         first,
         last,
-        username,
+        username: uname,
         email,
         venmo,
         cashapp,
@@ -103,8 +108,11 @@ export default function AccountScreen() {
       },
       { merge: true }
     );
-    if (initial) navigation.replace('Tabs');
-    else navigation.goBack();
+    if (initial) {
+      navigation.reset({ index: 0, routes: [{ name: 'Tabs' }] });
+    } else {
+      navigation.goBack();
+    }
   };
 
   return (
@@ -145,6 +153,7 @@ export default function AccountScreen() {
           onChangeText={setEmail}
           keyboardType="email-address"
           autoCapitalize="none"
+          editable={!initial}
           style={styles.input}
         />
         <Text style={styles.label}>Venmo Username (optional)</Text>

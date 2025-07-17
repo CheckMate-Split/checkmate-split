@@ -35,6 +35,7 @@ export default function CreateReceiptScreen() {
   const route = useRoute<RouteProp<CreateParams, 'CreateReceipt'>>();
   const navigation = useNavigation<any>();
   const { data = {}, image = '', manual, edit, receipt } = route.params;
+  const manualMode = edit || manual !== false;
   const [name, setName] = useState(receipt?.name || '');
   const [description, setDescription] = useState(receipt?.description || '');
   const [items, setItems] = useState<{ name: string; price: string; shared: boolean }[]>(
@@ -53,7 +54,7 @@ export default function CreateReceiptScreen() {
     const user = auth.currentUser;
     if (!user) return;
     try {
-      const parsedItems = manual !== false
+      const parsedItems = manualMode
         ? items.map(i => ({
             description: i.name,
             amount: { data: parseFloat(i.price) },
@@ -127,7 +128,7 @@ export default function CreateReceiptScreen() {
     <SafeAreaView style={styles.container}>
       <PageHeader title="Create Receipt" onBack={navigation.goBack} />
       <ScrollView contentContainerStyle={styles.scroll}>
-        {manual ? (
+        {manualMode ? (
           <>
             <Text style={styles.sectionHeader}>Receipt Info</Text>
             <Text style={styles.label}>Receipt Name</Text>
@@ -271,7 +272,7 @@ const styles = StyleSheet.create({
   },
   saveButton: { width: '90%', alignSelf: 'center' },
   deleteButton: {
-    backgroundColor: '#ff6b81',
+    backgroundColor: '#ff3b30',
     marginTop: spacing.m,
   },
   datePicker: { marginTop: spacing.m },

@@ -54,7 +54,10 @@ export default function ManageReceiptScreen() {
     status: id === receipt.payer ? 'Paid' : 'Not Paid',
   }));
 
-  const you = people.find(p => p.id === auth.currentUser?.uid);
+  let you = people.find(p => p.id === auth.currentUser?.uid);
+  if (!you && auth.currentUser) {
+    you = { id: auth.currentUser.uid, name: 'You', amount: 0, status: 'Not Paid' };
+  }
   const others = people.filter(p => p.id !== auth.currentUser?.uid);
   const isOwner = receipt.payer === auth.currentUser?.uid;
   const othersTotal = others.reduce((sum, p) => sum + p.amount, 0);

@@ -5,7 +5,6 @@ import {
   View,
   Image,
   TouchableOpacity,
-  Alert,
   ScrollView,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
@@ -15,16 +14,9 @@ import PageHeader from '../components/PageHeader';
 import { colors, spacing } from '../constants';
 import Button from '../components/Button';
 import Text from '../components/Text';
-import { auth, db, storage } from '../firebaseConfig';
-import {
-  doc,
-  getDoc,
-  setDoc,
-  collection,
-  query,
-  where,
-  getDocs,
-} from 'firebase/firestore';
+import { auth, db, storage, functions } from '../firebaseConfig';
+import { httpsCallable } from 'firebase/functions';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { updateProfile } from 'firebase/auth';
 
@@ -40,6 +32,7 @@ export default function AccountScreen() {
   const [venmo, setVenmo] = useState('');
   const [cashapp, setCashapp] = useState('');
   const [photo, setPhoto] = useState<string | null>(null);
+  const [error, setError] = useState('');
   const emailValid = /^\S+@\S+\.\S+$/.test(email.trim());
 
   useEffect(() => {
@@ -68,25 +61,29 @@ export default function AccountScreen() {
     setPhoto(pick.assets[0].uri);
   };
 
-  const usernameAvailable = async (name: string) => {
-    const q = query(collection(db, 'users'), where('username', '==', name));
-    const snap = await getDocs(q);
-    return snap.empty || (snap.docs.length === 1 && snap.docs[0].id === user?.uid);
-  };
 
   const handleSave = async () => {
     if (!user) return;
+    setError('');
     if (!emailValid) {
-      Alert.alert('Invalid Email', 'Please enter a valid email address.');
+      setError('Please enter a valid email.');
       return;
     }
     const uname = username.trim();
     if (!uname) {
-      Alert.alert('Invalid Username', 'Please choose a username.');
+      setError('Username is required.');
       return;
     }
-    if (!(await usernameAvailable(uname))) {
-      alert('Username already taken');
+    try {
+      const fn = httpsCallable(functions, 'checkUsername');
+      const res: any = await fn({ username: uname });
+      if (!res.data?.available) {
+        setError('Username already taken');
+        return;
+      }
+    } catch (e) {
+      console.error(e);
+      setError('Failed to validate username');
       return;
     }
     let photoURL = photo || null;
@@ -179,15 +176,16 @@ export default function AccountScreen() {
           onChangeText={setCashapp}
           style={styles.input}
         />
-        <View style={styles.footer}>
-          <Button
-            title="Save"
-            onPress={handleSave}
-            disabled={!first || !last || !username || !emailValid}
-            style={styles.saveButton}
-          />
-        </View>
+        {error ? <Text style={styles.error}>{error}</Text> : null}
       </ScrollView>
+      <View style={styles.footer}>
+        <Button
+          title="Save"
+          onPress={handleSave}
+          disabled={!first || !last || !username || !emailValid}
+          style={styles.saveButton}
+        />
+      </View>
     </SafeAreaView>
   );
 }
@@ -199,7 +197,7 @@ const styles = StyleSheet.create({
     padding: spacing.m,
   },
   form: {
-    paddingBottom: spacing.l,
+    paddingBottom: spacing.xl,
   },
   avatarWrapper: {
     alignSelf: 'center',
@@ -227,6 +225,11 @@ const styles = StyleSheet.create({
     padding: spacing.m,
     backgroundColor: colors.background,
     alignItems: 'center',
+  },
+  error: {
+    color: 'red',
+    marginBottom: spacing.m,
+    textAlign: 'center',
   },
   saveButton: { width: '90%', alignSelf: 'center' },
 });

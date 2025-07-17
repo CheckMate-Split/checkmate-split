@@ -151,6 +151,8 @@ export default function AccountScreen() {
           placeholder="Username"
           value={username}
           onChangeText={setUsername}
+          autoCapitalize="none"
+          autoCorrect={false}
           style={styles.input}
         />
         <Text style={styles.label}>Email</Text>
@@ -177,15 +179,15 @@ export default function AccountScreen() {
           onChangeText={setCashapp}
           style={styles.input}
         />
+        <View style={styles.footer}>
+          <Button
+            title="Save"
+            onPress={handleSave}
+            disabled={!first || !last || !username || !emailValid}
+            style={styles.saveButton}
+          />
+        </View>
       </ScrollView>
-      <View style={styles.footer}>
-        <Button
-          title="Save"
-          onPress={handleSave}
-          disabled={!first || !last || !username || !emailValid}
-          style={styles.saveButton}
-        />
-      </View>
     </SafeAreaView>
   );
 }

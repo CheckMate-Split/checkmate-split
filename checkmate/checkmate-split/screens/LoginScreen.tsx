@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, TextInput, View, Platform, Image } from 'react-native';
+import { StyleSheet, TextInput, View, Platform, Image, Alert, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Google from 'expo-auth-session/providers/google';
 import * as AppleAuthentication from 'expo-apple-authentication';
@@ -17,7 +17,11 @@ import { colors, spacing } from '../constants';
 import { auth } from '../firebaseConfig';
 
 export default function LoginScreen() {
+  const [step, setStep] = useState<'start' | 'password' | 'signin'>('start');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const emailValid = /\S+@\S+\.\S+/.test(email.trim());
   const [request, response, promptAsync] = Google.useAuthRequest({
     clientId: 'GOOGLE_CLIENT_ID',
   });
@@ -30,19 +34,27 @@ export default function LoginScreen() {
     }
   }, [response]);
 
-  const handleEmail = async () => {
+  const handleEmailContinue = () => {
+    setStep('password');
+  };
+
+  const handleCreate = async () => {
+    if (password !== confirm || password.length === 0) {
+      Alert.alert('Error', 'Passwords must match.');
+      return;
+    }
     try {
-      await signInWithEmailAndPassword(auth, email, 'password');
+      await createUserWithEmailAndPassword(auth, email.trim(), password);
     } catch (e: any) {
-      if (e.code === 'auth/user-not-found') {
-        try {
-          await createUserWithEmailAndPassword(auth, email, 'password');
-        } catch (err) {
-          console.error(err);
-        }
-      } else {
-        console.error(e);
-      }
+      Alert.alert('Error', e.message);
+    }
+  };
+
+  const handleSignIn = async () => {
+    try {
+      await signInWithEmailAndPassword(auth, email.trim(), password);
+    } catch (e: any) {
+      Alert.alert('Error', e.message);
     }
   };
 
@@ -66,25 +78,95 @@ export default function LoginScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.box}>
         <Image source={require('../assets/logo-full.jpeg')} style={styles.logo} resizeMode="contain" />
-        <Text style={styles.welcome}>Welcome</Text>
-        <Text style={styles.desc}>Use Checkmate to split the bill and pay your part.</Text>
-        <Text style={styles.label}>Email</Text>
-        <TextInput
-          value={email}
-          onChangeText={setEmail}
-          placeholder="Email"
-          keyboardType="email-address"
-          style={styles.input}
-        />
-        <Button title="Continue with Email" onPress={handleEmail} style={styles.button} />
-        {Platform.OS === 'ios' && (
-          <OutlineButton title="Continue with Apple" onPress={handleApple} style={styles.button} />
+        {step === 'start' && (
+          <>
+            <Text style={styles.welcome}>Welcome</Text>
+            <Text style={styles.desc}>Use Checkmate to split the bill and pay your part.</Text>
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              value={email}
+              onChangeText={setEmail}
+              placeholder="Email"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              style={styles.input}
+            />
+            <Button
+              title="Continue with Email"
+              onPress={handleEmailContinue}
+              disabled={!emailValid}
+              style={styles.button}
+            />
+            {Platform.OS === 'ios' && (
+              <OutlineButton
+                title="Continue with Apple"
+                icon="logo-apple"
+                onPress={handleApple}
+                style={styles.button}
+              />
+            )}
+            <OutlineButton
+              title="Continue with Google"
+              icon="logo-google"
+              onPress={() => promptAsync()}
+              style={styles.button}
+            />
+            <TouchableOpacity onPress={() => setStep('signin')}>\n              <Text style={styles.link}>Sign in</Text>\n            </TouchableOpacity>
+          </>
         )}
-        <OutlineButton
-          title="Continue with Google"
-          onPress={() => promptAsync()}
-          style={styles.button}
-        />
+        {step === 'password' && (
+          <>
+            <Text style={styles.welcome}>Create Password</Text>
+            <TextInput
+              value={password}
+              onChangeText={setPassword}
+              placeholder="Password"
+              secureTextEntry
+              style={styles.input}
+            />
+            <TextInput
+              value={confirm}
+              onChangeText={setConfirm}
+              placeholder="Confirm Password"
+              secureTextEntry
+              style={styles.input}
+            />
+            <Button
+              title="Create Account"
+              onPress={handleCreate}
+              disabled={!password || password !== confirm}
+              style={styles.button}
+            />
+            <TouchableOpacity onPress={() => setStep('start')}>\n              <Text style={styles.link}>Back</Text>\n            </TouchableOpacity>
+          </>
+        )}
+        {step === 'signin' && (
+          <>
+            <Text style={styles.welcome}>Login</Text>
+            <TextInput
+              value={email}
+              onChangeText={setEmail}
+              placeholder="Email"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              style={styles.input}
+            />
+            <TextInput
+              value={password}
+              onChangeText={setPassword}
+              placeholder="Password"
+              secureTextEntry
+              style={styles.input}
+            />
+            <Button
+              title="Sign In"
+              onPress={handleSignIn}
+              disabled={!emailValid || !password}
+              style={styles.button}
+            />
+            <TouchableOpacity onPress={() => setStep('start')}>\n              <Text style={styles.link}>Back</Text>\n            </TouchableOpacity>
+          </>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -133,5 +215,10 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: spacing.s,
+  },
+  link: {
+    marginTop: spacing.m,
+    color: colors.primary,
+    textAlign: 'center',
   },
 });

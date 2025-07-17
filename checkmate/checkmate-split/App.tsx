@@ -151,10 +151,11 @@ export default function App() {
   useEffect(() => {
     let unsubProfile: (() => void) | undefined;
     const unsubAuth = onAuthStateChanged(auth, (u) => {
-      setUser(u);
+      const valid = u && !u.isAnonymous ? u : null;
+      setUser(valid);
       if (unsubProfile) unsubProfile();
-      if (u) {
-        unsubProfile = onSnapshot(doc(db, 'users', u.uid), (snap) => {
+      if (valid) {
+        unsubProfile = onSnapshot(doc(db, 'users', valid.uid), (snap) => {
           setProfile(snap.exists() ? snap.data() : null);
         });
       } else {

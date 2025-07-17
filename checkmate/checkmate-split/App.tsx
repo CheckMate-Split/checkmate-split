@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
 import * as Linking from 'expo-linking';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -22,7 +22,7 @@ import SettingsScreen from './screens/SettingsScreen';
 import { colors } from './constants';
 import { auth, db } from './firebaseConfig';
 import { onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 
 export type RootStackParamList = {
   Login: undefined;
@@ -146,32 +146,51 @@ export default function App() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const navigationRef = useNavigationContainerRef();
 
   useEffect(() => {
-    return onAuthStateChanged(auth, async (u) => {
+    let unsubProfile: (() => void) | undefined;
+    const unsubAuth = onAuthStateChanged(auth, (u) => {
       setUser(u);
+      if (unsubProfile) unsubProfile();
       if (u) {
-        const snap = await getDoc(doc(db, 'users', u.uid));
-        setProfile(snap.exists() ? snap.data() : null);
+        unsubProfile = onSnapshot(doc(db, 'users', u.uid), (snap) => {
+          setProfile(snap.exists() ? snap.data() : null);
+        });
       } else {
         setProfile(null);
       }
       setLoading(false);
     });
+
+    return () => {
+      unsubAuth();
+      if (unsubProfile) unsubProfile();
+    };
   }, []);
+
+  useEffect(() => {
+    if (loading) return;
+    if (!user) {
+      navigationRef.reset({ index: 0, routes: [{ name: 'Login' }] });
+    } else if (!profile || !profile.first || !profile.last || !profile.username || !profile.email) {
+      navigationRef.reset({
+        index: 0,
+        routes: [{ name: 'AccountSetup', params: { initial: true } }],
+      });
+    } else {
+      navigationRef.reset({ index: 0, routes: [{ name: 'Tabs' }] });
+    }
+  }, [user, profile, loading, navigationRef]);
 
   if (loading) return null;
 
   return (
-    <NavigationContainer linking={linking}>
+    <NavigationContainer ref={navigationRef} linking={linking}>
       <RootStack.Navigator screenOptions={{ headerShown: false }}>
-        {!user && <RootStack.Screen name="Login" component={LoginScreen} />}
-        {user && (!profile || !profile.first || !profile.last || !profile.username || !profile.email) && (
-          <RootStack.Screen name="AccountSetup" component={AccountScreen} initialParams={{ initial: true }} />
-        )}
-        {user && profile && profile.first && profile.last && profile.username && profile.email && (
-          <RootStack.Screen name="Tabs" component={MainTabs} />
-        )}
+        <RootStack.Screen name="Login" component={LoginScreen} />
+        <RootStack.Screen name="AccountSetup" component={AccountScreen} />
+        <RootStack.Screen name="Tabs" component={MainTabs} />
         <RootStack.Screen name="Receipt" component={ReceiptScreen} />
         <RootStack.Screen name="ManageReceipt" component={ManageReceiptScreen} />
       </RootStack.Navigator>

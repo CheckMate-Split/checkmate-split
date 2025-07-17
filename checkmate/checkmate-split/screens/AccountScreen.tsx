@@ -6,6 +6,7 @@ import {
   Image,
   TouchableOpacity,
   Alert,
+  ScrollView,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -19,13 +20,13 @@ import {
   doc,
   getDoc,
   setDoc,
-  updateDoc,
   collection,
   query,
   where,
   getDocs,
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { updateProfile } from 'firebase/auth';
 
 export default function AccountScreen() {
   const navigation = useNavigation<any>();
@@ -95,6 +96,12 @@ export default function AccountScreen() {
       await uploadBytes(storageRef, blob);
       photoURL = await getDownloadURL(storageRef);
     }
+    if (photoURL !== photo) {
+      setPhoto(photoURL);
+    }
+    if (photoURL && user.photoURL !== photoURL) {
+      await updateProfile(user, { photoURL });
+    }
     await setDoc(
       doc(db, 'users', user.uid),
       {
@@ -124,7 +131,7 @@ export default function AccountScreen() {
           style={styles.avatar}
         />
       </TouchableOpacity>
-      <View style={styles.form}>
+      <ScrollView contentContainerStyle={styles.form}>
         <Text style={styles.label}>First Name</Text>
         <TextInput
           placeholder="First Name"
@@ -170,13 +177,15 @@ export default function AccountScreen() {
           onChangeText={setCashapp}
           style={styles.input}
         />
+      </ScrollView>
+      <View style={styles.footer}>
+        <Button
+          title="Save"
+          onPress={handleSave}
+          disabled={!first || !last || !username || !emailValid}
+          style={styles.saveButton}
+        />
       </View>
-      <Button
-        title="Save"
-        onPress={handleSave}
-        disabled={!first || !last || !username || !emailValid}
-        style={styles.saveButton}
-      />
     </SafeAreaView>
   );
 }
@@ -188,7 +197,7 @@ const styles = StyleSheet.create({
     padding: spacing.m,
   },
   form: {
-    flex: 1,
+    paddingBottom: spacing.l,
   },
   avatarWrapper: {
     alignSelf: 'center',
@@ -211,6 +220,11 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     padding: spacing.m,
     marginBottom: spacing.m,
+  },
+  footer: {
+    padding: spacing.m,
+    backgroundColor: colors.background,
+    alignItems: 'center',
   },
   saveButton: { width: '90%', alignSelf: 'center' },
 });

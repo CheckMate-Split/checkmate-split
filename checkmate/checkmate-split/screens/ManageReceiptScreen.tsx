@@ -69,15 +69,38 @@ export default function ManageReceiptScreen() {
 
 
   const renderPerson = (p: any) => (
-    <View key={p.id} style={styles.personRow}>
-      <View style={styles.avatar} />
-      <Text style={styles.personName}>{p.name}</Text>
-      <Text style={styles.amount}>{`$${p.amount.toFixed(2)}`}</Text>
-      <View
-        style={[styles.tag, p.status === 'Paid' ? styles.tagPaid : p.status === 'Viewed' ? styles.tagViewed : styles.tagUnpaid]}
-      >
-        <Text style={styles.tagText}>{p.status === 'Paid' ? 'Paid' : p.status === 'Viewed' ? 'Viewed' : 'Not Paid'}</Text>
+    <View key={p.id} style={styles.personContainer}>
+      <View style={styles.personRow}>
+        <View style={styles.avatar} />
+        <Text style={styles.personName}>{p.name}</Text>
+        <Text style={styles.amount}>{`$${p.amount.toFixed(2)}`}</Text>
+        <View
+          style={[
+            styles.tag,
+            p.status === 'Paid'
+              ? styles.tagPaid
+              : p.status === 'Viewed'
+              ? styles.tagViewed
+              : styles.tagUnpaid,
+          ]}
+        >
+          <Text style={styles.tagText}>
+            {p.status === 'Paid' ? 'Paid' : p.status === 'Viewed' ? 'Viewed' : 'Not Paid'}
+          </Text>
+        </View>
       </View>
+      {p.id === auth.currentUser?.uid && (
+        <Button
+          title="Claim More"
+          onPress={() =>
+            navigation.navigate('Tabs', {
+              screen: 'HomeTab',
+              params: { screen: 'ClaimItems', params: { receipt } },
+            })
+          }
+          style={styles.claimButton}
+        />
+      )}
     </View>
   );
 
@@ -87,35 +110,25 @@ export default function ManageReceiptScreen() {
         title={receipt.name || 'Receipt'}
         onBack={navigation.goBack}
         right={
-          isOwner && (
-            <TouchableOpacity onPress={handleEdit} style={styles.iconButton}>
-              <Ionicons name="pencil" size={24} color={colors.text} />
-            </TouchableOpacity>
-          )
+          <View style={styles.headerRight}>
+            <Text style={styles.headerAmount}>{`$${
+              (isOwner ? othersTotal : yourTotal).toFixed(2)
+            }`}</Text>
+            {isOwner && (
+              <TouchableOpacity onPress={handleEdit} style={styles.iconButton}>
+                <Ionicons name="pencil" size={24} color={colors.text} />
+              </TouchableOpacity>
+            )}
+          </View>
         }
       />
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text style={styles.subheader}>{`shared on ${created.toLocaleDateString()}`}</Text>
         {receipt.description ? <Text style={styles.desc}>{receipt.description}</Text> : null}
-        <Text style={styles.total}>
-          {isOwner
-            ? `Others owe $${othersTotal.toFixed(2)}`
-            : `You owe $${yourTotal.toFixed(2)}`}
-        </Text>
         {you && (
           <>
             <Text style={styles.section}>You</Text>
             {renderPerson(you)}
-            <OutlineButton
-              title="Claim More"
-              onPress={() =>
-                navigation.navigate('Tabs', {
-                  screen: 'HomeTab',
-                  params: { screen: 'ClaimItems', params: { receipt } },
-                })
-              }
-              style={styles.claimButton}
-            />
             <Text style={styles.section}>Others</Text>
           </>
         )}
@@ -182,12 +195,14 @@ const styles = StyleSheet.create({
   scroll: { paddingHorizontal: spacing.m, paddingBottom: spacing.m },
   subheader: { color: '#666', fontSize: 28 },
   desc: { marginTop: spacing.s, fontSize: 28 },
-  personRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  personContainer: {
     paddingVertical: spacing.m,
     borderBottomWidth: 1,
     borderColor: '#eee',
+  },
+  personRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   avatar: {
     width: 40,
@@ -215,7 +230,15 @@ const styles = StyleSheet.create({
     marginTop: spacing.s,
     width: '70%',
   },
-  total: { marginTop: spacing.m, fontSize: 28, fontWeight: '600' },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerAmount: {
+    fontSize: 28,
+    fontWeight: '600',
+    marginRight: spacing.s,
+  },
   iconButton: { marginLeft: spacing.m },
   footer: {
     flexDirection: 'row',

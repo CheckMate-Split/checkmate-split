@@ -111,7 +111,9 @@ export default function LoginScreen() {
               onPress={() => promptAsync()}
               style={styles.button}
             />
-            <TouchableOpacity onPress={() => setStep('signin')}>\n              <Text style={styles.link}>Sign in</Text>\n            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setStep('signin')}>
+              <Text style={styles.link}>Sign in</Text>
+            </TouchableOpacity>
           </>
         )}
         {step === 'password' && (
@@ -137,7 +139,9 @@ export default function LoginScreen() {
               disabled={!password || password !== confirm}
               style={styles.button}
             />
-            <TouchableOpacity onPress={() => setStep('start')}>\n              <Text style={styles.link}>Back</Text>\n            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setStep('start')}>
+              <Text style={styles.link}>Back</Text>
+            </TouchableOpacity>
           </>
         )}
         {step === 'signin' && (
@@ -164,7 +168,9 @@ export default function LoginScreen() {
               disabled={!emailValid || !password}
               style={styles.button}
             />
-            <TouchableOpacity onPress={() => setStep('start')}>\n              <Text style={styles.link}>Back</Text>\n            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setStep('start')}>
+              <Text style={styles.link}>Back</Text>
+            </TouchableOpacity>
           </>
         )}
       </View>

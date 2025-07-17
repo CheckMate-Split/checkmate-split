@@ -147,6 +147,7 @@ export default function App() {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const navigationRef = useNavigationContainerRef();
+  const [navReady, setNavReady] = useState(false);
 
   useEffect(() => {
     let unsubProfile: (() => void) | undefined;
@@ -171,7 +172,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (loading) return;
+    if (loading || !navReady) return;
     if (!user) {
       navigationRef.reset({ index: 0, routes: [{ name: 'Login' }] });
     } else if (!profile || !profile.first || !profile.last || !profile.username || !profile.email) {
@@ -182,12 +183,16 @@ export default function App() {
     } else {
       navigationRef.reset({ index: 0, routes: [{ name: 'Tabs' }] });
     }
-  }, [user, profile, loading, navigationRef]);
+  }, [user, profile, loading, navReady, navigationRef]);
 
   if (loading) return null;
 
   return (
-    <NavigationContainer ref={navigationRef} linking={linking}>
+    <NavigationContainer
+      ref={navigationRef}
+      linking={linking}
+      onReady={() => setNavReady(true)}
+    >
       <RootStack.Navigator screenOptions={{ headerShown: false }}>
         <RootStack.Screen name="Login" component={LoginScreen} />
         <RootStack.Screen name="AccountSetup" component={AccountScreen} />

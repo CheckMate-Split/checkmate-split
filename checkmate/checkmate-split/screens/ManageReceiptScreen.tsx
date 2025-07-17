@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, ScrollView, Modal, Share, TouchableOpacity } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  ScrollView,
+  Modal,
+  Share,
+  TouchableOpacity,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import Text from '../components/Text';
@@ -7,6 +14,8 @@ import PageHeader from '../components/PageHeader';
 import OutlineButton from '../components/OutlineButton';
 import QRCode from 'react-native-qrcode-svg';
 import { colors, spacing } from '../constants';
+import Button from '../components/Button';
+import { auth } from '../firebaseConfig';
 
 export type ManageReceiptParams = {
   ManageReceipt: { receipt: any };
@@ -18,6 +27,7 @@ export default function ManageReceiptScreen() {
   const { receipt } = route.params;
 
   const [qrVisible, setQrVisible] = useState(false);
+  const [payVisible, setPayVisible] = useState(false);
 
   const created = receipt.createdAt
     ? new Date(receipt.createdAt.seconds
@@ -25,17 +35,34 @@ export default function ManageReceiptScreen() {
         : receipt.createdAt)
     : new Date();
 
-  const people = [{ id: 'me', name: 'You', status: 'Paid' }];
-  const total =
-    receipt.data?.totalAmount?.data ?? receipt.data?.total?.data ?? null;
+  const items: any[] = receipt.data?.lineItems || [];
+  const totals: Record<string, number> = {};
+  items.forEach((item: any) => {
+    const resp = item.responsible || receipt.payer;
+    const amt = item.amount?.data || 0;
+    totals[resp] = (totals[resp] || 0) + amt;
+  });
+  if (!totals[receipt.payer]) {
+    totals[receipt.payer] = 0;
+  }
+  const people = Object.keys(totals).map(id => ({
+    id,
+    name: id === auth.currentUser?.uid ? 'You' : 'Person',
+    amount: totals[id],
+    status: id === receipt.payer ? 'Paid' : 'Not Paid',
+  }));
+
+  const total = receipt.data?.totalAmount?.data ?? receipt.data?.total?.data ?? null;
+
+  const you = people.find(p => p.id === auth.currentUser?.uid);
+  const others = people.filter(p => p.id !== auth.currentUser?.uid);
+  const isOwner = receipt.payer === auth.currentUser?.uid;
 
   const renderPerson = (p: any) => (
     <View key={p.id} style={styles.personRow}>
       <View style={styles.avatar} />
       <Text style={styles.personName}>{p.name}</Text>
-      {total !== null && (
-        <Text style={styles.amount}>{`$${Number(total).toFixed(2)}`}</Text>
-      )}
+      <Text style={styles.amount}>{`$${p.amount.toFixed(2)}`}</Text>
       <View
         style={[styles.tag, p.status === 'Paid' ? styles.tagPaid : p.status === 'Viewed' ? styles.tagViewed : styles.tagUnpaid]}
       >
@@ -50,8 +77,28 @@ export default function ManageReceiptScreen() {
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text style={styles.subheader}>{`shared on ${created.toLocaleDateString()}`}</Text>
         {receipt.description ? <Text style={styles.desc}>{receipt.description}</Text> : null}
-        {people.map(renderPerson)}
+        {you && (
+          <>
+            <Text style={styles.section}>You</Text>
+            {renderPerson(you)}
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate('Tabs', {
+                  screen: 'HomeTab',
+                  params: { screen: 'ClaimItems', params: { receipt } },
+                })
+              }
+            >
+              <Text style={styles.link}>claim more</Text>
+            </TouchableOpacity>
+            <View style={styles.divider} />
+          </>
+        )}
+        {others.map(renderPerson)}
       </ScrollView>
+      {!isOwner && (
+        <Button title="Pay" onPress={() => setPayVisible(true)} style={styles.payButton} />
+      )}
       <View style={styles.footer}>
         <OutlineButton
           title="Share QR"
@@ -66,6 +113,22 @@ export default function ManageReceiptScreen() {
           icon="link-outline"
         />
       </View>
+      <Modal
+        visible={payVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setPayVisible(false)}
+      >
+        <TouchableOpacity style={styles.modalOverlay} onPress={() => setPayVisible(false)}>
+          <View style={styles.modalContent}>
+            <Button title="Card" onPress={() => setPayVisible(false)} style={styles.payOption} />
+            <Button title="Cash App" onPress={() => setPayVisible(false)} style={styles.payOption} />
+            <Button title="Apple Pay" onPress={() => setPayVisible(false)} style={styles.payOption} />
+            <Button title="Balance / ACH" onPress={() => setPayVisible(false)} style={styles.payOption} />
+            <OutlineButton title="Close" onPress={() => setPayVisible(false)} style={styles.closeButton} />
+          </View>
+        </TouchableOpacity>
+      </Modal>
       <Modal
         visible={qrVisible}
         animationType="slide"
@@ -91,7 +154,9 @@ const styles = StyleSheet.create({
   personRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: spacing.m,
+    paddingVertical: spacing.m,
+    borderBottomWidth: 1,
+    borderColor: '#eee',
   },
   avatar: {
     width: 40,
@@ -101,6 +166,9 @@ const styles = StyleSheet.create({
     marginRight: spacing.m,
   },
   personName: { flex: 1, fontSize: 28 },
+  section: { marginTop: spacing.l, fontSize: 32, fontWeight: '600' },
+  link: { color: colors.primary, marginTop: spacing.s },
+  divider: { borderBottomWidth: 1, borderColor: '#000', marginVertical: spacing.m },
   tag: {
     paddingHorizontal: spacing.m,
     paddingVertical: spacing.s / 2,
@@ -111,6 +179,7 @@ const styles = StyleSheet.create({
   tagUnpaid: { backgroundColor: '#999' },
   tagViewed: { backgroundColor: '#f88' },
   tagPaid: { backgroundColor: '#4c9a4c' },
+  payButton: { marginHorizontal: spacing.m, marginTop: spacing.l },
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -129,6 +198,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 12,
     alignItems: 'center',
   },
+  payOption: { alignSelf: 'stretch', marginTop: spacing.s },
   closeButton: {
     marginTop: spacing.l,
     alignSelf: 'stretch',

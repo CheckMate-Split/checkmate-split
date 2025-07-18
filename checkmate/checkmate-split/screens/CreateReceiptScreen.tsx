@@ -10,7 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { addDoc, collection, serverTimestamp, doc, deleteDoc, updateDoc } from 'firebase/firestore';
-import { ref, uploadString, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Button from '../components/Button';
 import OutlineButton from '../components/OutlineButton';
 import Text from '../components/Text';
@@ -114,7 +114,8 @@ export default function CreateReceiptScreen() {
         if (image) {
           const imgRef = ref(storage, `receipts/${id}.jpg`);
           const dataUrl = `data:image/jpeg;base64,${image}`;
-          await uploadString(imgRef, dataUrl, 'data_url');
+          const blob = await (await fetch(dataUrl)).blob();
+          await uploadBytes(imgRef, blob);
           imageUrl = await getDownloadURL(imgRef);
           await updateDoc(docRef, { imageUrl });
         }

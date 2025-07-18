@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Image, View, Dimensions } from 'react-native';
+import { StyleSheet, Image, View, Dimensions, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { httpsCallable } from 'firebase/functions';
 import { useNavigation } from '@react-navigation/native';
-import { functions } from '../firebaseConfig';
+import { functions, auth } from '../firebaseConfig';
 import Button from '../components/Button';
 import OutlineButton from '../components/OutlineButton';
 import { colors, spacing } from '../constants';
@@ -25,6 +25,11 @@ export default function HomeScreen() {
   }, []);
 
   const handleScan = async () => {
+    if (!auth.currentUser) {
+      Alert.alert('Not signed in', 'Please sign in to scan a receipt.');
+      return;
+    }
+    console.log('Scanning as', auth.currentUser.uid);
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') {
       return;
@@ -43,6 +48,11 @@ export default function HomeScreen() {
   };
 
   const handleUpload = async () => {
+    if (!auth.currentUser) {
+      Alert.alert('Not signed in', 'Please sign in to scan a receipt.');
+      return;
+    }
+    console.log('Scanning as', auth.currentUser.uid);
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') return;
     const pick = await ImagePicker.launchImageLibraryAsync({ base64: true });

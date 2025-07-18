@@ -76,18 +76,30 @@ export default function CreateReceiptScreen() {
             responsible: user.uid,
           }))
         : (data?.lineItems || []).map((item: any) => ({
-            ...item,
+            description:
+              item.description ||
+              item.text?.data ||
+              item.data?.name?.data ||
+              '',
+            amount: { data: item.amount?.data ?? item.data?.totalPrice?.data },
             responsible: user.uid,
             shared: false,
           }));
       let id = receipt?.id;
       let imageUrl = receipt?.imageUrl || '';
+      const sanitizedData = {
+        description,
+        lineItems: parsedItems,
+        totalAmount: data?.totalAmount?.data ?? null,
+        taxAmount: data?.taxAmount?.data ?? null,
+      };
+
       if (edit && id) {
         await updateDoc(doc(db, 'receipts', id), {
           name,
           description,
           date: date.toISOString(),
-          data: { ...data, description, lineItems: parsedItems },
+          data: sanitizedData,
         });
       } else {
         const docRef = await addDoc(collection(db, 'receipts'), {
@@ -95,7 +107,7 @@ export default function CreateReceiptScreen() {
           description,
           date: date.toISOString(),
           payer: user.uid,
-          data: { ...data, description, lineItems: parsedItems },
+          data: sanitizedData,
           createdAt: serverTimestamp(),
         });
         id = docRef.id;
@@ -110,7 +122,7 @@ export default function CreateReceiptScreen() {
         id,
         name,
         description,
-        data: { ...data, description, lineItems: parsedItems },
+        data: sanitizedData,
         createdAt: receipt?.createdAt || new Date().toISOString(),
         imageUrl,
       };

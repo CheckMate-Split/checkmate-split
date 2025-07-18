@@ -55,6 +55,7 @@ export default function HomeScreen() {
       setUploading(true);
       const scan = httpsCallable(functions, 'parseReciept');
       const res: any = await scan({ image: base64 });
+      console.log('scan response', res);
       const parsed = res.data?.data ?? res.data;
       navigation.navigate('CreateReceipt', { data: parsed, image: base64 });
     } catch (e: any) {
@@ -101,6 +102,7 @@ export default function HomeScreen() {
       {uploading && (
         <View style={styles.loadingOverlay}>
           <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.loadingText}>Processing reciept…</Text>
         </View>
       )}
       <BottomDrawer
@@ -157,6 +159,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.petalGray,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: spacing.m,
+    fontWeight: 'bold',
   },
 });
 

@@ -43,7 +43,12 @@ export default function CreateReceiptScreen() {
       name: i.description,
       price: String(i.amount?.data ?? ''),
       shared: !!i.shared,
-    })) || []
+    })) ||
+      (data?.lineItems || []).map((i: any) => ({
+        name: i.description,
+        price: String(i.amount?.data ?? ''),
+        shared: false,
+      }))
   );
   const [date, setDate] = useState(
     receipt?.date ? new Date(receipt.date) : new Date()

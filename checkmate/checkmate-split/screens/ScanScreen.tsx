@@ -9,6 +9,7 @@ import Button from '../components/Button';
 import OutlineButton from '../components/OutlineButton';
 import { colors, spacing } from '../constants';
 import BottomDrawer from '../components/BottomDrawer';
+import Text from '../components/Text';
 
 export default function ScanScreen() {
   const navigation = useNavigation<any>();
@@ -41,6 +42,7 @@ export default function ScanScreen() {
     try {
       const scan = httpsCallable(functions, 'parseReciept');
       const res: any = await scan({ image: captured.base64 });
+      console.log('scan response', res);
       const parsed = res.data?.data ?? res.data;
       navigation.navigate('CreateReceipt', { data: parsed, image: captured.base64 });
     } catch (e: any) {
@@ -77,6 +79,7 @@ export default function ScanScreen() {
       {loading && (
         <View style={styles.loadingOverlay}>
           <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.loadingText}>Processing reciept…</Text>
         </View>
       )}
       <BottomDrawer
@@ -108,5 +111,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.petalGray,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: spacing.m,
+    fontWeight: 'bold',
   },
 });

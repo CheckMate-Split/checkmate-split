@@ -99,7 +99,8 @@ export default function AccountScreen() {
         encoding: FileSystem.EncodingType.Base64,
       });
       const storageRef = ref(storage, `avatars/${user.uid}`);
-      await uploadString(storageRef, base64, 'base64');
+      const dataUrl = `data:image/jpeg;base64,${base64}`;
+      await uploadString(storageRef, dataUrl, 'data_url');
       photoURL = await getDownloadURL(storageRef);
     }
     if (photoURL !== photo) {

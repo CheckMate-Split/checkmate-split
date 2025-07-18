@@ -113,7 +113,8 @@ export default function CreateReceiptScreen() {
         id = docRef.id;
         if (image) {
           const imgRef = ref(storage, `receipts/${id}.jpg`);
-          await uploadString(imgRef, image, 'base64');
+          const dataUrl = `data:image/jpeg;base64,${image}`;
+          await uploadString(imgRef, dataUrl, 'data_url');
           imageUrl = await getDownloadURL(imgRef);
           await updateDoc(docRef, { imageUrl });
         }

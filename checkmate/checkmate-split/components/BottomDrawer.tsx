@@ -29,7 +29,7 @@ export default function BottomDrawer({
     >
       <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={onClose}>
         <TouchableOpacity activeOpacity={1} style={styles.content}>
-          <Text style={styles.message}>We can't read that receipt</Text>
+          <Text style={styles.message}>We couldn't read that reciept</Text>
           <Button
             title={mode === 'scan' ? 'Try a New Scan' : 'Try a New Upload'}
             onPress={() => {

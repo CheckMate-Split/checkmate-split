@@ -1,6 +1,12 @@
 const functions = require('firebase-functions');
 const fetch = require('node-fetch');
 
+// Log when the module is loaded to confirm deployment and project info
+functions.logger.info('loading receiptScan module', {
+  project: process.env.GCLOUD_PROJECT,
+  region: process.env.FUNCTION_REGION,
+});
+
 // Callable function to proxy requests to TagGun API for receipt scanning
 const TAGGUN_KEY = '9eb1290f9f204bfca1c477905c74e0df';
 

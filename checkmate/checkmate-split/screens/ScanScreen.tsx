@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { StyleSheet, View, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { Camera } from 'expo-camera';
+import { Camera, CameraType } from 'expo-camera';
 import { useNavigation } from '@react-navigation/native';
 import { httpsCallable } from 'firebase/functions';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -65,7 +65,12 @@ export default function ScanScreen() {
   return (
     <SafeAreaView style={styles.container}>
       {!captured ? (
-        <Camera ref={cameraRef} style={styles.camera} ratio="16:9" />
+        <Camera
+          ref={cameraRef}
+          style={styles.camera}
+          ratio="16:9"
+          type={CameraType.back}
+        />
       ) : (
         <Image source={{ uri: captured.uri }} style={styles.camera} />
       )}

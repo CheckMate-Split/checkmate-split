@@ -1,6 +1,5 @@
 import React from 'react';
 import { Modal, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import Button from './Button';
 import OutlineButton from './OutlineButton';
 import Text from './Text';
@@ -32,9 +31,6 @@ export default function BottomDrawer({
     >
       <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={onClose}>
         <TouchableOpacity activeOpacity={1} style={styles.content}>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Ionicons name="close" size={24} color={colors.text} />
-          </TouchableOpacity>
           <Text style={styles.message}>{message}</Text>
           <Button
             title={mode === 'scan' ? 'Try a New Scan' : 'Try a New Upload'}
@@ -51,6 +47,13 @@ export default function BottomDrawer({
               onManual();
             }}
             style={styles.button}
+          />
+          <OutlineButton
+            title="Cancel"
+            onPress={onClose}
+            style={styles.cancelButton}
+            textColor={colors.pinkRed}
+            borderColor={colors.pinkRed}
           />
         </TouchableOpacity>
       </TouchableOpacity>
@@ -71,18 +74,17 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 12,
     alignItems: 'center',
   },
-  closeButton: {
-    position: 'absolute',
-    right: spacing.s,
-    top: spacing.s,
-    padding: spacing.s,
-  },
   message: {
     marginTop: spacing.l,
-    fontSize: 18,
+    fontSize: 22,
+    fontWeight: '600',
     textAlign: 'center',
   },
   button: {
+    alignSelf: 'stretch',
+    marginTop: spacing.m,
+  },
+  cancelButton: {
     alignSelf: 'stretch',
     marginTop: spacing.m,
   },

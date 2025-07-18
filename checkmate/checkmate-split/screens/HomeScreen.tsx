@@ -3,10 +3,6 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Image, View, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
-import DocumentScanner, {
-  ResponseType,
-  ScanDocumentResponseStatus,
-} from 'react-native-document-scanner-plugin';
 import { httpsCallable } from 'firebase/functions';
 import { useNavigation } from '@react-navigation/native';
 import { functions, auth } from '../firebaseConfig';
@@ -38,18 +34,16 @@ export default function HomeScreen() {
     const token = await auth.currentUser.getIdToken();
     const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
     console.log('Token aud', payload.aud);
+    const { status: camStatus } = await ImagePicker.requestCameraPermissionsAsync();
+    if (camStatus !== 'granted') {
+      return;
+    }
     try {
-      const { scannedImages, status } = await DocumentScanner.scanDocument({
-        responseType: ResponseType.Base64,
-      });
-      if (
-        status !== ScanDocumentResponseStatus.Success ||
-        !scannedImages ||
-        scannedImages.length === 0
-      ) {
+      const result = await ImagePicker.launchCameraAsync({ base64: true });
+      if (result.canceled) {
         return;
       }
-      const base64 = scannedImages[0];
+      const base64 = result.assets[0].base64 as string;
 
       const scan = httpsCallable(functions, 'parseReciept');
       const res = await scan({ image: base64 });

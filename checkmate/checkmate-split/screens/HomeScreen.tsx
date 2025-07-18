@@ -46,6 +46,11 @@ export default function HomeScreen() {
     const pick = await ImagePicker.launchImageLibraryAsync({ base64: true });
     if (pick.canceled) return;
     const base64 = pick.assets[0].base64 as string;
+    const bytes = (base64.length * 3) / 4;
+    if (bytes > 20 * 1024 * 1024) {
+      setUploadError(new Error('Image too large'));
+      return;
+    }
     try {
       setUploading(true);
       const scan = httpsCallable(functions, 'parseReciept');
@@ -104,7 +109,6 @@ export default function HomeScreen() {
         onRetry={handleUpload}
         onManual={handleManual}
         onClose={() => setUploadError(null)}
-        message={uploadError?.message}
       />
       <StatusBar style="dark" />
     </SafeAreaView>

@@ -32,6 +32,11 @@ export default function ScanScreen() {
 
   const handleUse = async () => {
     if (!captured || !auth.currentUser) return;
+    const bytes = (captured.base64.length * 3) / 4;
+    if (bytes > 20 * 1024 * 1024) {
+      setError(new Error('Image too large'));
+      return;
+    }
     setLoading(true);
     try {
       const scan = httpsCallable(functions, 'parseReciept');
@@ -80,7 +85,6 @@ export default function ScanScreen() {
         onRetry={handleRetry}
         onManual={handleManual}
         onClose={() => setError(null)}
-        message={error?.message}
       />
     </SafeAreaView>
   );

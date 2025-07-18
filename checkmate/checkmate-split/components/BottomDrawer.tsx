@@ -11,7 +11,6 @@ interface Props {
   onRetry: () => void;
   onManual: () => void;
   onClose: () => void;
-  message?: string;
 }
 
 export default function BottomDrawer({
@@ -20,7 +19,6 @@ export default function BottomDrawer({
   onRetry,
   onManual,
   onClose,
-  message = "We can't read that receipt",
 }: Props) {
   return (
     <Modal
@@ -31,7 +29,7 @@ export default function BottomDrawer({
     >
       <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={onClose}>
         <TouchableOpacity activeOpacity={1} style={styles.content}>
-          <Text style={styles.message}>{message}</Text>
+          <Text style={styles.message}>We can't read that receipt</Text>
           <Button
             title={mode === 'scan' ? 'Try a New Scan' : 'Try a New Upload'}
             onPress={() => {

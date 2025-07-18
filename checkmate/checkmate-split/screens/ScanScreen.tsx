@@ -1,46 +1,39 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { StyleSheet, View, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { Camera, CameraType } from 'expo-camera';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, Image, ActivityIndicator } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
 import { httpsCallable } from 'firebase/functions';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { functions, auth } from '../firebaseConfig';
-import { Buffer } from 'buffer';
 import Button from '../components/Button';
 import OutlineButton from '../components/OutlineButton';
-import Text from '../components/Text';
 import { colors, spacing } from '../constants';
 import BottomDrawer from '../components/BottomDrawer';
 
 export default function ScanScreen() {
   const navigation = useNavigation<any>();
-  const cameraRef = useRef<Camera | null>(null);
-  const [permission, requestPermission] = Camera.useCameraPermissions();
   const [captured, setCaptured] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<any>(null);
 
-  useEffect(() => {
-    if (!permission) {
-      requestPermission();
-    } else if (!permission.granted) {
-      requestPermission();
+  const openCamera = async () => {
+    const res = await ImagePicker.launchCameraAsync({
+      quality: 1,
+      base64: true,
+    });
+    if (!res.canceled) {
+      setCaptured(res.assets[0]);
     }
-  }, [permission, requestPermission]);
-
-  const takePhoto = async () => {
-    if (!cameraRef.current) return;
-    const result = await cameraRef.current.takePictureAsync({ quality: 1, base64: true });
-    setCaptured(result);
   };
+
+  useEffect(() => {
+    openCamera();
+  }, []);
 
   const handleUse = async () => {
     if (!captured || !auth.currentUser) return;
     setLoading(true);
     try {
-      const token = await auth.currentUser.getIdToken();
-      const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
-      console.log('Token aud', payload.aud);
       const scan = httpsCallable(functions, 'parseReciept');
       const res: any = await scan({ image: captured.base64 });
       const parsed = res.data?.data ?? res.data;
@@ -56,6 +49,7 @@ export default function ScanScreen() {
   const handleRetry = () => {
     setCaptured(null);
     setError(null);
+    openCamera();
   };
 
   const handleManual = () => {
@@ -64,21 +58,14 @@ export default function ScanScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {!captured ? (
-        <Camera
-          ref={cameraRef}
-          style={styles.camera}
-          ratio="16:9"
-          type={(CameraType as any)?.back ?? ('back' as CameraType)}
-        />
+      {captured ? (
+        <Image source={{ uri: captured.uri }} style={styles.image} />
       ) : (
-        <Image source={{ uri: captured.uri }} style={styles.camera} />
+        <View style={styles.placeholder} />
       )}
-      {!captured ? (
-        <TouchableOpacity style={styles.capture} onPress={takePhoto} />
-      ) : (
+      {captured && (
         <View style={styles.confirmRow}>
-          <OutlineButton title="Retake" onPress={() => setCaptured(null)} style={styles.confirmButton} />
+          <OutlineButton title="Retake" onPress={openCamera} style={styles.confirmButton} />
           <Button title="Use Photo" onPress={handleUse} style={styles.confirmButton} />
         </View>
       )}
@@ -100,18 +87,8 @@ export default function ScanScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  camera: { flex: 1 },
-  capture: {
-    position: 'absolute',
-    bottom: spacing.l,
-    alignSelf: 'center',
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    borderWidth: 4,
-    borderColor: '#fff',
-    backgroundColor: '#fff',
-  },
+  image: { flex: 1 },
+  placeholder: { flex: 1, backgroundColor: '#000' },
   confirmRow: {
     position: 'absolute',
     bottom: spacing.l,

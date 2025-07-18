@@ -44,11 +44,18 @@ exports.scanReceipt = functions.https.onCall(async (data, context) => {
 
     const text = await response.text();
     if (!response.ok) {
-      functions.logger.error('TagGun request failed', { status: response.status, body: text });
-      throw new functions.https.HttpsError('internal', 'TagGun request failed', {
+      functions.logger.error('TagGun request failed', {
         status: response.status,
         body: text,
       });
+      throw new functions.https.HttpsError(
+        'internal',
+        `TagGun request failed: ${response.status} ${text}`,
+        {
+          status: response.status,
+          body: text,
+        }
+      );
     }
 
     const result = JSON.parse(text);

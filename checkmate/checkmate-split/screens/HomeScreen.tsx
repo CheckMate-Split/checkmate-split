@@ -51,7 +51,7 @@ export default function HomeScreen() {
       }
       const base64 = scannedImages[0];
 
-      const scan = httpsCallable(functions, 'scanReceipt');
+      const scan = httpsCallable(functions, 'parseReciept');
       const res = await scan({ image: base64 });
       navigation.navigate('CreateReceipt', { data: res.data, image: base64 });
     } catch (e) {
@@ -74,7 +74,7 @@ export default function HomeScreen() {
     if (pick.canceled) return;
     const base64 = pick.assets[0].base64 as string;
     try {
-      const scan = httpsCallable(functions, 'scanReceipt');
+      const scan = httpsCallable(functions, 'parseReciept');
       const res = await scan({ image: base64 });
       navigation.navigate('CreateReceipt', { data: res.data, image: base64 });
     } catch (e) {

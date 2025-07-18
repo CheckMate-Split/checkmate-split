@@ -42,16 +42,22 @@ exports.scanReceipt = functions.https.onCall(async (data, context) => {
       }),
     });
 
+    const text = await response.text();
     if (!response.ok) {
-      throw new Error(`TagGun error: ${response.status}`);
+      functions.logger.error('TagGun request failed', { status: response.status, body: text });
+      throw new functions.https.HttpsError('internal', 'TagGun request failed', {
+        status: response.status,
+        body: text,
+      });
     }
 
-    const result = await response.json();
-    return result;
+    const result = JSON.parse(text);
+    return { success: true, data: result };
   } catch (err) {
     console.error(err);
     throw new functions.https.HttpsError('internal', 'Failed to scan receipt', {
       uid: context.auth.uid,
+      message: err.message,
     });
   }
 });

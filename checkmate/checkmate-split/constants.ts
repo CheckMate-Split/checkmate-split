@@ -3,6 +3,7 @@ export const colors = {
   primaryBackground: '#ffffff',
   primary: '#1e53d3',
   text: '#333333',
+  petalGray: '#e4e4e4',
 };
 
 export const spacing = {

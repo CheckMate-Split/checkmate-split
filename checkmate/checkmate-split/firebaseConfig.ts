@@ -33,6 +33,11 @@ if (!getApps().length) {
 
 const db = getFirestore(app);
 const storage = getStorage(app);
-const functions = getFunctions(app);
+// Use explicit region for callable functions so the URL is predictable
+// and easier to debug.
+const functions = getFunctions(app, 'us-central1');
+
+console.log('Firebase project', app.options.projectId);
+console.log('Functions URL', `https://us-central1-${app.options.projectId}.cloudfunctions.net`);
 
 export { app, auth, db, storage, functions };

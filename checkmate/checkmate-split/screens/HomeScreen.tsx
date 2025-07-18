@@ -33,6 +33,7 @@ export default function HomeScreen() {
       return;
     }
     console.log('Scanning as', auth.currentUser.uid);
+    console.log('Functions project', functions.app.options.projectId);
     try {
       const { scannedImages, status } = await DocumentScanner.scanDocument({
         responseType: ResponseType.Base64,
@@ -59,6 +60,7 @@ export default function HomeScreen() {
       return;
     }
     console.log('Scanning as', auth.currentUser.uid);
+    console.log('Functions project', functions.app.options.projectId);
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') return;
     const pick = await ImagePicker.launchImageLibraryAsync({ base64: true });

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, FlatList } from 'react-native';
+import { StyleSheet, FlatList, ActivityIndicator, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { db } from '../firebaseConfig';
@@ -11,12 +11,14 @@ import { colors, spacing } from '../constants';
 
 export default function ReceiptsScreen() {
   const [receipts, setReceipts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const navigation = useNavigation<any>();
 
   useEffect(() => {
     const q = query(collection(db, 'receipts'), orderBy('createdAt', 'desc'));
     return onSnapshot(q, snap => {
       setReceipts(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      setLoading(false);
     });
   }, []);
 
@@ -30,13 +32,19 @@ export default function ReceiptsScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <PageHeader title="Receipts" />
-      <FlatList
-        data={receipts}
-        renderItem={renderItem}
-        keyExtractor={item => item.id}
-        contentContainerStyle={receipts.length === 0 && styles.emptyContainer}
-        ListEmptyComponent={<Text style={styles.emptyText}>no receipts yet</Text>}
-      />
+      {loading ? (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      ) : (
+        <FlatList
+          data={receipts}
+          renderItem={renderItem}
+          keyExtractor={item => item.id}
+          contentContainerStyle={receipts.length === 0 && styles.emptyContainer}
+          ListEmptyComponent={<Text style={styles.emptyText}>no receipts yet</Text>}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -55,5 +63,10 @@ const styles = StyleSheet.create({
   emptyText: {
     textAlign: 'center',
     marginTop: spacing.m,
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

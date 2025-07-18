@@ -33,6 +33,7 @@ export default function AccountScreen() {
   const [cashapp, setCashapp] = useState('');
   const [photo, setPhoto] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
   const emailValid = /^\S+@\S+\.\S+$/.test(email.trim());
 
   useEffect(() => {
@@ -64,14 +65,17 @@ export default function AccountScreen() {
 
   const handleSave = async () => {
     if (!user) return;
+    setSaving(true);
     setError('');
     if (!emailValid) {
       setError('Please enter a valid email.');
+      setSaving(false);
       return;
     }
     const uname = username.trim();
     if (!uname) {
       setError('Username is required.');
+      setSaving(false);
       return;
     }
     try {
@@ -79,11 +83,13 @@ export default function AccountScreen() {
       const res: any = await fn({ username: uname });
       if (!res.data?.available) {
         setError('Username already taken');
+        setSaving(false);
         return;
       }
     } catch (e) {
       console.error(e);
       setError('Failed to validate username');
+      setSaving(false);
       return;
     }
     let photoURL = photo || null;
@@ -117,6 +123,7 @@ export default function AccountScreen() {
     } else {
       navigation.goBack();
     }
+    setSaving(false);
   };
 
   return (
@@ -182,7 +189,8 @@ export default function AccountScreen() {
         <Button
           title="Save"
           onPress={handleSave}
-          disabled={!first || !last || !username || !emailValid}
+          disabled={!first || !last || !username || !emailValid || saving}
+          loading={saving}
           style={styles.saveButton}
         />
       </View>

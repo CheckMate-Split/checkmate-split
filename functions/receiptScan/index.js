@@ -6,7 +6,9 @@ const TAGGUN_KEY = '9eb1290f9f204bfca1c477905c74e0df';
 
 exports.scanReceipt = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
-    throw new functions.https.HttpsError('unauthenticated', 'User must be signed in');
+    throw new functions.https.HttpsError('unauthenticated', 'User must be signed in', {
+      auth: context.auth || null,
+    });
   }
 
   const image = data.image;
@@ -36,6 +38,8 @@ exports.scanReceipt = functions.https.onCall(async (data, context) => {
     return result;
   } catch (err) {
     console.error(err);
-    throw new functions.https.HttpsError('internal', 'Failed to scan receipt');
+    throw new functions.https.HttpsError('internal', 'Failed to scan receipt', {
+      uid: context.auth.uid,
+    });
   }
 });

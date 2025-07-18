@@ -4408,6 +4408,7 @@ __metadata:
     qrcode: "npm:^1.5.4"
     react: "npm:19.0.0"
     react-native: "npm:0.79.5"
+    react-native-document-scanner-plugin: "npm:^1.0.1"
     react-native-qrcode-svg: "npm:^6.3.15"
     react-native-safe-area-context: "npm:5.4.0"
     react-native-screens: "npm:~4.11.1"
@@ -8719,6 +8720,20 @@ __metadata:
   version: 19.1.0
   resolution: "react-is@npm:19.1.0"
   checksum: 10c0/b6c6cadd172d5d39f66d493700d137a5545c294a62ce0f8ec793d59794c97d2bed6bad227626f16bd0e90004ed7fdc8ed662a004e6edcf5d2b7ecb6e3040ea6b
+  languageName: node
+  linkType: hard
+
+"react-native-document-scanner-plugin@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "react-native-document-scanner-plugin@npm:1.0.1"
+  peerDependencies:
+    expo: ">=47.0.0"
+    react: "*"
+    react-native: "*"
+  peerDependenciesMeta:
+    expo:
+      optional: true
+  checksum: 10c0/5e0b96833d707ad22833882dd04c4d32cd2f3839e63d2dbc0a08a73543e7aafd4f28b5ff60c7f85d93b0cfd439b220aa86e643d9c1cdcbf8db203c8f3fe19a7c
   languageName: node
   linkType: hard
 

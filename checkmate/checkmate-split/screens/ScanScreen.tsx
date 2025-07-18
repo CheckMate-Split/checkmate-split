@@ -21,6 +21,7 @@ export default function ScanScreen() {
     const res = await ImagePicker.launchCameraAsync({
       quality: 1,
       base64: true,
+      allowsEditing: true,
     });
     if (!res.canceled) {
       setCaptured(res.assets[0]);

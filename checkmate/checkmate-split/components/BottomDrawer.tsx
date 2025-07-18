@@ -1,5 +1,6 @@
 import React from 'react';
 import { Modal, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import Button from './Button';
 import OutlineButton from './OutlineButton';
 import Text from './Text';
@@ -29,7 +30,10 @@ export default function BottomDrawer({
     >
       <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={onClose}>
         <TouchableOpacity activeOpacity={1} style={styles.content}>
-          <Text style={styles.message}>We couldn't read that reciept</Text>
+          <TouchableOpacity style={styles.close} onPress={onClose}>
+            <Ionicons name="close" size={24} color={colors.text} />
+          </TouchableOpacity>
+          <Text style={styles.message}>We can't read that reciept</Text>
           <Button
             title={mode === 'scan' ? 'Try a New Scan' : 'Try a New Upload'}
             onPress={() => {
@@ -73,11 +77,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   message: {
-    marginTop: 0,
-    marginBottom: spacing.l,
+    marginTop: spacing.s,
+    marginBottom: spacing.l * 1.5,
     fontSize: 28,
     fontWeight: 'bold',
     textAlign: 'center',
+  },
+  close: {
+    position: 'absolute',
+    right: spacing.m,
+    top: spacing.s,
   },
   button: {
     alignSelf: 'stretch',

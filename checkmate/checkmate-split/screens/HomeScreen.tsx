@@ -10,6 +10,7 @@ import DocumentScanner, {
 import { httpsCallable } from 'firebase/functions';
 import { useNavigation } from '@react-navigation/native';
 import { functions, auth } from '../firebaseConfig';
+import { Buffer } from 'buffer';
 import Button from '../components/Button';
 import OutlineButton from '../components/OutlineButton';
 import { colors, spacing } from '../constants';
@@ -33,6 +34,10 @@ export default function HomeScreen() {
       return;
     }
     console.log('Scanning as', auth.currentUser.uid);
+    console.log('Functions project', functions.app.options.projectId);
+    const token = await auth.currentUser.getIdToken();
+    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
+    console.log('Token aud', payload.aud);
     try {
       const { scannedImages, status } = await DocumentScanner.scanDocument({
         responseType: ResponseType.Base64,
@@ -46,7 +51,7 @@ export default function HomeScreen() {
       }
       const base64 = scannedImages[0];
 
-      const scan = httpsCallable(functions, 'scanReceipt');
+      const scan = httpsCallable(functions, 'parseReciept');
       const res = await scan({ image: base64 });
       navigation.navigate('CreateReceipt', { data: res.data, image: base64 });
     } catch (e) {
@@ -59,13 +64,17 @@ export default function HomeScreen() {
       return;
     }
     console.log('Scanning as', auth.currentUser.uid);
+    console.log('Functions project', functions.app.options.projectId);
+    const upToken = await auth.currentUser.getIdToken();
+    const upPayload = JSON.parse(Buffer.from(upToken.split('.')[1], 'base64').toString());
+    console.log('Token aud', upPayload.aud);
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') return;
     const pick = await ImagePicker.launchImageLibraryAsync({ base64: true });
     if (pick.canceled) return;
     const base64 = pick.assets[0].base64 as string;
     try {
-      const scan = httpsCallable(functions, 'scanReceipt');
+      const scan = httpsCallable(functions, 'parseReciept');
       const res = await scan({ image: base64 });
       navigation.navigate('CreateReceipt', { data: res.data, image: base64 });
     } catch (e) {

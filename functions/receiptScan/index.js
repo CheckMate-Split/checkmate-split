@@ -1,10 +1,22 @@
 const functions = require('firebase-functions');
 const fetch = require('node-fetch');
+const admin = require('firebase-admin');
+if (!admin.apps.length) {
+  admin.initializeApp();
+}
+
+
 
 // Callable function to proxy requests to TagGun API for receipt scanning
 const TAGGUN_KEY = '9eb1290f9f204bfca1c477905c74e0df';
 
 exports.scanReceipt = functions.https.onCall(async (data, context) => {
+  // Log invocation details to help troubleshoot issues with authentication
+  functions.logger.info('scanReceipt invoked', {
+    hasAuth: !!context.auth,
+    uid: context.auth ? context.auth.uid : null,
+  });
+
   if (!context.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be signed in', {
       auth: context.auth || null,

@@ -9,7 +9,7 @@ const {
 } = require('./stripeConnect');
 const { checkUsername } = require('./username');
 
-exports.scanReceipt = scanReceipt;
+exports.parseReciept = scanReceipt;
 exports.createStripeConnectLink = createStripeConnectLink;
 exports.createSetupIntent = createSetupIntent;
 exports.listPaymentMethods = listPaymentMethods;

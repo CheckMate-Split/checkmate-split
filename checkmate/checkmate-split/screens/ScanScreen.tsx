@@ -80,6 +80,7 @@ export default function ScanScreen() {
         onRetry={handleRetry}
         onManual={handleManual}
         onClose={() => setError(null)}
+        message={error?.message}
       />
     </SafeAreaView>
   );

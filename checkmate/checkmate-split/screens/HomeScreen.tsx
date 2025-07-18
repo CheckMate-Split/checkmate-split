@@ -104,6 +104,7 @@ export default function HomeScreen() {
         onRetry={handleUpload}
         onManual={handleManual}
         onClose={() => setUploadError(null)}
+        message={uploadError?.message}
       />
       <StatusBar style="dark" />
     </SafeAreaView>

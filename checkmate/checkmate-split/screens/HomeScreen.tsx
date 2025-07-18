@@ -55,7 +55,11 @@ export default function HomeScreen() {
       setUploading(true);
       const scan = httpsCallable(functions, 'parseReciept');
       const res: any = await scan({ image: base64 });
-      console.log('scan response', res);
+      console.log('scan response', JSON.stringify(res, null, 2));
+      console.log(
+        'line amounts',
+        JSON.stringify(res.data?.data?.lineAmounts || res.data?.lineAmounts || [], null, 2)
+      );
       const parsed = res.data?.data ?? res.data;
       navigation.navigate('CreateReceipt', { data: parsed, image: base64 });
     } catch (e: any) {

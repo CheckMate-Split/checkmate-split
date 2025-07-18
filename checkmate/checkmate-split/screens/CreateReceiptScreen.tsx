@@ -44,9 +44,9 @@ export default function CreateReceiptScreen() {
       price: String(i.amount?.data ?? ''),
       shared: !!i.shared,
     })) ||
-      (data?.lineItems || []).map((i: any) => ({
-        name: i.description,
-        price: String(i.amount?.data ?? ''),
+      (data?.lineItems || data?.lineAmounts || []).map((i: any) => ({
+        name: i.description || i.text?.data || '',
+        price: String(i.amount?.data ?? i.data ?? ''),
         shared: false,
       }))
   );

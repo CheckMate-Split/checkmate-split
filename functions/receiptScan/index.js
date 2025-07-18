@@ -55,9 +55,13 @@ exports.scanReceipt = functions.https.onCall(async (data, context) => {
     return { success: true, data: result };
   } catch (err) {
     console.error(err);
-    throw new functions.https.HttpsError('internal', 'Failed to scan receipt', {
-      uid: context.auth.uid,
-      message: err.message,
-    });
+    throw new functions.https.HttpsError(
+      'internal',
+      `Failed to scan receipt: ${err.message}`,
+      {
+        uid: context.auth.uid,
+        message: err.message,
+      }
+    );
   }
 });

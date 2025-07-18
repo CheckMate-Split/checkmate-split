@@ -17,7 +17,8 @@ import Text from '../components/Text';
 import { auth, db, storage, functions } from '../firebaseConfig';
 import { httpsCallable } from 'firebase/functions';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref, uploadString, getDownloadURL } from 'firebase/storage';
+import * as FileSystem from 'expo-file-system';
 import { updateProfile } from 'firebase/auth';
 
 export default function AccountScreen() {
@@ -94,9 +95,12 @@ export default function AccountScreen() {
     }
     let photoURL = photo || null;
     if (photo && !photo.startsWith('https://')) {
-      const blob = await fetch(photo).then((r) => r.blob());
+      const base64 = await FileSystem.readAsStringAsync(photo, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
       const storageRef = ref(storage, `avatars/${user.uid}`);
-      await uploadBytes(storageRef, blob);
+      const dataUrl = `data:image/jpeg;base64,${base64}`;
+      await uploadString(storageRef, dataUrl, 'data_url');
       photoURL = await getDownloadURL(storageRef);
     }
     if (photoURL !== photo) {

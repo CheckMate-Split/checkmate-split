@@ -15,6 +15,7 @@ import TermsPrivacyScreen from './screens/TermsPrivacyScreen';
 import SupportFaqScreen from './screens/SupportFaqScreen';
 import ConfirmScreen from './screens/ConfirmScreen';
 import CreateReceiptScreen from './screens/CreateReceiptScreen';
+import ScanScreen from './screens/ScanScreen';
 import ReceiptScreen from './screens/ReceiptScreen';
 import ClaimItemsScreen from './screens/ClaimItemsScreen';
 import ManageReceiptScreen from './screens/ManageReceiptScreen';
@@ -34,6 +35,7 @@ export type RootStackParamList = {
 
 export type HomeStackParamList = {
   Home: undefined;
+  Scan: undefined;
   CreateReceipt: {
     data?: any;
     image?: string;
@@ -78,6 +80,7 @@ function HomeStack() {
   return (
     <HomeStackNav.Navigator screenOptions={{ headerShown: false }}>
       <HomeStackNav.Screen name="Home" component={HomeScreen} />
+      <HomeStackNav.Screen name="Scan" component={ScanScreen} />
       <HomeStackNav.Screen name="CreateReceipt" component={CreateReceiptScreen} />
       <HomeStackNav.Screen name="Confirm" component={ConfirmScreen} />
       <HomeStackNav.Screen name="ClaimItems" component={ClaimItemsScreen} />

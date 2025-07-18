@@ -10,7 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { addDoc, collection, serverTimestamp, doc, deleteDoc, updateDoc } from 'firebase/firestore';
-import { ref, uploadString } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Button from '../components/Button';
 import OutlineButton from '../components/OutlineButton';
 import Text from '../components/Text';
@@ -43,10 +43,24 @@ export default function CreateReceiptScreen() {
       name: i.description,
       price: String(i.amount?.data ?? ''),
       shared: !!i.shared,
-    })) || []
+    })) ||
+      (
+        data?.lineItems ||
+        data?.entities?.productLineItems ||
+        data?.lineAmounts ||
+        []
+      ).map((i: any) => ({
+        name: i.description || i.text?.data || i.data?.name?.data || '',
+        price: String(
+          i.amount?.data ?? i.data?.totalPrice?.data ?? i.data ?? ''
+        ),
+        shared: false,
+      }))
   );
   const [date, setDate] = useState(
-    receipt?.date ? new Date(receipt.date) : new Date()
+    receipt?.date
+      ? new Date(receipt.date)
+      : new Date(data?.date?.data || Date.now())
   );
   const valid = name && items.every(i => i.name && i.price);
 
@@ -62,17 +76,30 @@ export default function CreateReceiptScreen() {
             responsible: user.uid,
           }))
         : (data?.lineItems || []).map((item: any) => ({
-            ...item,
+            description:
+              item.description ||
+              item.text?.data ||
+              item.data?.name?.data ||
+              '',
+            amount: { data: item.amount?.data ?? item.data?.totalPrice?.data },
             responsible: user.uid,
             shared: false,
           }));
       let id = receipt?.id;
+      let imageUrl = receipt?.imageUrl || '';
+      const sanitizedData = {
+        description,
+        lineItems: parsedItems,
+        totalAmount: data?.totalAmount?.data ?? null,
+        taxAmount: data?.taxAmount?.data ?? null,
+      };
+
       if (edit && id) {
         await updateDoc(doc(db, 'receipts', id), {
           name,
           description,
           date: date.toISOString(),
-          data: { ...data, description, lineItems: parsedItems },
+          data: sanitizedData,
         });
       } else {
         const docRef = await addDoc(collection(db, 'receipts'), {
@@ -80,24 +107,26 @@ export default function CreateReceiptScreen() {
           description,
           date: date.toISOString(),
           payer: user.uid,
-          data: { ...data, description, lineItems: parsedItems },
+          data: sanitizedData,
           createdAt: serverTimestamp(),
         });
         id = docRef.id;
         if (image) {
-          await uploadString(
-            ref(storage, `receipts/${id}.jpg`),
-            image,
-            'base64'
-          );
+          const imgRef = ref(storage, `receipts/${id}.jpg`);
+          const dataUrl = `data:image/jpeg;base64,${image}`;
+          const blob = await (await fetch(dataUrl)).blob();
+          await uploadBytes(imgRef, blob);
+          imageUrl = await getDownloadURL(imgRef);
+          await updateDoc(docRef, { imageUrl });
         }
       }
       const localReceipt = {
         id,
         name,
         description,
-        data: { ...data, description, lineItems: parsedItems },
+        data: sanitizedData,
         createdAt: receipt?.createdAt || new Date().toISOString(),
+        imageUrl,
       };
       navigation.navigate('ClaimItems', { receipt: localReceipt });
     } catch (e) {

@@ -1,5 +1,6 @@
 const functions = require('firebase-functions');
 const fetch = require('node-fetch');
+const FormData = require('form-data');
 const admin = require('firebase-admin');
 if (!admin.apps.length) {
   admin.initializeApp();
@@ -27,31 +28,67 @@ exports.scanReceipt = functions.https.onCall(async (data, context) => {
   if (!image) {
     throw new functions.https.HttpsError('invalid-argument', 'Missing image data');
   }
+  const size = Buffer.byteLength(image, 'base64');
+  if (size > 20 * 1024 * 1024) {
+    throw new functions.https.HttpsError('invalid-argument', 'Image too large');
+  }
 
   try {
+    const form = new FormData();
+    form.append('file', Buffer.from(image, 'base64'), { filename: 'receipt.jpg' });
+    form.append('extractLineItems', 'true');
+    form.append('extractTime', 'false');
+    form.append('refresh', 'false');
+    form.append('incognito', 'false');
     const response = await fetch('https://api.taggun.io/api/receipt/v1/verbose/file', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
         apikey: TAGGUN_KEY,
+        ...form.getHeaders(),
       },
-      body: JSON.stringify({
-        file: image,
-        filename: 'receipt.jpg',
-        incognito: true,
-      }),
+      body: form,
     });
 
+    const text = await response.text();
     if (!response.ok) {
-      throw new Error(`TagGun error: ${response.status}`);
+      functions.logger.error('TagGun request failed', {
+        status: response.status,
+        body: text,
+      });
+      throw new functions.https.HttpsError(
+        'internal',
+        `TagGun request failed: ${response.status} ${text}`,
+        {
+          status: response.status,
+          body: text,
+        }
+      );
     }
 
-    const result = await response.json();
-    return result;
+    const result = JSON.parse(text);
+    const lineItems = [];
+    if (result.entities && Array.isArray(result.entities.productLineItems)) {
+      for (const item of result.entities.productLineItems) {
+        lineItems.push({
+          description: item.data?.name?.data || item.text || '',
+          amount: { data: item.data?.totalPrice?.data },
+        });
+      }
+    }
+    if (result.taxAmount && result.taxAmount.data != null) {
+      lineItems.push({ description: 'Tax', amount: { data: result.taxAmount.data } });
+    }
+    result.lineItems = lineItems;
+    return { success: true, data: result };
   } catch (err) {
     console.error(err);
-    throw new functions.https.HttpsError('internal', 'Failed to scan receipt', {
-      uid: context.auth.uid,
-    });
+    const msg = err && err.message ? err.message : String(err);
+    throw new functions.https.HttpsError(
+      'internal',
+      `Failed to scan receipt: ${msg}`,
+      {
+        uid: context.auth.uid,
+      }
+    );
   }
 });

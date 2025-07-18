@@ -1,12 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Image, View, Dimensions } from 'react-native';
+import { StyleSheet, Image, View, Dimensions, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
-import DocumentScanner, {
-  ResponseType,
-  ScanDocumentResponseStatus,
-} from 'react-native-document-scanner-plugin';
 import { httpsCallable } from 'firebase/functions';
 import { useNavigation } from '@react-navigation/native';
 import { functions, auth } from '../firebaseConfig';
@@ -15,11 +11,14 @@ import Button from '../components/Button';
 import OutlineButton from '../components/OutlineButton';
 import { colors, spacing } from '../constants';
 import Text from '../components/Text';
+import BottomDrawer from '../components/BottomDrawer';
 
 export default function HomeScreen() {
   const navigation = useNavigation<any>();
 
   const [logoSize, setLogoSize] = useState({ width: 0, height: 0 });
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<any>(null);
 
   useEffect(() => {
     const { width: screenWidth } = Dimensions.get('window');
@@ -29,34 +28,8 @@ export default function HomeScreen() {
     setLogoSize({ width: targetWidth, height: targetHeight });
   }, []);
 
-  const handleScan = async () => {
-    if (!auth.currentUser) {
-      return;
-    }
-    console.log('Scanning as', auth.currentUser.uid);
-    console.log('Functions project', functions.app.options.projectId);
-    const token = await auth.currentUser.getIdToken();
-    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
-    console.log('Token aud', payload.aud);
-    try {
-      const { scannedImages, status } = await DocumentScanner.scanDocument({
-        responseType: ResponseType.Base64,
-      });
-      if (
-        status !== ScanDocumentResponseStatus.Success ||
-        !scannedImages ||
-        scannedImages.length === 0
-      ) {
-        return;
-      }
-      const base64 = scannedImages[0];
-
-      const scan = httpsCallable(functions, 'parseReciept');
-      const res = await scan({ image: base64 });
-      navigation.navigate('CreateReceipt', { data: res.data, image: base64 });
-    } catch (e) {
-      console.error(e);
-    }
+  const handleScan = () => {
+    navigation.navigate('Scan');
   };
 
   const handleUpload = async () => {
@@ -73,12 +46,34 @@ export default function HomeScreen() {
     const pick = await ImagePicker.launchImageLibraryAsync({ base64: true });
     if (pick.canceled) return;
     const base64 = pick.assets[0].base64 as string;
+    const bytes = (base64.length * 3) / 4;
+    if (bytes > 20 * 1024 * 1024) {
+      setUploadError(new Error('Image too large'));
+      return;
+    }
     try {
+      setUploading(true);
       const scan = httpsCallable(functions, 'parseReciept');
-      const res = await scan({ image: base64 });
-      navigation.navigate('CreateReceipt', { data: res.data, image: base64 });
-    } catch (e) {
+      const res: any = await scan({ image: base64 });
+      console.log('scan response', JSON.stringify(res, null, 2));
+      console.log(
+        'product line items',
+        JSON.stringify(
+          res.data?.data?.entities?.productLineItems ||
+            res.data?.entities?.productLineItems ||
+            [],
+          null,
+          2
+        )
+      );
+      console.log('scan date', res.data?.data?.date?.data || res.data?.date?.data);
+      const parsed = res.data?.data ?? res.data;
+      navigation.navigate('CreateReceipt', { data: parsed, image: base64 });
+    } catch (e: any) {
       console.error(e);
+      setUploadError(e);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -115,6 +110,19 @@ export default function HomeScreen() {
           />
         </View>
       </View>
+      {uploading && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.loadingText}>Processing reciept…</Text>
+        </View>
+      )}
+      <BottomDrawer
+        visible={!!uploadError}
+        mode="upload"
+        onRetry={handleUpload}
+        onManual={handleManual}
+        onClose={() => setUploadError(null)}
+      />
       <StatusBar style="dark" />
     </SafeAreaView>
   );
@@ -156,6 +164,16 @@ const styles = StyleSheet.create({
   },
   extraButton: {
     flex: 1,
+  },
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: colors.petalGray,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: spacing.m,
+    fontWeight: 'bold',
   },
 });
 

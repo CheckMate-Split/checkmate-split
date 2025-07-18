@@ -10,12 +10,28 @@ interface Props {
   icon?: string;
   disabled?: boolean;
   loading?: boolean;
+  textColor?: string;
+  borderColor?: string;
 }
 
-export default function OutlineButton({ title, onPress, style, icon, disabled, loading }: Props) {
+export default function OutlineButton({
+  title,
+  onPress,
+  style,
+  icon,
+  disabled,
+  loading,
+  textColor = colors.text,
+  borderColor = '#ccc',
+}: Props) {
   return (
     <TouchableOpacity
-      style={[styles.button, style, (disabled || loading) && styles.disabled]}
+      style={[
+        styles.button,
+        { borderColor },
+        style,
+        (disabled || loading) && styles.disabled,
+      ]}
       onPress={onPress}
       disabled={disabled || loading}
     >
@@ -25,9 +41,14 @@ export default function OutlineButton({ title, onPress, style, icon, disabled, l
         ) : (
           <>
             {icon && (
-              <Ionicons name={icon as any} size={20} color={colors.text} style={styles.icon} />
+              <Ionicons
+                name={icon as any}
+                size={20}
+                color={textColor}
+                style={styles.icon}
+              />
             )}
-            <Text style={styles.text}>{title}</Text>
+            <Text style={[styles.text, { color: textColor }]}>{title}</Text>
           </>
         )}
       </View>
@@ -38,7 +59,6 @@ export default function OutlineButton({ title, onPress, style, icon, disabled, l
 const styles = StyleSheet.create({
   button: {
     backgroundColor: colors.primaryBackground,
-    borderColor: '#ccc',
     borderWidth: 1,
     padding: spacing.l,
     borderRadius: 8,

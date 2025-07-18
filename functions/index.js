@@ -7,6 +7,7 @@ const {
   getConnectStatus,
   createPaymentIntent,
 } = require('./stripeConnect');
+const { checkUsername } = require('./username');
 
 exports.scanReceipt = scanReceipt;
 exports.createStripeConnectLink = createStripeConnectLink;
@@ -15,3 +16,4 @@ exports.listPaymentMethods = listPaymentMethods;
 exports.getBalance = getBalance;
 exports.getConnectStatus = getConnectStatus;
 exports.createPaymentIntent = createPaymentIntent;
+exports.checkUsername = checkUsername;

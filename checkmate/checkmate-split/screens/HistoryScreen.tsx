@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet } from 'react-native';
 import * as Linking from 'expo-linking';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -13,8 +13,10 @@ import { functions } from '../firebaseConfig';
 
 export default function HistoryScreen() {
   const { initPaymentSheet, presentPaymentSheet, confirmPayment } = useStripe();
+  const [loadingType, setLoadingType] = useState<null | 'card' | 'cashApp'>(null);
 
   const handleCheckout = async (cashAppOnly?: boolean) => {
+    setLoadingType(cashAppOnly ? 'cashApp' : 'card');
     try {
       const createIntent = httpsCallable(functions, 'createPaymentIntent');
       const res: any = await createIntent({ cashAppOnly });
@@ -44,14 +46,27 @@ export default function HistoryScreen() {
     } catch (e) {
       console.error(e);
     }
+    setLoadingType(null);
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <PageHeader title="History" />
       <Text style={styles.empty}>no past receipts</Text>
-      <Button title="Sample Checkout" onPress={() => handleCheckout(false)} style={styles.button} />
-      <OutlineButton title="Pay with Cash App" onPress={() => handleCheckout(true)} style={styles.button} />
+      <Button
+        title="Sample Checkout"
+        onPress={() => handleCheckout(false)}
+        style={styles.button}
+        loading={loadingType === 'card'}
+        disabled={loadingType !== null}
+      />
+      <OutlineButton
+        title="Pay with Cash App"
+        onPress={() => handleCheckout(true)}
+        style={styles.button}
+        loading={loadingType === 'cashApp'}
+        disabled={loadingType !== null}
+      />
     </SafeAreaView>
   );
 }

@@ -7,8 +7,9 @@ Firebase to deploy.
 
 Current structure:
 
-- `receiptScan/` &mdash; contains `scanReceipt` for receipt OCR
+- `receiptScan/` &mdash; contains `scanReceipt` (callable, requires auth) for receipt OCR
 - `stripeConnect/` &mdash; contains `createStripeConnectLink` for onboarding
+- `username/` &mdash; contains `checkUsername` for validating unique usernames
 
 Add new functionality by creating a folder with an `index.js` and exporting your
 function in `functions/index.js`.

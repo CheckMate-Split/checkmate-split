@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
 import * as Linking from 'expo-linking';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -8,6 +8,7 @@ import HomeScreen from './screens/HomeScreen';
 import HistoryScreen from './screens/HistoryScreen';
 import ReceiptsScreen from './screens/ReceiptsScreen';
 import AccountScreen from './screens/AccountScreen';
+import LoginScreen from './screens/LoginScreen';
 import PaymentMethodsScreen from './screens/PaymentMethodsScreen';
 import NotificationsScreen from './screens/NotificationsScreen';
 import TermsPrivacyScreen from './screens/TermsPrivacyScreen';
@@ -19,10 +20,13 @@ import ClaimItemsScreen from './screens/ClaimItemsScreen';
 import ManageReceiptScreen from './screens/ManageReceiptScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import { colors } from './constants';
-import { auth } from './firebaseConfig';
-import { signInAnonymously } from 'firebase/auth';
+import { auth, db } from './firebaseConfig';
+import { onAuthStateChanged } from 'firebase/auth';
+import { doc, onSnapshot } from 'firebase/firestore';
 
 export type RootStackParamList = {
+  Login: undefined;
+  AccountSetup: undefined;
   Tabs: undefined;
   Receipt: { id: string; receipt: any };
   ManageReceipt: { receipt: any };
@@ -139,15 +143,59 @@ function MainTabs() {
 }
 
 export default function App() {
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const navigationRef = useNavigationContainerRef();
+  const [navReady, setNavReady] = useState(false);
+
   useEffect(() => {
-    if (!auth.currentUser) {
-      signInAnonymously(auth).catch(console.error);
-    }
+    let unsubProfile: (() => void) | undefined;
+    const unsubAuth = onAuthStateChanged(auth, (u) => {
+      const valid = u && !u.isAnonymous ? u : null;
+      setUser(valid);
+      if (unsubProfile) unsubProfile();
+      if (valid) {
+        unsubProfile = onSnapshot(doc(db, 'users', valid.uid), (snap) => {
+          setProfile(snap.exists() ? snap.data() : null);
+        });
+      } else {
+        setProfile(null);
+      }
+      setLoading(false);
+    });
+
+    return () => {
+      unsubAuth();
+      if (unsubProfile) unsubProfile();
+    };
   }, []);
 
+  useEffect(() => {
+    if (loading || !navReady) return;
+    if (!user) {
+      navigationRef.reset({ index: 0, routes: [{ name: 'Login' }] });
+    } else if (!profile || !profile.first || !profile.last || !profile.username || !profile.email) {
+      navigationRef.reset({
+        index: 0,
+        routes: [{ name: 'AccountSetup', params: { initial: true } }],
+      });
+    } else {
+      navigationRef.reset({ index: 0, routes: [{ name: 'Tabs' }] });
+    }
+  }, [user, profile, loading, navReady, navigationRef]);
+
+  if (loading) return null;
+
   return (
-    <NavigationContainer linking={linking}>
+    <NavigationContainer
+      ref={navigationRef}
+      linking={linking}
+      onReady={() => setNavReady(true)}
+    >
       <RootStack.Navigator screenOptions={{ headerShown: false }}>
+        <RootStack.Screen name="Login" component={LoginScreen} />
+        <RootStack.Screen name="AccountSetup" component={AccountScreen} />
         <RootStack.Screen name="Tabs" component={MainTabs} />
         <RootStack.Screen name="Receipt" component={ReceiptScreen} />
         <RootStack.Screen name="ManageReceipt" component={ManageReceiptScreen} />

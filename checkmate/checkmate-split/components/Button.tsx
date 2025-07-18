@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ViewStyle, StyleProp } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, ViewStyle, StyleProp, ActivityIndicator } from 'react-native';
 import { colors, spacing } from '../constants';
 
 interface Props {
@@ -7,16 +7,17 @@ interface Props {
   onPress: () => void;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
+  loading?: boolean;
 }
 
-export default function Button({ title, onPress, disabled, style }: Props) {
+export default function Button({ title, onPress, disabled, style, loading }: Props) {
   return (
     <TouchableOpacity
-      style={[styles.button, style, disabled && styles.disabled]}
+      style={[styles.button, style, (disabled || loading) && styles.disabled]}
       onPress={onPress}
-      disabled={disabled}
+      disabled={disabled || loading}
     >
-      <Text style={styles.text}>{title}</Text>
+      {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.text}>{title}</Text>}
     </TouchableOpacity>
   );
 }

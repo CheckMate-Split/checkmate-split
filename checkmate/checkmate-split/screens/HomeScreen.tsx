@@ -3,9 +3,13 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Image, View, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
+import DocumentScanner, {
+  ResponseType,
+  ScanDocumentResponseStatus,
+} from 'react-native-document-scanner-plugin';
 import { httpsCallable } from 'firebase/functions';
 import { useNavigation } from '@react-navigation/native';
-import { functions } from '../firebaseConfig';
+import { functions, auth } from '../firebaseConfig';
 import Button from '../components/Button';
 import OutlineButton from '../components/OutlineButton';
 import { colors, spacing } from '../constants';
@@ -25,15 +29,23 @@ export default function HomeScreen() {
   }, []);
 
   const handleScan = async () => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== 'granted') {
+    if (!auth.currentUser) {
       return;
     }
-    const capture = await ImagePicker.launchCameraAsync({ base64: true });
-    if (capture.canceled) return;
-    const base64 = capture.assets[0].base64 as string;
-
+    console.log('Scanning as', auth.currentUser.uid);
     try {
+      const { scannedImages, status } = await DocumentScanner.scanDocument({
+        responseType: ResponseType.Base64,
+      });
+      if (
+        status !== ScanDocumentResponseStatus.Success ||
+        !scannedImages ||
+        scannedImages.length === 0
+      ) {
+        return;
+      }
+      const base64 = scannedImages[0];
+
       const scan = httpsCallable(functions, 'scanReceipt');
       const res = await scan({ image: base64 });
       navigation.navigate('CreateReceipt', { data: res.data, image: base64 });
@@ -43,6 +55,10 @@ export default function HomeScreen() {
   };
 
   const handleUpload = async () => {
+    if (!auth.currentUser) {
+      return;
+    }
+    console.log('Scanning as', auth.currentUser.uid);
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') return;
     const pick = await ImagePicker.launchImageLibraryAsync({ base64: true });

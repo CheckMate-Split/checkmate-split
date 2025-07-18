@@ -69,7 +69,7 @@ export default function ScanScreen() {
           ref={cameraRef}
           style={styles.camera}
           ratio="16:9"
-          type={CameraType.back}
+          type={(CameraType as any)?.back ?? ('back' as CameraType)}
         />
       ) : (
         <Image source={{ uri: captured.uri }} style={styles.camera} />

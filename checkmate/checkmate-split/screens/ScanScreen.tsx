@@ -44,9 +44,16 @@ export default function ScanScreen() {
       const res: any = await scan({ image: captured.base64 });
       console.log('scan response', JSON.stringify(res, null, 2));
       console.log(
-        'line amounts',
-        JSON.stringify(res.data?.data?.lineAmounts || res.data?.lineAmounts || [], null, 2)
+        'product line items',
+        JSON.stringify(
+          res.data?.data?.entities?.productLineItems ||
+            res.data?.entities?.productLineItems ||
+            [],
+          null,
+          2
+        )
       );
+      console.log('scan date', res.data?.data?.date?.data || res.data?.date?.data);
       const parsed = res.data?.data ?? res.data;
       navigation.navigate('CreateReceipt', { data: parsed, image: captured.base64 });
     } catch (e: any) {

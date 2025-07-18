@@ -73,8 +73,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   message: {
-    marginTop: spacing.s,
-    marginBottom: spacing.m,
+    marginTop: 0,
+    marginBottom: spacing.l,
     fontSize: 28,
     fontWeight: 'bold',
     textAlign: 'center',

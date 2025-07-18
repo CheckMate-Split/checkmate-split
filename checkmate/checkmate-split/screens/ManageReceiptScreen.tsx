@@ -6,6 +6,7 @@ import {
   Modal,
   Share,
   TouchableOpacity,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
@@ -30,6 +31,7 @@ export default function ManageReceiptScreen() {
 
   const [qrVisible, setQrVisible] = useState(false);
   const [payVisible, setPayVisible] = useState(false);
+  const [imageVisible, setImageVisible] = useState(false);
 
   const created = receipt.createdAt
     ? new Date(receipt.createdAt.seconds
@@ -164,6 +166,13 @@ export default function ManageReceiptScreen() {
           style={styles.shareButton}
           icon="link-outline"
         />
+        <OutlineButton
+          title="View Image"
+          onPress={() => setImageVisible(true)}
+          style={styles.shareButton}
+          icon="image"
+          disabled={!receipt.imageUrl}
+        />
       </View>
       <Modal
         visible={payVisible}
@@ -191,6 +200,21 @@ export default function ManageReceiptScreen() {
           <View style={styles.modalContent}>
             <QRCode value={receipt.id} size={200} />
             <OutlineButton title="Close" onPress={() => setQrVisible(false)} style={styles.closeButton} />
+          </View>
+        </TouchableOpacity>
+      </Modal>
+      <Modal
+        visible={imageVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setImageVisible(false)}
+      >
+        <TouchableOpacity style={styles.modalOverlay} onPress={() => setImageVisible(false)}>
+          <View style={styles.modalContent}>
+            {receipt.imageUrl && (
+              <Image source={{ uri: receipt.imageUrl }} style={styles.receiptImage} resizeMode="contain" />
+            )}
+            <OutlineButton title="Close" onPress={() => setImageVisible(false)} style={styles.closeButton} />
           </View>
         </TouchableOpacity>
       </Modal>
@@ -273,5 +297,9 @@ const styles = StyleSheet.create({
   closeButton: {
     marginTop: spacing.l,
     alignSelf: 'stretch',
+  },
+  receiptImage: {
+    width: '100%',
+    height: 400,
   },
 });

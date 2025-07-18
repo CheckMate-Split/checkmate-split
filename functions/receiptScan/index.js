@@ -61,6 +61,19 @@ exports.scanReceipt = functions.https.onCall(async (data, context) => {
     }
 
     const result = JSON.parse(text);
+    const lineItems = [];
+    if (result.entities && Array.isArray(result.entities.productLineItems)) {
+      for (const item of result.entities.productLineItems) {
+        lineItems.push({
+          description: item.data?.name?.data || item.text || '',
+          amount: { data: item.data?.totalPrice?.data },
+        });
+      }
+    }
+    if (result.taxAmount && result.taxAmount.data != null) {
+      lineItems.push({ description: 'Tax', amount: { data: result.taxAmount.data } });
+    }
+    result.lineItems = lineItems;
     return { success: true, data: result };
   } catch (err) {
     console.error(err);

@@ -5,7 +5,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import HomeScreen from './screens/HomeScreen';
-import HistoryScreen from './screens/HistoryScreen';
+import FriendsScreen from './screens/FriendsScreen';
 import ReceiptsScreen from './screens/ReceiptsScreen';
 import AccountScreen from './screens/AccountScreen';
 import LoginScreen from './screens/LoginScreen';
@@ -61,14 +61,14 @@ export type ReceiptsStackParamList = {
   ReceiptsHome: undefined;
 };
 
-export type HistoryStackParamList = {
-  HistoryHome: undefined;
+export type FriendsStackParamList = {
+  FriendsHome: undefined;
 };
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const HomeStackNav = createNativeStackNavigator<HomeStackParamList>();
 const SettingsStackNav = createNativeStackNavigator<SettingsStackParamList>();
-const HistoryStackNav = createNativeStackNavigator<HistoryStackParamList>();
+const FriendsStackNav = createNativeStackNavigator<FriendsStackParamList>();
 const ReceiptsStackNav = createNativeStackNavigator<ReceiptsStackParamList>();
 const Tab = createBottomTabNavigator();
 
@@ -110,11 +110,11 @@ function ReceiptsStack() {
   );
 }
 
-function HistoryStack() {
+function FriendsStack() {
   return (
-    <HistoryStackNav.Navigator screenOptions={{ headerShown: false }}>
-      <HistoryStackNav.Screen name="HistoryHome" component={HistoryScreen} />
-    </HistoryStackNav.Navigator>
+    <FriendsStackNav.Navigator screenOptions={{ headerShown: false }}>
+      <FriendsStackNav.Screen name="FriendsHome" component={FriendsScreen} />
+    </FriendsStackNav.Navigator>
   );
 }
 
@@ -125,7 +125,7 @@ function MainTabs() {
         tabBarIcon: ({ color, size }) => {
           let icon = 'home';
           if (route.name === 'Receipts') icon = 'receipt';
-          else if (route.name === 'History') icon = 'time';
+          else if (route.name === 'Friends') icon = 'people';
           else if (route.name === 'Settings') icon = 'settings';
           return <Ionicons name={icon as any} size={size} color={color} />;
         },
@@ -139,7 +139,7 @@ function MainTabs() {
         options={{ title: 'Home', headerShown: false }}
       />
       <Tab.Screen name="Receipts" component={ReceiptsStack} options={{ headerShown: false }} />
-      <Tab.Screen name="History" component={HistoryStack} options={{ headerShown: false }} />
+      <Tab.Screen name="Friends" component={FriendsStack} options={{ headerShown: false }} />
       <Tab.Screen name="Settings" component={SettingsStack} options={{ headerShown: false }} />
     </Tab.Navigator>
   );

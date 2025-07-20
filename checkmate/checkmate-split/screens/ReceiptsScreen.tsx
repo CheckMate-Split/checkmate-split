@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, FlatList, ActivityIndicator, View } from 'react-native';
+import {
+  StyleSheet,
+  FlatList,
+  ActivityIndicator,
+  View,
+  TouchableOpacity,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { db } from '../firebaseConfig';
@@ -12,6 +18,7 @@ import { colors, spacing } from '../constants';
 export default function ReceiptsScreen() {
   const [receipts, setReceipts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<'active' | 'past'>('active');
   const navigation = useNavigation<any>();
 
   useEffect(() => {
@@ -21,6 +28,21 @@ export default function ReceiptsScreen() {
       setLoading(false);
     });
   }, []);
+
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 30);
+  const activeReceipts = receipts.filter(r => {
+    const created = r.createdAt
+      ? new Date(r.createdAt.seconds ? r.createdAt.seconds * 1000 : r.createdAt)
+      : new Date();
+    return created >= cutoff;
+  });
+  const pastReceipts = receipts.filter(r => {
+    const created = r.createdAt
+      ? new Date(r.createdAt.seconds ? r.createdAt.seconds * 1000 : r.createdAt)
+      : new Date();
+    return created < cutoff;
+  });
 
   const renderItem = ({ item }: { item: any }) => (
     <ReceiptCard
@@ -32,17 +54,36 @@ export default function ReceiptsScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <PageHeader title="Receipts" />
+      <View style={styles.tabs}>
+        <TouchableOpacity
+          onPress={() => setTab('active')}
+          style={[styles.tab, tab === 'active' && styles.tabSelected]}
+        >
+          <Text style={[styles.tabText, tab === 'active' && styles.tabTextSelected]}>Active</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setTab('past')}
+          style={[styles.tab, tab === 'past' && styles.tabSelected]}
+        >
+          <Text style={[styles.tabText, tab === 'past' && styles.tabTextSelected]}>Past</Text>
+        </TouchableOpacity>
+      </View>
       {loading ? (
         <View style={styles.loaderContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
       ) : (
         <FlatList
-          data={receipts}
+          data={tab === 'active' ? activeReceipts : pastReceipts}
           renderItem={renderItem}
           keyExtractor={item => item.id}
-          contentContainerStyle={receipts.length === 0 && styles.emptyContainer}
-          ListEmptyComponent={<Text style={styles.emptyText}>no receipts yet</Text>}
+          contentContainerStyle={
+            (tab === 'active' ? activeReceipts.length === 0 : pastReceipts.length === 0) &&
+            styles.emptyContainer
+          }
+          ListEmptyComponent={
+            <Text style={styles.emptyText}>no receipts yet</Text>
+          }
         />
       )}
     </SafeAreaView>
@@ -68,5 +109,27 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  tabs: {
+    flexDirection: 'row',
+    marginBottom: spacing.m,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: spacing.s,
+    alignItems: 'center',
+    borderBottomWidth: 2,
+    borderColor: 'transparent',
+  },
+  tabSelected: {
+    borderColor: colors.primary,
+  },
+  tabText: {
+    fontSize: 18,
+    color: '#666',
+  },
+  tabTextSelected: {
+    color: colors.primary,
+    fontWeight: '600',
   },
 });

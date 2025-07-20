@@ -236,10 +236,12 @@ export default function CreateReceiptScreen() {
         <View style={styles.footer}>
           <Button title="Save" onPress={handleSave} disabled={!valid} style={styles.saveButton} />
           {edit && (
-            <Button
+            <OutlineButton
               title="End Request"
               onPress={handleDelete}
-              style={[styles.saveButton, styles.deleteButton]}
+              style={[styles.saveButton, styles.endButton]}
+              textColor={colors.pinkRed}
+              borderColor={colors.pinkRed}
             />
           )}
         </View>
@@ -302,9 +304,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   saveButton: { width: '90%', alignSelf: 'center' },
-  deleteButton: {
-    backgroundColor: '#ff3b30',
+  endButton: {
     marginTop: spacing.m,
+    alignSelf: 'center',
+    width: '90%',
   },
   datePicker: { marginTop: spacing.m },
 });

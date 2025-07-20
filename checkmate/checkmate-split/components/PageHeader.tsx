@@ -8,11 +8,12 @@ interface Props {
   title: string;
   onBack?: () => void;
   right?: React.ReactNode;
+  noTopMargin?: boolean;
 }
 
-export default function PageHeader({ title, onBack, right }: Props) {
+export default function PageHeader({ title, onBack, right, noTopMargin }: Props) {
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, noTopMargin && styles.noMarginTop]}>
       <View style={styles.row}>
         {onBack && (
           <TouchableOpacity onPress={onBack} style={styles.backButton}>
@@ -35,6 +36,9 @@ const styles = StyleSheet.create({
   container: {
     marginTop: spacing.xl,
     marginBottom: spacing.l,
+  },
+  noMarginTop: {
+    marginTop: 0,
   },
   row: {
     flexDirection: 'row',
@@ -63,6 +67,6 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#ccc',
     alignSelf: 'stretch',
-    marginTop: spacing.m,
+    marginTop: spacing.l,
   },
 });

@@ -53,7 +53,7 @@ export default function ReceiptsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <PageHeader title="Receipts" />
+      <PageHeader title="Receipts" noTopMargin />
       <View style={styles.tabs}>
         <TouchableOpacity
           onPress={() => setTab('active')}

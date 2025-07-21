@@ -43,7 +43,7 @@ export const ConnectLinkProvider = ({ children }: { children: React.ReactNode })
       return id;
     } catch (e: any) {
       console.error(e);
-      const msg = e?.message || e?.details || 'failed to create wallet';
+      const msg = e?.details || e?.message || 'failed to create wallet';
       Alert.alert('Error', msg);
       return null;
     }

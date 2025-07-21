@@ -51,19 +51,21 @@ export default function AddGroupScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <PageHeader title="New Group" onBack={navigation.goBack} />
+      <Text style={styles.label}>Group Name</Text>
       <TextInput
         placeholder="Group Name"
         value={name}
         onChangeText={setName}
         style={styles.input}
       />
+      <Text style={styles.section}>Add Friends</Text>
       <FlatList
         data={friends}
         renderItem={renderItem}
         keyExtractor={item => item.id}
         ListEmptyComponent={<Text style={styles.empty}>no friends</Text>}
       />
-      <Button title="Create" onPress={create} style={styles.button} />
+      <Button title="Create" onPress={create} style={styles.button} disabled={!name} />
     </SafeAreaView>
   );
 }
@@ -71,6 +73,8 @@ export default function AddGroupScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background, padding: spacing.m },
   input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: spacing.m, marginBottom: spacing.m },
+  label: { fontWeight: '600', marginBottom: spacing.s },
+  section: { fontSize: 18, fontWeight: '600', marginBottom: spacing.s },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.s },
   empty: { textAlign: 'center', marginTop: spacing.l },
   button: { marginTop: spacing.l },

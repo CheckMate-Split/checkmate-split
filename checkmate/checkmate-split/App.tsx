@@ -7,7 +7,6 @@ import { Ionicons } from '@expo/vector-icons';
 import HomeScreen from './screens/HomeScreen';
 import FriendsScreen from './screens/FriendsScreen';
 import AddFriendSearchScreen from './screens/AddFriendSearchScreen';
-import AddFriendQRScreen from './screens/AddFriendQRScreen';
 import AddGroupScreen from './screens/AddGroupScreen';
 import FriendDetailScreen from './screens/FriendDetailScreen';
 import GroupDetailScreen from './screens/GroupDetailScreen';
@@ -70,7 +69,6 @@ export type ReceiptsStackParamList = {
 export type FriendsStackParamList = {
   FriendsHome: undefined;
   AddFriendSearch: undefined;
-  AddFriendQR: undefined;
   AddGroup: undefined;
   FriendDetail: { uid: string; name: string };
   GroupDetail: { id: string };
@@ -136,7 +134,6 @@ function FriendsStack() {
     <FriendsStackNav.Navigator screenOptions={{ headerShown: false }}>
       <FriendsStackNav.Screen name="FriendsHome" component={FriendsScreen} />
       <FriendsStackNav.Screen name="AddFriendSearch" component={AddFriendSearchScreen} />
-      <FriendsStackNav.Screen name="AddFriendQR" component={AddFriendQRScreen} />
       <FriendsStackNav.Screen name="AddGroup" component={AddGroupScreen} />
       <FriendsStackNav.Screen name="FriendDetail" component={FriendDetailScreen} />
       <FriendsStackNav.Screen name="GroupDetail" component={GroupDetailScreen} />

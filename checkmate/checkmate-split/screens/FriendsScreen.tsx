@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, TouchableOpacity, FlatList } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, FlatList, Share } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import PageHeader from '../components/PageHeader';
 import Text from '../components/Text';
 import Button from '../components/Button';
 import AddFriendDrawer from '../components/AddFriendDrawer';
+import AddFriendQRDrawer from '../components/AddFriendQRDrawer';
 import { collection, onSnapshot, doc, getDoc } from 'firebase/firestore';
 import { useNavigation } from '@react-navigation/native';
 import { db, auth } from '../firebaseConfig';
@@ -14,6 +15,7 @@ export default function FriendsScreen() {
   const navigation = useNavigation<any>();
   const [tab, setTab] = useState<'friends' | 'groups'>('friends');
   const [addVisible, setAddVisible] = useState(false);
+  const [qrVisible, setQrVisible] = useState(false);
   const [friends, setFriends] = useState<any[]>([]);
   const [groups, setGroups] = useState<any[]>([]);
 
@@ -40,6 +42,13 @@ export default function FriendsScreen() {
     );
     return unsub;
   }, []);
+
+  const uid = auth.currentUser?.uid || '';
+  const link = `checkmate://add-friend?uid=${uid}`;
+
+  const shareLink = () => {
+    Share.share({ message: link });
+  };
 
   const openAdd = () => {
     if (tab === 'friends') setAddVisible(true);
@@ -102,9 +111,10 @@ export default function FriendsScreen() {
         visible={addVisible}
         onClose={() => setAddVisible(false)}
         onSearch={() => navigation.navigate('AddFriendSearch')}
-        onQr={() => navigation.navigate('AddFriendQR')}
-        onLink={() => navigation.navigate('AddFriendQR')}
+        onQr={() => setQrVisible(true)}
+        onLink={shareLink}
       />
+      <AddFriendQRDrawer visible={qrVisible} onClose={() => setQrVisible(false)} />
     </SafeAreaView>
   );
 }

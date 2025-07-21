@@ -95,7 +95,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    padding: spacing.m,
+    paddingTop: spacing.m,
+    paddingHorizontal: spacing.m,
+    paddingBottom: 0,
   },
   emptyContainer: {
     flexGrow: 1,

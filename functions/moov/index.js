@@ -5,6 +5,8 @@ const { randomUUID } = require('crypto');
 
 if (!admin.apps.length) {
   admin.initializeApp();
+  // Strip undefined values so Firestore writes don't fail
+  admin.firestore().settings({ ignoreUndefinedProperties: true });
 }
 
 const MOOV_PUBLIC = functions.config().moov?.public;
@@ -16,6 +18,17 @@ const client = new Moov({
   xMoovVersion: 'v2024.01.00',
   security: { username: MOOV_PUBLIC, password: MOOV_SECRET },
 });
+
+async function waitForWallet(accountID) {
+  for (let i = 0; i < 5; i++) {
+    const res = await client.wallets.list({ accountID });
+    const arr = res.result ?? res;
+    const id = arr[0]?.walletID;
+    if (id) return id;
+    await new Promise(r => setTimeout(r, 1000));
+  }
+  return undefined;
+}
 
 exports.createMoovWallet = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
@@ -48,10 +61,12 @@ exports.createMoovWallet = functions.https.onCall(async (data, context) => {
       capabilities: ['wallet'],
     });
     const accountID = account.result?.accountID || account.accountID;
-    const wallets = await client.wallets.list({ accountID });
-    const walletId = wallets[0]?.walletID;
-    await ref.set({ walletId, accountId: accountID });
-    return { walletId };
+    const walletId = await waitForWallet(accountID);
+    await ref.set({ walletId: walletId ?? null, accountId: accountID });
+    if (walletId) {
+      return { walletId };
+    }
+    return { walletPending: true };
   } catch (err) {
     console.error(err);
     const msg = err && err.message ? err.message : String(err);
@@ -108,4 +123,52 @@ exports.createMoovPayment = functions.https.onCall(async (data, context) => {
     console.error(err);
     throw new functions.https.HttpsError('internal', 'failed to send payment');
   }
+});
+
+exports.completeMoovKYC = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'user not authenticated');
+  }
+  const uid = context.auth.uid;
+  const ref = admin.firestore().collection('moovWallets').doc(uid);
+  const snap = await ref.get();
+  if (!snap.exists) {
+    throw new functions.https.HttpsError('failed-precondition', 'no account');
+  }
+  const { accountId } = snap.data();
+  try {
+    await client.accounts.update({
+      accountID: accountId,
+      profile: {
+        individual: {
+          name: data.name,
+          dob: data.dob,
+          address: data.address,
+          email: data.email,
+          phone: data.phone,
+          ssn: data.ssn,
+        },
+      },
+    });
+    return { submitted: true };
+  } catch (err) {
+    console.error(err);
+    throw new functions.https.HttpsError('internal', 'failed to submit info');
+  }
+});
+
+exports.checkWalletStatus = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'user not authenticated');
+  }
+  const uid = context.auth.uid;
+  const snap = await admin.firestore().collection('moovWallets').doc(uid).get();
+  if (!snap.exists) return { pending: true };
+  const { accountId } = snap.data();
+  const id = await waitForWallet(accountId);
+  if (id) {
+    await snap.ref.update({ walletId: id });
+    return { walletId: id };
+  }
+  return { pending: true };
 });

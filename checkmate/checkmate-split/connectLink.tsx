@@ -21,6 +21,10 @@ export const ConnectLinkProvider = ({ children }: { children: React.ReactNode })
     try {
       const callable = httpsCallable(functions, 'createMoovWallet');
       const res: any = await callable();
+      if (res?.data?.walletPending) {
+        Alert.alert('Info', 'Wallet is being created. Provide additional info if prompted.');
+        return null;
+      }
       const id = res?.data?.walletId || null;
       setWalletId(id);
       return id;

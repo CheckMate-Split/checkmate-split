@@ -11,6 +11,8 @@ const {
   createMoovWallet,
   getMoovBalance,
   createMoovPayment,
+  completeMoovKYC,
+  checkWalletStatus,
 } = require('./moov');
 const { checkUsername } = require('./username');
 const { sendFriendRequest, respondFriendRequest, createGroup } = require('./friends');
@@ -29,3 +31,5 @@ exports.createGroup = createGroup;
 exports.createMoovWallet = createMoovWallet;
 exports.getMoovBalance = getMoovBalance;
 exports.createMoovPayment = createMoovPayment;
+exports.completeMoovKYC = completeMoovKYC;
+exports.checkWalletStatus = checkWalletStatus;

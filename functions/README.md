@@ -20,3 +20,12 @@ Set this with the Firebase CLI:
 ```sh
 firebase functions:config:set stripe.secret="<YOUR_SECRET_KEY>"
 ```
+
+Moov functions require API credentials via `functions.config().moov.public` and
+`functions.config().moov.secret`. Set them with:
+
+```sh
+firebase functions:config:set \
+  moov.public="<YOUR_MOOV_PUBLIC_KEY>" \
+  moov.secret="<YOUR_MOOV_SECRET_KEY>"
+```

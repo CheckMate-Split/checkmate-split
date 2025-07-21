@@ -9,6 +9,7 @@ if (!admin.apps.length) {
 
 const MOOV_PUBLIC = functions.config().moov?.public;
 const MOOV_SECRET = functions.config().moov?.secret;
+console.log('Moov env', { hasPublic: !!MOOV_PUBLIC, hasSecret: !!MOOV_SECRET });
 const client = new Moov({
   serverURL: 'https://api.moov.io',
   xMoovVersion: 'v2024.01.00',
@@ -46,7 +47,7 @@ exports.createMoovWallet = functions.https.onCall(async (data, context) => {
       },
       capabilities: ['wallet'],
     });
-    const accountID = account.accountID;
+    const accountID = account.result?.accountID || account.accountID;
     const wallets = await client.wallets.list({ accountID });
     const walletId = wallets[0]?.walletID;
     await ref.set({ walletId, accountId: accountID });

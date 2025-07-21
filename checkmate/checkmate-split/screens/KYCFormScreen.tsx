@@ -29,9 +29,10 @@ export default function KYCFormScreen() {
     street.trim().length >= 3 &&
     city.trim().length > 0 &&
     /^[A-Za-z]{2}$/.test(state.trim()) &&
+    /^[A-Za-z]{2}$/.test(country.trim()) &&
     /^\d{5}$/.test(postal) &&
     phoneDigits.length === 10 &&
-    /^\d{4}$/.test(ssn) &&
+    /^\d{4}$|^\d{9}$/.test(ssn) &&
     email.trim().length > 0 &&
     dob.getTime() <= Date.now();
 

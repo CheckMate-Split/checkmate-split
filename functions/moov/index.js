@@ -45,22 +45,30 @@ exports.createMoovWallet = functions.https.onCall(async (data, context) => {
     const userSnap = await admin.firestore().collection('users').doc(uid).get();
     const first = userSnap.data()?.first || 'CheckMate';
     const last = userSnap.data()?.last || uid;
-    const tokenRes = await client.accounts.getTermsOfServiceToken(
-      {},
-      { headers: { origin: ORIGIN } },
-    );
-    const token = tokenRes.result?.token || tokenRes.token;
+// generate a TOS token (origin must be provided to satisfy API requirements)
+const tokenRes = await client.accounts.getTermsOfServiceToken({ origin: ORIGIN });
+const token = tokenRes.result?.token || tokenRes.token;
+if (!token) throw new Error('missing terms of service token');
 
-    const profile = {
-      individual: {
-        name: { firstName: first, lastName: last },
+const profile = {
+  individual: {
+    name: { firstName: first, lastName: last },
+    ...(data?.phone && { phone: { number: data.phone, countryCode: '1' } }),
+    ...(data?.email && { email: data.email }),
+    ...(data?.dob && { dob: data.dob }),
+    ...(data?.address && {
+      address: {
+        addressLine1: data.address.addressLine1,
+        addressLine2: data.address.addressLine2 ?? undefined,
+        city: data.address.city,
+        stateOrProvince: data.address.stateOrProvince,
+        postalCode: data.address.postalCode,
+        country: data.address.country,
       },
-    };
-    if (data?.address) profile.individual.address = data.address;
-    if (data?.dob) profile.individual.dob = data.dob;
-    if (data?.email) profile.individual.email = data.email;
-    if (data?.phone) profile.individual.phone = data.phone;
-    if (data?.ssn) profile.individual.ssn = data.ssn;
+    }),
+    ...(data?.ssn && { ssn: data.ssn }),
+  },
+};
 
     const account = await client.accounts.create({
       accountType: 'individual',
@@ -70,7 +78,7 @@ exports.createMoovWallet = functions.https.onCall(async (data, context) => {
     });
     const accountID = account.result?.accountID || account.accountID;
     const walletId = await waitForWallet(accountID);
-    await ref.set({ walletId: walletId ?? null, accountId: accountID });
+    await ref.set({ accountId: accountID, ...(walletId ? { walletId } : {}) });
     if (walletId) {
       return { walletId };
     }

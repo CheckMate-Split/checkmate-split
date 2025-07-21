@@ -76,9 +76,20 @@ export default function ManageReceiptScreen() {
   };
 
 
-  const renderPerson = (p: any) => (
-    <View key={p.id}>
-      <View style={styles.personContainer}>
+  const renderPerson = (p: any) => {
+    const isYou = p.id === auth.currentUser?.uid;
+    const Container: any = isYou ? TouchableOpacity : View;
+    const props = isYou
+      ? {
+          onPress: () =>
+            navigation.navigate('Tabs', {
+              screen: 'HomeTab',
+              params: { screen: 'ClaimItems', params: { receipt } },
+            }),
+        }
+      : {};
+    return (
+      <Container key={p.id} style={styles.personContainer} {...props}>
         <View style={styles.personRow}>
           <View style={styles.avatar} />
           <Text style={styles.personName}>{p.name}</Text>
@@ -98,21 +109,9 @@ export default function ManageReceiptScreen() {
             </Text>
           </View>
         </View>
-      </View>
-      {p.id === auth.currentUser?.uid && (
-        <Button
-          title="Claim More"
-          onPress={() =>
-            navigation.navigate('Tabs', {
-              screen: 'HomeTab',
-              params: { screen: 'ClaimItems', params: { receipt } },
-            })
-          }
-          style={styles.claimButton}
-        />
-      )}
-    </View>
-  );
+      </Container>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -262,13 +261,6 @@ const styles = StyleSheet.create({
   tagViewed: { backgroundColor: '#f88' },
   tagPaid: { backgroundColor: '#4c9a4c' },
   payButton: { marginHorizontal: spacing.m, marginTop: spacing.l },
-  claimButton: {
-    alignSelf: 'center',
-    marginTop: spacing.l,
-    marginBottom: spacing.m,
-    width: '70%',
-    paddingVertical: spacing.m,
-  },
   iconButton: { marginRight: spacing.l },
   footer: {
     flexDirection: 'row',

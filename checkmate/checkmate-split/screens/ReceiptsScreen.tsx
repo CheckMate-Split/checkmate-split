@@ -84,6 +84,7 @@ export default function ReceiptsScreen() {
           ListEmptyComponent={
             <Text style={styles.emptyText}>no receipts yet</Text>
           }
+          scrollIndicatorInsets={{ right: -spacing.m }}
         />
       )}
     </SafeAreaView>

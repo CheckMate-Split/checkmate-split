@@ -3,10 +3,13 @@ import { StyleSheet, View, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import PageHeader from '../components/PageHeader';
 import Text from '../components/Text';
+import Button from '../components/Button';
+import AddFriendDrawer from '../components/AddFriendDrawer';
 import { colors, spacing } from '../constants';
 
 export default function FriendsScreen() {
   const [tab, setTab] = useState<'friends' | 'groups'>('friends');
+  const [addVisible, setAddVisible] = useState(false);
   return (
     <SafeAreaView style={styles.container}>
       <PageHeader title="Friends" noTopMargin />
@@ -25,6 +28,16 @@ export default function FriendsScreen() {
         </TouchableOpacity>
       </View>
       <Text style={styles.empty}>no friends yet</Text>
+      <View style={styles.footer}>
+        <Button title="Add Friend" onPress={() => setAddVisible(true)} />
+      </View>
+      <AddFriendDrawer
+        visible={addVisible}
+        onClose={() => setAddVisible(false)}
+        onSearch={() => {}}
+        onQr={() => {}}
+        onLink={() => {}}
+      />
     </SafeAreaView>
   );
 }
@@ -61,5 +74,8 @@ const styles = StyleSheet.create({
   tabTextSelected: {
     color: colors.primary,
     fontWeight: '600',
+  },
+  footer: {
+    marginTop: 'auto',
   },
 });

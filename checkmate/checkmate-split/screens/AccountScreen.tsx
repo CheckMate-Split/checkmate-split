@@ -139,7 +139,10 @@ export default function AccountScreen() {
           style={styles.avatar}
         />
       </TouchableOpacity>
-      <ScrollView contentContainerStyle={styles.form}>
+      <ScrollView
+        contentContainerStyle={styles.form}
+        scrollIndicatorInsets={{ right: -spacing.m }}
+      >
         <Text style={styles.label}>First Name</Text>
         <TextInput
           placeholder="First Name"

@@ -32,7 +32,11 @@ exports.createMoovWallet = functions.https.onCall(async (data, context) => {
     const last = userSnap.data()?.last || uid;
     const account = await client.accounts.create({
       accountType: 'individual',
-      profile: { individual: { firstName: first, lastName: last } },
+      profile: {
+        individual: {
+          name: { firstName: first, lastName: last },
+        },
+      },
       capabilities: ['wallet'],
     });
     const accountID = account.accountID;
@@ -42,7 +46,11 @@ exports.createMoovWallet = functions.https.onCall(async (data, context) => {
     return { walletId };
   } catch (err) {
     console.error(err);
-    throw new functions.https.HttpsError('internal', 'failed to create wallet');
+    const msg = err && err.message ? err.message : String(err);
+    throw new functions.https.HttpsError(
+      'internal',
+      `failed to create wallet: ${msg}`,
+    );
   }
 });
 

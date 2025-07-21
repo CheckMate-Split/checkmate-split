@@ -31,9 +31,6 @@ export const ConnectLinkProvider = ({ children }: { children: React.ReactNode })
     }
   };
 
-  useEffect(() => {
-    refresh();
-  }, []);
 
   return (
     <ConnectLinkContext.Provider value={{ walletId, refresh }}>

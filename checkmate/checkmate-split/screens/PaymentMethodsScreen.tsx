@@ -6,6 +6,7 @@ import { httpsCallable } from 'firebase/functions';
 import PageHeader from '../components/PageHeader';
 import Button from '../components/Button';
 import OutlineButton from '../components/OutlineButton';
+import TermsDrawer from '../components/TermsDrawer';
 import Text from '../components/Text';
 import { colors, spacing } from '../constants';
 import { functions } from '../firebaseConfig';
@@ -15,15 +16,11 @@ export default function PaymentMethodsScreen() {
   const navigation = useNavigation<any>();
   const { walletId, refresh } = useConnectLink();
   const [balance, setBalance] = useState<number>(0);
+  const [showTerms, setShowTerms] = useState(false);
 
   useEffect(() => {
-    load();
-  }, []);
-
-  const load = async () => {
-    await refresh();
-    fetchBalance();
-  };
+    if (walletId) fetchBalance();
+  }, [walletId]);
 
   const fetchBalance = async () => {
     try {
@@ -48,8 +45,16 @@ export default function PaymentMethodsScreen() {
           <OutlineButton title="Withdraw" onPress={() => {}} style={styles.button} />
         </View>
       ) : (
-        <Button title="Create Wallet" onPress={refresh} />
+        <Button title="Create Wallet" onPress={() => setShowTerms(true)} />
       )}
+      <TermsDrawer
+        visible={showTerms}
+        onAccept={async () => {
+          setShowTerms(false);
+          await refresh();
+        }}
+        onClose={() => setShowTerms(false)}
+      />
     </SafeAreaView>
   );
 }

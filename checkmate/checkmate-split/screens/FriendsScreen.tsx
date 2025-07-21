@@ -1,15 +1,68 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, TouchableOpacity, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import PageHeader from '../components/PageHeader';
 import Text from '../components/Text';
 import Button from '../components/Button';
 import AddFriendDrawer from '../components/AddFriendDrawer';
+import { collection, onSnapshot, doc, getDoc } from 'firebase/firestore';
+import { useNavigation } from '@react-navigation/native';
+import { db, auth } from '../firebaseConfig';
 import { colors, spacing } from '../constants';
 
 export default function FriendsScreen() {
+  const navigation = useNavigation<any>();
   const [tab, setTab] = useState<'friends' | 'groups'>('friends');
   const [addVisible, setAddVisible] = useState(false);
+  const [friends, setFriends] = useState<any[]>([]);
+  const [groups, setGroups] = useState<any[]>([]);
+
+  useEffect(() => {
+    const unsub = onSnapshot(
+      collection(db, 'users', auth.currentUser!.uid, 'friends'),
+      async snap => {
+        const arr = await Promise.all(
+          snap.docs.map(async d => {
+            const p = await getDoc(doc(db, 'users', d.id));
+            return { id: d.id, ...(p.exists() ? p.data() : {}) };
+          })
+        );
+        setFriends(arr);
+      }
+    );
+    return unsub;
+  }, []);
+
+  useEffect(() => {
+    const unsub = onSnapshot(
+      collection(db, 'users', auth.currentUser!.uid, 'groups'),
+      snap => setGroups(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+    );
+    return unsub;
+  }, []);
+
+  const openAdd = () => {
+    if (tab === 'friends') setAddVisible(true);
+    else navigation.navigate('AddGroup');
+  };
+
+  const renderFriend = ({ item }: { item: any }) => (
+    <TouchableOpacity
+      onPress={() =>
+        navigation.navigate('FriendDetail', { uid: item.id, name: `${item.first} ${item.last}` })
+      }
+      style={styles.row}
+    >
+      <Text>{item.first ? `${item.first} ${item.last}` : item.id}</Text>
+    </TouchableOpacity>
+  );
+
+  const renderGroup = ({ item }: { item: any }) => (
+    <TouchableOpacity onPress={() => navigation.navigate('GroupDetail', { id: item.id })} style={styles.row}>
+      <Text>{item.name || item.id}</Text>
+    </TouchableOpacity>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <PageHeader title="Friends" noTopMargin />
@@ -27,16 +80,30 @@ export default function FriendsScreen() {
           <Text style={[styles.tabText, tab === 'groups' && styles.tabTextSelected]}>Groups</Text>
         </TouchableOpacity>
       </View>
-      <Text style={styles.empty}>no friends yet</Text>
+      {tab === 'friends' ? (
+        <FlatList
+          data={friends}
+          renderItem={renderFriend}
+          keyExtractor={item => item.id}
+          ListEmptyComponent={<Text style={styles.empty}>no friends yet</Text>}
+        />
+      ) : (
+        <FlatList
+          data={groups}
+          renderItem={renderGroup}
+          keyExtractor={item => item.id}
+          ListEmptyComponent={<Text style={styles.empty}>no groups yet</Text>}
+        />
+      )}
       <View style={styles.footer}>
-        <Button title="Add Friend" onPress={() => setAddVisible(true)} />
+        <Button title={tab === 'friends' ? 'Add Friend' : 'Add Group'} onPress={openAdd} />
       </View>
       <AddFriendDrawer
         visible={addVisible}
         onClose={() => setAddVisible(false)}
-        onSearch={() => {}}
-        onQr={() => {}}
-        onLink={() => {}}
+        onSearch={() => navigation.navigate('AddFriendSearch')}
+        onQr={() => navigation.navigate('AddFriendQR')}
+        onLink={() => navigation.navigate('AddFriendQR')}
       />
     </SafeAreaView>
   );
@@ -77,5 +144,10 @@ const styles = StyleSheet.create({
   },
   footer: {
     marginTop: 'auto',
+  },
+  row: {
+    paddingVertical: spacing.s,
+    borderBottomWidth: 1,
+    borderColor: '#eee',
   },
 });

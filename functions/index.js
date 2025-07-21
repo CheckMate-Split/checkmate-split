@@ -8,6 +8,7 @@ const {
   createPaymentIntent,
 } = require('./stripeConnect');
 const { checkUsername } = require('./username');
+const { sendFriendRequest, respondFriendRequest, createGroup } = require('./friends');
 
 exports.parseReciept = scanReceipt;
 exports.createStripeConnectLink = createStripeConnectLink;
@@ -17,3 +18,6 @@ exports.getBalance = getBalance;
 exports.getConnectStatus = getConnectStatus;
 exports.createPaymentIntent = createPaymentIntent;
 exports.checkUsername = checkUsername;
+exports.sendFriendRequest = sendFriendRequest;
+exports.respondFriendRequest = respondFriendRequest;
+exports.createGroup = createGroup;

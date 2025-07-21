@@ -32,10 +32,11 @@ exports.createMoovWallet = functions.https.onCall(async (data, context) => {
     const userSnap = await admin.firestore().collection('users').doc(uid).get();
     const first = userSnap.data()?.first || 'CheckMate';
     const last = userSnap.data()?.last || uid;
-    const { token } = await client.accounts.getTermsOfServiceToken(
+    const tokenRes = await client.accounts.getTermsOfServiceToken(
       {},
       { headers: { origin: ORIGIN } },
     );
+    const token = tokenRes.result?.token || tokenRes.token;
     const account = await client.accounts.create({
       accountType: 'individual',
       profile: {

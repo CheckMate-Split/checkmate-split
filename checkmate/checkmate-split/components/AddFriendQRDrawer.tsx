@@ -3,7 +3,6 @@ import { Modal, StyleSheet, TouchableOpacity, View, Share } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { Ionicons } from '@expo/vector-icons';
 import { auth } from '../firebaseConfig';
-import OutlineButton from './OutlineButton';
 import Text from './Text';
 import { colors, spacing } from '../constants';
 
@@ -27,12 +26,12 @@ export default function AddFriendQRDrawer({ visible, onClose }: Props) {
           <View style={styles.qrWrapper}>
             <QRCode value={link} size={220} />
           </View>
-          <OutlineButton
-            title="Share Link"
+          <TouchableOpacity
+            style={styles.share}
             onPress={() => Share.share({ message: link })}
-            style={styles.button}
-            icon="share"
-          />
+          >
+            <Ionicons name="share" size={28} color={colors.primary} />
+          </TouchableOpacity>
         </TouchableOpacity>
       </TouchableOpacity>
     </Modal>
@@ -66,5 +65,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: spacing.l,
   },
-  button: { alignSelf: 'stretch' },
+  share: {
+    padding: spacing.s,
+    borderRadius: 20,
+    backgroundColor: '#eee',
+  },
 });

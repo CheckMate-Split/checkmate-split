@@ -126,7 +126,7 @@ export default function ManageReceiptScreen() {
           )
         }
       />
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
         <Text style={styles.subheader}>{`Receipt Date ${created.toLocaleDateString()}`}</Text>
         {receipt.description ? (
           <>
@@ -223,7 +223,8 @@ export default function ManageReceiptScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  scroll: { paddingHorizontal: spacing.m, paddingBottom: spacing.m },
+  scroll: { flex: 1 },
+  scrollContent: { paddingHorizontal: spacing.m, paddingBottom: spacing.m },
   subheader: { color: '#666', fontSize: 28 },
   desc: { marginTop: spacing.s, fontSize: 28 },
   descHeader: {

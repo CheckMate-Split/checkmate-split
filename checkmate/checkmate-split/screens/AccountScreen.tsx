@@ -237,9 +237,11 @@ const styles = StyleSheet.create({
     marginBottom: spacing.m,
   },
   footer: {
-    padding: spacing.m,
+    paddingVertical: spacing.s,
+    paddingHorizontal: spacing.m,
     backgroundColor: colors.background,
     alignItems: 'center',
+    marginTop: 'auto',
   },
   error: {
     color: 'red',

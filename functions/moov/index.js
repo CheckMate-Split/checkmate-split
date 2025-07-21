@@ -1,6 +1,7 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const { Moov } = require('@moovio/sdk');
+const { randomUUID } = require('crypto');
 
 if (!admin.apps.length) {
   admin.initializeApp();
@@ -25,9 +26,17 @@ exports.createMoovWallet = functions.https.onCall(async (data, context) => {
     if (doc.exists) {
       return { walletId: doc.data().walletId };
     }
-    const wallet = await client.wallets.createWallet({ name: uid });
-    await ref.set({ walletId: wallet.walletID });
-    return { walletId: wallet.walletID };
+    // Create an account with wallet capability
+    const account = await client.accounts.create({
+      accountType: 'business',
+      profile: { business: { legalBusinessName: `CheckMate ${uid}` } },
+      capabilities: ['wallet'],
+    });
+    const accountID = account.accountID;
+    const wallets = await client.wallets.list({ accountID });
+    const walletId = wallets[0]?.walletID;
+    await ref.set({ walletId, accountId: accountID });
+    return { walletId };
   } catch (err) {
     console.error(err);
     throw new functions.https.HttpsError('internal', 'failed to create wallet');
@@ -42,9 +51,9 @@ exports.getMoovBalance = functions.https.onCall(async (data, context) => {
   try {
     const snap = await admin.firestore().collection('moovWallets').doc(uid).get();
     if (!snap.exists) return { balance: 0 };
-    const walletId = snap.data().walletId;
-    const bal = await client.wallets.getBalance(walletId);
-    return { balance: bal.available?.value || 0 };
+    const { walletId, accountId } = snap.data();
+    const res = await client.wallets.get({ accountID: accountId, walletID: walletId });
+    return { balance: res.availableBalance?.value || 0 };
   } catch (err) {
     console.error(err);
     throw new functions.https.HttpsError('internal', 'failed to fetch balance');
@@ -65,13 +74,17 @@ exports.createMoovPayment = functions.https.onCall(async (data, context) => {
     if (!snap.exists) {
       throw new functions.https.HttpsError('failed-precondition', 'no wallet');
     }
-    const walletId = snap.data().walletId;
-    const payment = await client.payments.createPayment({
-      source: { walletID: walletId },
-      destination: { walletID: destWallet },
-      amount: { currency: 'USD', value: amount },
+    const { walletId, accountId } = snap.data();
+    const transfer = await client.transfers.create({
+      xIdempotencyKey: randomUUID(),
+      accountID: accountId,
+      createTransfer: {
+        source: { paymentMethodID: walletId },
+        destination: { paymentMethodID: destWallet },
+        amount: { currency: 'USD', value: amount },
+      },
     });
-    return { paymentID: payment.paymentID };
+    return { transferID: transfer.transferID };
   } catch (err) {
     console.error(err);
     throw new functions.https.HttpsError('internal', 'failed to send payment');

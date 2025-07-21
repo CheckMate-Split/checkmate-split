@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { Alert } from 'react-native';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from './firebaseConfig';
 import { TEST_MODE } from './testMode';
@@ -23,8 +24,9 @@ export const ConnectLinkProvider = ({ children }: { children: React.ReactNode })
       const id = res?.data?.walletId || null;
       setWalletId(id);
       return id;
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
+      Alert.alert('Error', e?.message || 'failed to create wallet');
       return null;
     }
   };

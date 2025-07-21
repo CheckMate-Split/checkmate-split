@@ -10,6 +10,7 @@ if (!admin.apps.length) {
 const MOOV_PUBLIC = functions.config().moov?.public;
 const MOOV_SECRET = functions.config().moov?.secret;
 console.log('Moov env', { hasPublic: !!MOOV_PUBLIC, hasSecret: !!MOOV_SECRET });
+const ORIGIN = 'https://app.checkmate.ai';
 const client = new Moov({
   serverURL: 'https://api.moov.io',
   xMoovVersion: 'v2024.01.00',
@@ -31,7 +32,10 @@ exports.createMoovWallet = functions.https.onCall(async (data, context) => {
     const userSnap = await admin.firestore().collection('users').doc(uid).get();
     const first = userSnap.data()?.first || 'CheckMate';
     const last = userSnap.data()?.last || uid;
-    const { token } = await client.accounts.getTermsOfServiceToken({});
+    const { token } = await client.accounts.getTermsOfServiceToken(
+      {},
+      { headers: { origin: ORIGIN } },
+    );
     const account = await client.accounts.create({
       accountType: 'individual',
       profile: {

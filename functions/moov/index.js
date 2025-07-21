@@ -26,10 +26,13 @@ exports.createMoovWallet = functions.https.onCall(async (data, context) => {
     if (doc.exists) {
       return { walletId: doc.data().walletId };
     }
-    // Create an account with wallet capability
+    // Create an individual account with wallet capability
+    const userSnap = await admin.firestore().collection('users').doc(uid).get();
+    const first = userSnap.data()?.first || 'CheckMate';
+    const last = userSnap.data()?.last || uid;
     const account = await client.accounts.create({
-      accountType: 'business',
-      profile: { business: { legalBusinessName: `CheckMate ${uid}` } },
+      accountType: 'individual',
+      profile: { individual: { firstName: first, lastName: last } },
       capabilities: ['wallet'],
     });
     const accountID = account.accountID;

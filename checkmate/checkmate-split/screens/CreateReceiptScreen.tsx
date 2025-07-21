@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { addDoc, collection, serverTimestamp, doc, deleteDoc, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, serverTimestamp, doc, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Button from '../components/Button';
 import OutlineButton from '../components/OutlineButton';
@@ -162,7 +162,9 @@ export default function CreateReceiptScreen() {
         style: 'destructive',
         onPress: async () => {
           try {
-            await deleteDoc(doc(db, 'receipts', receipt.id));
+            await updateDoc(doc(db, 'receipts', receipt.id), {
+              endedAt: serverTimestamp(),
+            });
             navigation.goBack();
           } catch (e) {
             console.error(e);

@@ -35,13 +35,13 @@ export default function ReceiptsScreen() {
     const created = r.createdAt
       ? new Date(r.createdAt.seconds ? r.createdAt.seconds * 1000 : r.createdAt)
       : new Date();
-    return created >= cutoff;
+    return !r.endedAt && created >= cutoff;
   });
   const pastReceipts = receipts.filter(r => {
     const created = r.createdAt
       ? new Date(r.createdAt.seconds ? r.createdAt.seconds * 1000 : r.createdAt)
       : new Date();
-    return created < cutoff;
+    return r.endedAt || created < cutoff;
   });
 
   const renderItem = ({ item }: { item: any }) => (

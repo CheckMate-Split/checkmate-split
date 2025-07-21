@@ -18,6 +18,8 @@ import { colors, spacing } from '../constants';
 import Button from '../components/Button';
 import { auth } from '../firebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '../firebaseConfig';
 
 
 export type ManageReceiptParams = {
@@ -74,6 +76,21 @@ export default function ManageReceiptScreen() {
       },
     });
   };
+
+  const pay = async () => {
+    try {
+      const fn = httpsCallable(functions, 'createMoovPayment');
+      await fn({ amount: Math.round(yourTotal), destWallet: receipt.payer });
+    } catch (e) {
+      console.error(e);
+    }
+    setPayVisible(false);
+  };
+
+  const payCard = pay;
+  const payCash = pay;
+  const payApple = pay;
+  const payAch = pay;
 
 
   const renderPerson = (p: any) => {
@@ -181,10 +198,16 @@ export default function ManageReceiptScreen() {
       >
         <TouchableOpacity style={styles.modalOverlay} onPress={() => setPayVisible(false)}>
           <View style={styles.modalContent}>
-            <Button title="Card" onPress={() => setPayVisible(false)} style={styles.payOption} />
-            <Button title="Cash App" onPress={() => setPayVisible(false)} style={styles.payOption} />
-            <Button title="Apple Pay" onPress={() => setPayVisible(false)} style={styles.payOption} />
-            <Button title="Balance / ACH" onPress={() => setPayVisible(false)} style={styles.payOption} />
+            <Button title="Card" onPress={payCard} style={[styles.payOption, styles.payCard]} />
+            <Button title="Cash App" onPress={payCash} style={[styles.payOption, styles.payCash]} />
+            <Button title="Apple Pay" onPress={payApple} style={[styles.payOption, styles.payApple]} />
+            <OutlineButton
+              title="Balance / ACH"
+              onPress={payAch}
+              style={[styles.payOption, styles.payBalance]}
+              textColor={colors.primary}
+              borderColor={colors.primary}
+            />
             <OutlineButton title="Close" onPress={() => setPayVisible(false)} style={styles.closeButton} />
           </View>
         </TouchableOpacity>
@@ -287,6 +310,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   payOption: { alignSelf: 'stretch', marginTop: spacing.s },
+  payCard: { backgroundColor: colors.primary },
+  payCash: { backgroundColor: '#00C244' },
+  payApple: { backgroundColor: '#000' },
+  payBalance: { borderWidth: 1, borderColor: colors.primary, backgroundColor: colors.primaryBackground },
   closeButton: {
     marginTop: spacing.l,
     alignSelf: 'stretch',

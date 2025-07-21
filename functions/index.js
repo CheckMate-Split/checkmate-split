@@ -7,6 +7,11 @@ const {
   getConnectStatus,
   createPaymentIntent,
 } = require('./stripeConnect');
+const {
+  createMoovWallet,
+  getMoovBalance,
+  createMoovPayment,
+} = require('./moov');
 const { checkUsername } = require('./username');
 const { sendFriendRequest, respondFriendRequest, createGroup } = require('./friends');
 
@@ -21,3 +26,6 @@ exports.checkUsername = checkUsername;
 exports.sendFriendRequest = sendFriendRequest;
 exports.respondFriendRequest = respondFriendRequest;
 exports.createGroup = createGroup;
+exports.createMoovWallet = createMoovWallet;
+exports.getMoovBalance = getMoovBalance;
+exports.createMoovPayment = createMoovPayment;

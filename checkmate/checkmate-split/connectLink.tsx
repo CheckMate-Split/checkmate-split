@@ -4,27 +4,25 @@ import { functions } from './firebaseConfig';
 import { TEST_MODE } from './testMode';
 
 interface Context {
-  link: string | null;
-  refresh: (test?: boolean) => Promise<string | null>;
+  walletId: string | null;
+  refresh: () => Promise<string | null>;
 }
 
 const ConnectLinkContext = createContext<Context>({
-  link: null,
+  walletId: null,
   refresh: async () => null,
 });
 
 export const ConnectLinkProvider = ({ children }: { children: React.ReactNode }) => {
-  const [link, setLink] = useState<string | null>(null);
+  const [walletId, setWalletId] = useState<string | null>(null);
 
-  const refresh = async (test = TEST_MODE) => {
+  const refresh = async () => {
     try {
-      const callable = httpsCallable(functions, 'createStripeConnectLink');
-      const res: any = await callable({ test });
-      const url = res?.data?.url || null;
-      if (!test) {
-        setLink(url);
-      }
-      return url;
+      const callable = httpsCallable(functions, 'createMoovWallet');
+      const res: any = await callable();
+      const id = res?.data?.walletId || null;
+      setWalletId(id);
+      return id;
     } catch (e) {
       console.error(e);
       return null;
@@ -32,11 +30,11 @@ export const ConnectLinkProvider = ({ children }: { children: React.ReactNode })
   };
 
   useEffect(() => {
-    refresh(TEST_MODE);
+    refresh();
   }, []);
 
   return (
-    <ConnectLinkContext.Provider value={{ link, refresh }}>
+    <ConnectLinkContext.Provider value={{ walletId, refresh }}>
       {children}
     </ConnectLinkContext.Provider>
   );

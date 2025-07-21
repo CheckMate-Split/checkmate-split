@@ -1,6 +1,6 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
-const { Client } = require('@moovio/sdk');
+const { Moov } = require('@moovio/sdk');
 
 if (!admin.apps.length) {
   admin.initializeApp();
@@ -8,9 +8,10 @@ if (!admin.apps.length) {
 
 const MOOV_PUBLIC = functions.config().moov?.public;
 const MOOV_SECRET = functions.config().moov?.secret;
-const client = new Client({
-  baseUrl: 'https://api.moov.io',
-  apiKey: MOOV_SECRET,
+const client = new Moov({
+  serverURL: 'https://api.moov.io',
+  xMoovVersion: 'v2024.01.00',
+  security: { username: MOOV_PUBLIC, password: MOOV_SECRET },
 });
 
 exports.createMoovWallet = functions.https.onCall(async (data, context) => {

@@ -31,6 +31,7 @@ exports.createMoovWallet = functions.https.onCall(async (data, context) => {
     const userSnap = await admin.firestore().collection('users').doc(uid).get();
     const first = userSnap.data()?.first || 'CheckMate';
     const last = userSnap.data()?.last || uid;
+    const { token } = await client.accounts.getTermsOfServiceToken({});
     const account = await client.accounts.create({
       accountType: 'individual',
       profile: {
@@ -38,18 +39,7 @@ exports.createMoovWallet = functions.https.onCall(async (data, context) => {
           name: { firstName: first, lastName: last },
         },
       },
-      termsOfService: {
-        manual: {
-          acceptedDate: new Date(),
-          acceptedIP: context.rawRequest.ip || '0.0.0.0',
-          acceptedUserAgent:
-            context.rawRequest.headers['user-agent'] || 'unknown',
-          acceptedDomain:
-            context.rawRequest.headers['host'] ||
-            context.rawRequest.hostname ||
-            'unknown',
-        },
-      },
+      termsOfService: { token },
       capabilities: ['wallet'],
     });
     const accountID = account.result?.accountID || account.accountID;

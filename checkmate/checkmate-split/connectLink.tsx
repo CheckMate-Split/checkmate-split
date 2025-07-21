@@ -22,10 +22,23 @@ export const ConnectLinkProvider = ({ children }: { children: React.ReactNode })
       const callable = httpsCallable(functions, 'createMoovWallet');
       const res: any = await callable(info);
       if (res?.data?.walletPending) {
-        Alert.alert('Info', 'Wallet is being created. Provide additional info if prompted.');
+        Alert.alert('Info', 'Verifying wallet...');
+        let id: string | null = null;
+        for (let i = 0; i < 12 && !id; i++) {
+          await new Promise(r => setTimeout(r, 5000));
+          const check: any = await httpsCallable(functions, 'checkWalletStatus')();
+          id = check?.data?.walletId || null;
+        }
+        if (id) {
+          Alert.alert('Success', 'Wallet created');
+          setWalletId(id);
+          return id;
+        }
+        Alert.alert('Info', 'Wallet pending verification.');
         return null;
       }
       const id = res?.data?.walletId || null;
+      if (id) Alert.alert('Success', 'Wallet created');
       setWalletId(id);
       return id;
     } catch (e: any) {

@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import PageHeader from '../components/PageHeader';
 import Button from '../components/Button';
 import TermsDrawer from '../components/TermsDrawer';
+import DateInput from '../components/DateInput';
 import Text from '../components/Text';
 import { colors, spacing } from '../constants';
 import { useConnectLink } from '../connectLink';
@@ -17,11 +18,22 @@ export default function KYCFormScreen() {
   const [state, setState] = useState('');
   const [country, setCountry] = useState('US');
   const [postal, setPostal] = useState('');
-  const [dob, setDob] = useState('');
+  const [dob, setDob] = useState(new Date());
   const [ssn, setSsn] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [showTerms, setShowTerms] = useState(false);
+
+  const phoneDigits = phone.replace(/\D/g, '');
+  const formValid =
+    street.trim().length >= 3 &&
+    city.trim().length > 0 &&
+    /^[A-Za-z]{2}$/.test(state.trim()) &&
+    /^\d{5}$/.test(postal) &&
+    phoneDigits.length === 10 &&
+    /^\d{4}$/.test(ssn) &&
+    email.trim().length > 0 &&
+    dob.getTime() <= Date.now();
 
   const submit = async () => {
     const info = {
@@ -32,9 +44,13 @@ export default function KYCFormScreen() {
         postalCode: postal,
         country,
       },
-      dob,
+      dob: {
+        day: dob.getDate(),
+        month: dob.getMonth() + 1,
+        year: dob.getFullYear(),
+      },
       ssn,
-      phone: { number: phone, countryCode: '1' },
+      phone: { number: phone.replace(/\D/g, ''), countryCode: '1' },
       email,
     };
     setShowTerms(false);
@@ -56,8 +72,8 @@ export default function KYCFormScreen() {
         <TextInput style={styles.input} value={country} onChangeText={setCountry} />
         <Text style={styles.label}>Postal Code</Text>
         <TextInput style={styles.input} value={postal} onChangeText={setPostal} keyboardType="number-pad" />
-        <Text style={styles.label}>Date of Birth (YYYY-MM-DD)</Text>
-        <TextInput style={styles.input} value={dob} onChangeText={setDob} />
+        <Text style={styles.label}>Date of Birth</Text>
+        <DateInput value={dob} onChange={setDob} />
         <Text style={styles.label}>SSN (last 4)</Text>
         <TextInput style={styles.input} value={ssn} onChangeText={setSsn} keyboardType="number-pad" />
         <Text style={styles.label}>Phone</Text>
@@ -66,7 +82,7 @@ export default function KYCFormScreen() {
         <TextInput style={styles.input} value={email} onChangeText={setEmail} keyboardType="email-address" />
       </ScrollView>
       <View style={styles.footer}>
-        <Button title="Create Wallet" onPress={() => setShowTerms(true)} disabled={!street || !city || !state || !postal || !country || !dob || !ssn || !phone || !email} />
+        <Button title="Create Wallet" onPress={() => setShowTerms(true)} disabled={!formValid} />
       </View>
       <TermsDrawer visible={showTerms} onAccept={submit} onClose={() => setShowTerms(false)} />
     </SafeAreaView>

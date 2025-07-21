@@ -15,6 +15,7 @@ export default function KYCFormScreen() {
   const [street, setStreet] = useState('');
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
+  const [country, setCountry] = useState('US');
   const [postal, setPostal] = useState('');
   const [dob, setDob] = useState('');
   const [ssn, setSsn] = useState('');
@@ -24,10 +25,16 @@ export default function KYCFormScreen() {
 
   const submit = async () => {
     const info = {
-      address: { line1: street, city, state, postalCode: postal },
+      address: {
+        addressLine1: street,
+        city,
+        stateOrProvince: state,
+        postalCode: postal,
+        country,
+      },
       dob,
       ssn,
-      phone,
+      phone: { number: phone, countryCode: '1' },
       email,
     };
     setShowTerms(false);
@@ -45,6 +52,8 @@ export default function KYCFormScreen() {
         <TextInput style={styles.input} value={city} onChangeText={setCity} />
         <Text style={styles.label}>State</Text>
         <TextInput style={styles.input} value={state} onChangeText={setState} />
+        <Text style={styles.label}>Country</Text>
+        <TextInput style={styles.input} value={country} onChangeText={setCountry} />
         <Text style={styles.label}>Postal Code</Text>
         <TextInput style={styles.input} value={postal} onChangeText={setPostal} keyboardType="number-pad" />
         <Text style={styles.label}>Date of Birth (YYYY-MM-DD)</Text>
@@ -57,7 +66,7 @@ export default function KYCFormScreen() {
         <TextInput style={styles.input} value={email} onChangeText={setEmail} keyboardType="email-address" />
       </ScrollView>
       <View style={styles.footer}>
-        <Button title="Create Wallet" onPress={() => setShowTerms(true)} disabled={!street || !city || !state || !postal || !dob || !ssn || !phone || !email} />
+        <Button title="Create Wallet" onPress={() => setShowTerms(true)} disabled={!street || !city || !state || !postal || !country || !dob || !ssn || !phone || !email} />
       </View>
       <TermsDrawer visible={showTerms} onAccept={submit} onClose={() => setShowTerms(false)} />
     </SafeAreaView>

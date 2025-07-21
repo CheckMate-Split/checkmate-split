@@ -39,16 +39,14 @@ exports.createMoovWallet = functions.https.onCall(async (data, context) => {
         },
       },
       termsOfService: {
-        manual: {
-          acceptedDate: new Date(),
-          acceptedIP: context.rawRequest.ip || '0.0.0.0',
-          acceptedUserAgent:
-            context.rawRequest.headers['user-agent'] || 'unknown',
-          acceptedDomain:
-            context.rawRequest.headers['host'] ||
-            context.rawRequest.hostname ||
-            'unknown',
-        },
+        acceptedDate: new Date(),
+        acceptedIP: context.rawRequest.ip || '0.0.0.0',
+        acceptedUserAgent:
+          context.rawRequest.headers['user-agent'] || 'unknown',
+        acceptedDomain:
+          context.rawRequest.headers['host'] ||
+          context.rawRequest.hostname ||
+          'unknown',
       },
       capabilities: ['wallet'],
     });

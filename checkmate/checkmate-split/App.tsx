@@ -15,6 +15,7 @@ import ReceiptsScreen from './screens/ReceiptsScreen';
 import AccountScreen from './screens/AccountScreen';
 import LoginScreen from './screens/LoginScreen';
 import PaymentMethodsScreen from './screens/PaymentMethodsScreen';
+import KYCFormScreen from './screens/KYCFormScreen';
 import NotificationsScreen from './screens/NotificationsScreen';
 import TermsPrivacyScreen from './screens/TermsPrivacyScreen';
 import SupportFaqScreen from './screens/SupportFaqScreen';
@@ -57,6 +58,7 @@ export type SettingsStackParamList = {
   SettingsHome: undefined;
   Account: undefined;
   PaymentMethods: undefined;
+  KYCForm: undefined;
   Notifications: undefined;
   Terms: undefined;
   Support: undefined;
@@ -114,6 +116,7 @@ function SettingsStack() {
       <SettingsStackNav.Screen name="SettingsHome" component={SettingsScreen} />
       <SettingsStackNav.Screen name="Account" component={AccountScreen} />
       <SettingsStackNav.Screen name="PaymentMethods" component={PaymentMethodsScreen} />
+      <SettingsStackNav.Screen name="KYCForm" component={KYCFormScreen} />
       <SettingsStackNav.Screen name="Notifications" component={NotificationsScreen} />
       <SettingsStackNav.Screen name="Terms" component={TermsPrivacyScreen} />
       <SettingsStackNav.Screen name="Support" component={SupportFaqScreen} />

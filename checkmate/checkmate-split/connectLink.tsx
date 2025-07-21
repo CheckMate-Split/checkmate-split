@@ -6,7 +6,7 @@ import { TEST_MODE } from './testMode';
 
 interface Context {
   walletId: string | null;
-  refresh: () => Promise<string | null>;
+  refresh: (info?: any) => Promise<string | null>;
 }
 
 const ConnectLinkContext = createContext<Context>({
@@ -17,10 +17,10 @@ const ConnectLinkContext = createContext<Context>({
 export const ConnectLinkProvider = ({ children }: { children: React.ReactNode }) => {
   const [walletId, setWalletId] = useState<string | null>(null);
 
-  const refresh = async () => {
+  const refresh = async (info?: any) => {
     try {
       const callable = httpsCallable(functions, 'createMoovWallet');
-      const res: any = await callable();
+      const res: any = await callable(info);
       if (res?.data?.walletPending) {
         Alert.alert('Info', 'Wallet is being created. Provide additional info if prompted.');
         return null;

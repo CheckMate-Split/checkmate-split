@@ -50,13 +50,21 @@ exports.createMoovWallet = functions.https.onCall(async (data, context) => {
       { headers: { origin: ORIGIN } },
     );
     const token = tokenRes.result?.token || tokenRes.token;
+
+    const profile = {
+      individual: {
+        name: { firstName: first, lastName: last },
+      },
+    };
+    if (data?.address) profile.individual.address = data.address;
+    if (data?.dob) profile.individual.dob = data.dob;
+    if (data?.email) profile.individual.email = data.email;
+    if (data?.phone) profile.individual.phone = data.phone;
+    if (data?.ssn) profile.individual.ssn = data.ssn;
+
     const account = await client.accounts.create({
       accountType: 'individual',
-      profile: {
-        individual: {
-          name: { firstName: first, lastName: last },
-        },
-      },
+      profile,
       termsOfService: { token },
       capabilities: ['wallet'],
     });

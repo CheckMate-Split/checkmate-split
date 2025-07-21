@@ -6,7 +6,6 @@ import { httpsCallable } from 'firebase/functions';
 import PageHeader from '../components/PageHeader';
 import Button from '../components/Button';
 import OutlineButton from '../components/OutlineButton';
-import TermsDrawer from '../components/TermsDrawer';
 import Text from '../components/Text';
 import { colors, spacing } from '../constants';
 import { functions } from '../firebaseConfig';
@@ -14,9 +13,8 @@ import { useConnectLink } from '../connectLink';
 
 export default function PaymentMethodsScreen() {
   const navigation = useNavigation<any>();
-  const { walletId, refresh } = useConnectLink();
+  const { walletId } = useConnectLink();
   const [balance, setBalance] = useState<number>(0);
-  const [showTerms, setShowTerms] = useState(false);
 
   useEffect(() => {
     if (walletId) fetchBalance();
@@ -45,16 +43,8 @@ export default function PaymentMethodsScreen() {
           <OutlineButton title="Withdraw" onPress={() => {}} style={styles.button} />
         </View>
       ) : (
-        <Button title="Create Wallet" onPress={() => setShowTerms(true)} />
+        <Button title="Create Wallet" onPress={() => navigation.navigate('KYCForm')} />
       )}
-      <TermsDrawer
-        visible={showTerms}
-        onAccept={async () => {
-          setShowTerms(false);
-          await refresh();
-        }}
-        onClose={() => setShowTerms(false)}
-      />
     </SafeAreaView>
   );
 }

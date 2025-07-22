@@ -37,10 +37,7 @@ exports.createMoovWallet = functions.https.onCall(async (data, context) => {
   const uid = context.auth.uid;
   try {
     const ref = admin.firestore().collection('moovWallets').doc(uid);
-    const doc = await ref.get();
-    if (doc.exists) {
-      return { walletId: doc.data().walletId };
-    }
+    // Always create a fresh account so new information is captured
     // Create an individual account with wallet capability
     const userSnap = await admin.firestore().collection('users').doc(uid).get();
     const first = userSnap.data()?.first || 'CheckMate';

@@ -51,7 +51,9 @@ export default function GroupDetailScreen() {
   const renderItem = ({ item }: { item: any }) => (
     <PersonCard
       user={item}
-      onPress={() => setSelected(item.id)}
+      onPress={
+        item.id === auth.currentUser?.uid ? undefined : () => setSelected(item.id)
+      }
       tag={item.id === group?.owner ? 'owner' : undefined}
     />
   );

@@ -73,7 +73,15 @@ export default function FriendsScreen() {
   useEffect(() => {
     const unsub = onSnapshot(
       collection(db, 'users', auth.currentUser!.uid, 'groups'),
-      snap => setGroups(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+      async snap => {
+        const arr = await Promise.all(
+          snap.docs.map(async d => {
+            const g = await getDoc(doc(db, 'groups', d.id));
+            return { id: d.id, ...(g.exists() ? g.data() : {}) };
+          })
+        );
+        setGroups(arr);
+      }
     );
     return unsub;
   }, []);

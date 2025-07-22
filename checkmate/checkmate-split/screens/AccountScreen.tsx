@@ -90,13 +90,20 @@ export default function AccountScreen() {
 
       let photoURL = photo || null;
       if (photo && !photo.startsWith('https://')) {
-        const base64 = await FileSystem.readAsStringAsync(photo, {
-          encoding: FileSystem.EncodingType.Base64,
-        });
-        const storageRef = ref(storage, `avatars/${user.uid}`);
-        const dataUrl = `data:image/jpeg;base64,${base64}`;
-        await uploadString(storageRef, dataUrl, 'data_url');
-        photoURL = await getDownloadURL(storageRef);
+        try {
+          const base64 = await FileSystem.readAsStringAsync(photo, {
+            encoding: FileSystem.EncodingType.Base64,
+          });
+          const storageRef = ref(storage, `avatars/${user.uid}`);
+          const dataUrl = `data:image/jpeg;base64,${base64}`;
+          await uploadString(storageRef, dataUrl, 'data_url');
+          photoURL = await getDownloadURL(storageRef);
+        } catch (err) {
+          console.error('upload failed', err);
+          setError('Failed to upload image');
+          setSaving(false);
+          return;
+        }
       }
       if (photoURL !== photo) {
         setPhoto(photoURL);

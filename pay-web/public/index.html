@@ -5,17 +5,70 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Checkmate Pay</title>
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; padding: 40px; }
-    .btn { display: block; margin: 12px auto; padding: 12px 24px; border-radius: 4px; border: none; font-size: 16px; cursor: pointer; width: 220px; }
-    .btn-pay { background-color: #1a73e8; color: white; }
-    .btn-store { background-color: white; color: #1a73e8; border: 1px solid #1a73e8; }
-  </style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #fff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        text-align: center;
+      }
+
+      .card {
+        width: 95%;
+        max-width: 500px;
+        border: 2px solid #041036;
+        border-radius: 12px;
+        padding: 48px 32px;
+      }
+
+      .logo {
+        width: 100%;
+        max-width: 250px;
+        margin-bottom: 24px;
+      }
+
+      .btn {
+        display: block;
+        margin: 16px auto;
+        padding: 20px 24px;
+        border-radius: 8px;
+        border: none;
+        font-size: 18px;
+        cursor: pointer;
+        width: 260px;
+      }
+
+      .btn-pay {
+        background-color: #1e53d3;
+        color: white;
+      }
+
+      h1 {
+        color: #041036;
+      }
+
+      .btn-store {
+        background-color: white;
+        color: #041036;
+        border: 2px solid #041036;
+      }
+      .btn-store:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px #041036;
+      }
+    </style>
 </head>
 <body>
-  <h1 id="title">Loading...</h1>
-  <button id="payBtn" class="btn btn-pay">Pay on Web</button>
-  <button id="iosBtn" class="btn btn-store">Download on App Store</button>
-  <button id="androidBtn" class="btn btn-store">Download on Google Play</button>
+  <div class="card">
+    <img src="logo-full.jpeg" alt="Checkmate" class="logo" />
+    <h1 id="title">Loading...</h1>
+    <button id="payBtn" class="btn btn-pay">Pay on Web</button>
+    <button id="iosBtn" class="btn btn-store">Download on App Store</button>
+    <button id="androidBtn" class="btn btn-store">Download on Google Play</button>
+  </div>
 
   <script>
     function getQueryParam(key) {
@@ -28,9 +81,10 @@
     document.getElementById('title').innerText = `${name} has invited you to split the bill with Checkmate`;
 
     document.getElementById('payBtn').addEventListener('click', () => {
-      if (receiptId) {
-        window.location.href = `/pay?receipt_id=${encodeURIComponent(receiptId)}`;
-      }
+      const dest = new URL('claim.html', window.location.href);
+      if (receiptId) dest.searchParams.set('receipt_id', receiptId);
+      if (name) dest.searchParams.set('name', name);
+      window.location.href = dest.toString();
     });
     document.getElementById('iosBtn').addEventListener('click', () => {
       window.location.href = 'https://apps.apple.com';

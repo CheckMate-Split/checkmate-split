@@ -6,8 +6,7 @@ import { collection, onSnapshot, doc, getDoc } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import PageHeader from '../components/PageHeader';
 import Text from '../components/Text';
-import Checkbox from '../components/Checkbox';
-import PersonCard from '../components/PersonCard';
+import SelectablePersonCard from '../components/SelectablePersonCard';
 import Button from '../components/Button';
 import { db, auth, functions } from '../firebaseConfig';
 import { colors, spacing } from '../constants';
@@ -48,14 +47,11 @@ export default function AddReceiptFriendsScreen() {
   };
 
   const renderItem = ({ item }: { item: any }) => (
-    <View style={styles.row}>
-      <PersonCard user={item} />
-      <Checkbox
-        value={!!selected[item.id]}
-        onValueChange={v => setSelected({ ...selected, [item.id]: v })}
-        style={styles.check}
-      />
-    </View>
+    <SelectablePersonCard
+      user={item}
+      value={!!selected[item.id]}
+      onValueChange={v => setSelected({ ...selected, [item.id]: v })}
+    />
   );
 
   const selectedCount = Object.values(selected).filter(Boolean).length;
@@ -81,13 +77,6 @@ export default function AddReceiptFriendsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background, padding: spacing.m },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: spacing.s,
-  },
-  check: { marginLeft: spacing.m },
   empty: { textAlign: 'center', marginTop: spacing.l },
   button: { marginTop: spacing.l },
 });

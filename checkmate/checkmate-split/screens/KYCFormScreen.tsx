@@ -91,6 +91,7 @@ export default function KYCFormScreen() {
       phone: { number: phone.replace(/\D/g, ''), countryCode: '1' },
       email,
     };
+    console.log('submit KYC info', info);
     setShowTerms(false);
     const id = await refresh(info);
     if (id) navigation.goBack();

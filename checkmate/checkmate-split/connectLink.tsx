@@ -21,12 +21,14 @@ export const ConnectLinkProvider = ({ children }: { children: React.ReactNode })
     try {
       const callable = httpsCallable(functions, 'createMoovWallet');
       const res: any = await callable(info);
+      console.log('createMoovWallet result', res);
       if (res?.data?.walletPending) {
         Alert.alert('Info', 'Verifying wallet...');
         let id: string | null = null;
         for (let i = 0; i < 12 && !id; i++) {
           await new Promise(r => setTimeout(r, 5000));
           const check: any = await httpsCallable(functions, 'checkWalletStatus')();
+          console.log('checkWalletStatus result', check);
           id = check?.data?.walletId || null;
         }
         if (id) {

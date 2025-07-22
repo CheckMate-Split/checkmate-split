@@ -36,9 +36,19 @@
       padding: 8px 0;
       border-bottom: 1px solid #eee;
     }
-    .item label {
+    .item span {
       flex: 1;
       text-align: left;
+    }
+    .action-btn {
+      background: white;
+      border: 1px solid #1e53d3;
+      color: #1e53d3;
+      border-radius: 6px;
+      padding: 6px 12px;
+      margin-left: 8px;
+      cursor: pointer;
+      font-size: 14px;
     }
     .input {
       width: 100%;
@@ -93,40 +103,72 @@
       }
     }
 
+    let itemsData = [];
     function updateTotal() {
-      const cbs = document.querySelectorAll('#items input:checked');
       let total = 0;
-      cbs.forEach(cb => total += Number(cb.value));
+      itemsData.forEach(it => {
+        if (it.claimed) {
+          const pct = it.split ?? 100;
+          total += (it.price * pct) / 100;
+        }
+      });
       payBtn.textContent = `Pay $${total.toFixed(2)}`;
+      payBtn.disabled = !nameInput.value.trim() || total <= 0;
     }
 
     const payBtn = document.getElementById('pay');
     const nameInput = document.getElementById('name');
-    nameInput.addEventListener('input', () => {
-      payBtn.disabled = !nameInput.value.trim();
-    });
+    nameInput.addEventListener('input', updateTotal);
 
     loadReceipt(receiptId).then(items => {
       const container = document.getElementById('items');
-      items.forEach(item => {
+      itemsData = items.map(it => ({ ...it, claimed: true }));
+      itemsData.forEach(item => {
         const div = document.createElement('div');
         div.className = 'item';
-        const label = document.createElement('label');
-        const cb = document.createElement('input');
-        cb.type = 'checkbox';
-        cb.value = item.price;
-        cb.checked = true;
-        label.appendChild(cb);
-        label.append(` ${item.description} - $${item.price.toFixed(2)}`);
+        const label = document.createElement('span');
+        label.textContent = `${item.description} - $${item.price.toFixed(2)}`;
         div.appendChild(label);
+        const actions = document.createElement('div');
+        const claimBtn = document.createElement('button');
+        claimBtn.className = 'action-btn';
+        claimBtn.textContent = 'Unclaim';
+        const splitBtn = document.createElement('button');
+        splitBtn.className = 'action-btn';
+        splitBtn.textContent = 'Split';
+        actions.appendChild(claimBtn);
+        actions.appendChild(splitBtn);
+        div.appendChild(actions);
         container.appendChild(div);
-        cb.addEventListener('change', updateTotal);
+
+        claimBtn.addEventListener('click', () => {
+          item.claimed = !item.claimed;
+          claimBtn.textContent = item.claimed ? 'Unclaim' : 'Claim';
+          updateTotal();
+        });
+
+        splitBtn.addEventListener('click', () => {
+          const pct = parseFloat(prompt('Percent to claim (1-100)?', '100'));
+          if (!isNaN(pct) && pct > 0 && pct <= 100) {
+            item.split = pct;
+            item.claimed = true;
+            claimBtn.textContent = 'Unclaim';
+            updateTotal();
+          }
+        });
       });
       updateTotal();
     });
 
+    const stripe = Stripe('pk_test_placeholder');
     payBtn.addEventListener('click', async () => {
-      alert('This would open a Stripe checkout with the selected items.');
+      const { error } = await stripe.redirectToCheckout({
+        lineItems: [{ price: 'price_placeholder', quantity: 1 }],
+        mode: 'payment',
+        successUrl: window.location.href + '?success=true',
+        cancelUrl: window.location.href,
+      });
+      if (error) alert(error.message);
     });
   </script>
 </body>

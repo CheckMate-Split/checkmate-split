@@ -9,6 +9,7 @@ import HomeScreen from './screens/HomeScreen';
 import FriendsScreen from './screens/FriendsScreen';
 import AddFriendSearchScreen from './screens/AddFriendSearchScreen';
 import AddGroupScreen from './screens/AddGroupScreen';
+import AddGroupMembersScreen from './screens/AddGroupMembersScreen';
 import FriendDetailScreen from './screens/FriendDetailScreen';
 import GroupDetailScreen from './screens/GroupDetailScreen';
 import EditGroupScreen from './screens/EditGroupScreen';
@@ -26,6 +27,7 @@ import CreateReceiptScreen from './screens/CreateReceiptScreen';
 import ScanScreen from './screens/ScanScreen';
 import ReceiptScreen from './screens/ReceiptScreen';
 import ClaimItemsScreen from './screens/ClaimItemsScreen';
+import AddReceiptFriendsScreen from './screens/AddReceiptFriendsScreen';
 import ManageReceiptScreen from './screens/ManageReceiptScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import { colors } from './constants';
@@ -41,17 +43,19 @@ export type RootStackParamList = {
   Receipt: { id: string; receipt: any };
   ManageReceipt: { receipt: any };
   ClaimItems: { receipt: any; fromManage?: boolean };
+  AddReceiptFriends: { id: string };
 };
 
 export type HomeStackParamList = {
   Home: undefined;
-  Scan: undefined;
+  Scan: { groupId?: string } | undefined;
   CreateReceipt: {
     data?: any;
     image?: string;
     manual?: boolean;
     edit?: boolean;
     receipt?: any;
+    groupId?: string;
   };
   Confirm: { result: any };
   ClaimItems: { receipt: any };
@@ -79,6 +83,7 @@ export type FriendsStackParamList = {
   FriendDetail: { uid: string; name: string };
   GroupDetail: { id: string };
   EditGroup: { id: string };
+  AddGroupMembers: { id: string };
   DeeplinkAddFriend: { uid: string };
 };
 
@@ -145,6 +150,7 @@ function FriendsStack() {
       <FriendsStackNav.Screen name="AddGroup" component={AddGroupScreen} />
       <FriendsStackNav.Screen name="FriendDetail" component={FriendDetailScreen} />
       <FriendsStackNav.Screen name="GroupDetail" component={GroupDetailScreen} />
+      <FriendsStackNav.Screen name="AddGroupMembers" component={AddGroupMembersScreen} />
       <FriendsStackNav.Screen name="EditGroup" component={EditGroupScreen} />
       <FriendsStackNav.Screen name="DeeplinkAddFriend" component={DeeplinkAddFriendScreen} />
     </FriendsStackNav.Navigator>
@@ -255,6 +261,7 @@ export default function App() {
         <RootStack.Screen name="Tabs" component={MainTabs} />
         <RootStack.Screen name="Receipt" component={ReceiptScreen} />
         <RootStack.Screen name="ManageReceipt" component={ManageReceiptScreen} />
+        <RootStack.Screen name="AddReceiptFriends" component={AddReceiptFriendsScreen} />
         <RootStack.Screen name="ClaimItems" component={ClaimItemsScreen} />
       </RootStack.Navigator>
     </NavigationContainer>

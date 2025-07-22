@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { addDoc, collection, serverTimestamp, doc, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, serverTimestamp, doc, updateDoc, getDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Button from '../components/Button';
 import OutlineButton from '../components/OutlineButton';
@@ -30,17 +30,19 @@ export type CreateParams = {
     manual?: boolean;
     edit?: boolean;
     receipt?: any;
+    groupId?: string;
   };
 };
 
 export default function CreateReceiptScreen() {
   const route = useRoute<RouteProp<CreateParams, 'CreateReceipt'>>();
   const navigation = useNavigation<any>();
-  const { data = {}, image = '', manual, edit, receipt } = route.params;
+  const { data = {}, image = '', manual, edit, receipt, groupId } = route.params;
   const manualMode = edit || manual !== false;
   const [name, setName] = useState(receipt?.name || '');
   const [description, setDescription] = useState(receipt?.description || '');
   const [newImage, setNewImage] = useState<string | null>(null);
+  const [members, setMembers] = useState<string[]>([]);
   const [items, setItems] = useState<{ name: string; price: string; shared: boolean }[]>(
     receipt?.data?.lineItems?.map((i: any) => ({
       name: i.description,
@@ -66,6 +68,26 @@ export default function CreateReceiptScreen() {
       : new Date(data?.date?.data || Date.now())
   );
   const valid = name && items.every(i => i.name && i.price);
+
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      if (!groupId) return;
+      try {
+        const snap = await getDoc(doc(db, 'groups', groupId));
+        if (active && snap.exists()) {
+          const arr: string[] = snap.data().members || [];
+          setMembers(arr);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    load();
+    return () => {
+      active = false;
+    };
+  }, [groupId]);
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -138,6 +160,11 @@ export default function CreateReceiptScreen() {
           imageUrl = await getDownloadURL(imgRef);
           await updateDoc(docRef, { imageUrl });
         }
+        if (groupId && members.length) {
+          await updateDoc(docRef, {
+            participants: Array.from(new Set([...members, user.uid])),
+          });
+        }
       }
       const localReceipt = {
         id,
@@ -146,6 +173,7 @@ export default function CreateReceiptScreen() {
         data: sanitizedData,
         createdAt: receipt?.createdAt || new Date().toISOString(),
         imageUrl,
+        participants: groupId && members.length ? Array.from(new Set([...members, user.uid])) : receipt?.participants,
       };
       navigation.navigate('ClaimItems', { receipt: localReceipt });
     } catch (e) {

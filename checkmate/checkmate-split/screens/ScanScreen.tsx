@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Image, ActivityIndicator } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { httpsCallable } from 'firebase/functions';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { functions, auth } from '../firebaseConfig';
@@ -11,8 +11,12 @@ import { colors, spacing } from '../constants';
 import BottomDrawer from '../components/BottomDrawer';
 import Text from '../components/Text';
 
+export type ScanParams = { Scan: { groupId?: string } };
+
 export default function ScanScreen() {
   const navigation = useNavigation<any>();
+  const route = useRoute<RouteProp<ScanParams, 'Scan'>>();
+  const groupId = route.params?.groupId;
   const [captured, setCaptured] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<any>(null);
@@ -56,7 +60,7 @@ export default function ScanScreen() {
       );
       console.log('scan date', res.data?.data?.date?.data || res.data?.date?.data);
       const parsed = res.data?.data ?? res.data;
-      navigation.navigate('CreateReceipt', { data: parsed, image: captured.base64 });
+      navigation.navigate('CreateReceipt', { data: parsed, image: captured.base64, groupId });
     } catch (e: any) {
       console.error(e);
       setError(e);
@@ -72,7 +76,7 @@ export default function ScanScreen() {
   };
 
   const handleManual = () => {
-    navigation.navigate('CreateReceipt', { data: {}, image: '', manual: true });
+    navigation.navigate('CreateReceipt', { data: {}, image: '', manual: true, groupId });
   };
 
   return (

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkmate Pay</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding: 40px; }
+    .btn { display: block; margin: 12px auto; padding: 12px 24px; border-radius: 4px; border: none; font-size: 16px; cursor: pointer; width: 220px; }
+    .btn-pay { background-color: #1a73e8; color: white; }
+    .btn-store { background-color: white; color: #1a73e8; border: 1px solid #1a73e8; }
+  </style>
+</head>
+<body>
+  <h1 id="title">Loading...</h1>
+  <button id="payBtn" class="btn btn-pay">Pay on Web</button>
+  <button id="iosBtn" class="btn btn-store">Download on App Store</button>
+  <button id="androidBtn" class="btn btn-store">Download on Google Play</button>
+
+  <script>
+    function getQueryParam(key) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(key);
+    }
+
+    const receiptId = getQueryParam('receipt_id');
+    const name = getQueryParam('name') || 'Someone';
+    document.getElementById('title').innerText = `${name} has invited you to split the bill with Checkmate`;
+
+    document.getElementById('payBtn').addEventListener('click', () => {
+      if (receiptId) {
+        window.location.href = `/pay?receipt_id=${encodeURIComponent(receiptId)}`;
+      }
+    });
+    document.getElementById('iosBtn').addEventListener('click', () => {
+      window.location.href = 'https://apps.apple.com';
+    });
+    document.getElementById('androidBtn').addEventListener('click', () => {
+      window.location.href = 'https://play.google.com/store/apps';
+    });
+  </script>
+</body>
+</html>

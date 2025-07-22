@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, TouchableOpacity, FlatList, SectionList, Share } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, FlatList, Share } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import PageHeader from '../components/PageHeader';
 import Text from '../components/Text';
 import Button from '../components/Button';
-import OutlineButton from '../components/OutlineButton';
 import AddFriendDrawer from '../components/AddFriendDrawer';
 import AddFriendQRDrawer from '../components/AddFriendQRDrawer';
 import PersonCard from '../components/PersonCard';
@@ -149,19 +148,25 @@ export default function FriendsScreen() {
   );
 
   const renderRequest = ({ item }: { item: any }) => (
-    <View style={styles.row}>
-      <Text>{item.first ? `${item.first} ${item.last}` : item.id}</Text>
-      <View style={styles.actions}>
-        <Button title="Accept" onPress={() => acceptRequest(item.id, true)} style={styles.actionBtn} />
-        <OutlineButton title="Deny" onPress={() => acceptRequest(item.id, false)} style={styles.actionBtn} />
+    <View style={styles.inviteCard}>
+      <Text style={styles.inviteName}>{item.first ? `${item.first} ${item.last}` : item.id}</Text>
+      <View style={styles.inviteActions}>
+        <TouchableOpacity onPress={() => acceptRequest(item.id, true)} style={styles.smallBtn}>
+          <Text style={styles.btnText}>Accept</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => acceptRequest(item.id, false)} style={styles.smallBtn}>
+          <Text style={styles.btnText}>Deny</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
 
   const renderSentReq = ({ item }: { item: any }) => (
-    <View style={styles.row}>
-      <Text>{item.first ? `${item.first} ${item.last}` : item.id}</Text>
-      <OutlineButton title="Withdraw" onPress={() => withdrawRequest(item.id)} style={styles.actionBtn} />
+    <View style={styles.inviteCard}>
+      <Text style={styles.inviteName}>{item.first ? `${item.first} ${item.last}` : item.id}</Text>
+      <TouchableOpacity onPress={() => withdrawRequest(item.id)} style={styles.smallBtn}>
+        <Text style={styles.btnText}>Withdraw</Text>
+      </TouchableOpacity>
     </View>
   );
 
@@ -173,11 +178,15 @@ export default function FriendsScreen() {
   );
 
   const renderGroupInvite = ({ item }: { item: any }) => (
-    <View style={styles.row}>
-      <Text>{item.name || item.id}</Text>
-      <View style={styles.actions}>
-        <Button title="Join" onPress={() => respondGroup(item.id, true)} style={styles.actionBtn} />
-        <OutlineButton title="Decline" onPress={() => respondGroup(item.id, false)} style={styles.actionBtn} />
+    <View style={styles.inviteCard}>
+      <Text style={styles.inviteName}>{item.name || item.id}</Text>
+      <View style={styles.inviteActions}>
+        <TouchableOpacity onPress={() => respondGroup(item.id, true)} style={styles.smallBtn}>
+          <Text style={styles.btnText}>Join</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => respondGroup(item.id, false)} style={styles.smallBtn}>
+          <Text style={styles.btnText}>Decline</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -287,12 +296,28 @@ const styles = StyleSheet.create({
   footer: {
     marginTop: 'auto',
   },
-  row: {
-    paddingVertical: spacing.s,
-    borderBottomWidth: 1,
-    borderColor: '#eee',
-  },
   sectionTitle: { marginTop: spacing.m, marginBottom: spacing.s, fontWeight: '600' },
-  actions: { flexDirection: 'row' },
-  actionBtn: { marginLeft: spacing.s },
+  inviteCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: colors.primaryBackground,
+    padding: spacing.m,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    marginVertical: spacing.s,
+  },
+  inviteName: { fontSize: 18, fontWeight: '600', color: colors.text },
+  inviteActions: { flexDirection: 'row' },
+  smallBtn: {
+    backgroundColor: '#fff',
+    borderColor: '#ccc',
+    borderWidth: 1,
+    paddingVertical: spacing.s,
+    paddingHorizontal: spacing.m,
+    borderRadius: 16,
+    marginLeft: spacing.s / 2,
+  },
+  btnText: { color: colors.primary, fontWeight: '500' },
 });

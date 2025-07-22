@@ -42,3 +42,7 @@ Optionally configure onboarding URLs with `stripe.return_url` and `stripe.refres
 
 The mobile app initializes Firebase Auth using AsyncStorage persistence so users
 remain signed in across sessions.
+
+## Pay Web
+
+A minimal static page for web payments lives in `pay-web/public/index.html`. Pass a `receipt_id` query parameter to link a specific receipt. Optionally include `name` to show who invited you. The page offers a button to pay on the web and links to download the Checkmate app from the App Store or Google Play.

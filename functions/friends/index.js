@@ -68,8 +68,18 @@ exports.respondFriendRequest = functions.https.onCall(async (data, context) => {
   await reqRef.delete();
   await db.collection('users').doc(from).collection('sentRequests').doc(to).delete();
   if (accept) {
-    await db.collection('users').doc(to).collection('friends').doc(from).set({ createdAt: admin.firestore.FieldValue.serverTimestamp() });
-    await db.collection('users').doc(from).collection('friends').doc(to).set({ createdAt: admin.firestore.FieldValue.serverTimestamp() });
+    await db
+      .collection('users')
+      .doc(to)
+      .collection('friends')
+      .doc(from)
+      .set({ createdAt: admin.firestore.FieldValue.serverTimestamp() });
+    await db
+      .collection('users')
+      .doc(from)
+      .collection('friends')
+      .doc(to)
+      .set({ createdAt: admin.firestore.FieldValue.serverTimestamp() });
     const fromDoc = await db.collection('users').doc(from).get();
     const token = fromDoc.data()?.fcmToken;
     const allow = fromDoc.data()?.notificationSettings?.friendAccept !== false;
@@ -83,6 +93,16 @@ exports.respondFriendRequest = functions.https.onCall(async (data, context) => {
         data: { type: 'friendAccept', uid: to },
       });
     }
+    await db
+      .collection('users')
+      .doc(from)
+      .collection('notifications')
+      .add({
+        type: 'friendAccept',
+        from: to,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        read: false,
+      });
   }
   return { success: true };
 });
@@ -98,6 +118,20 @@ exports.withdrawFriendRequest = functions.https.onCall(async (data, context) => 
   const from = context.auth.uid;
   await db.collection('users').doc(to).collection('friendRequests').doc(from).delete();
   await db.collection('users').doc(from).collection('sentRequests').doc(to).delete();
+  return { success: true };
+});
+
+exports.removeFriend = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'user not authenticated');
+  }
+  const other = (data.uid || '').trim();
+  if (!other) {
+    throw new functions.https.HttpsError('invalid-argument', 'missing uid');
+  }
+  const uid = context.auth.uid;
+  await db.collection('users').doc(uid).collection('friends').doc(other).delete();
+  await db.collection('users').doc(other).collection('friends').doc(uid).delete();
   return { success: true };
 });
 
@@ -152,6 +186,35 @@ exports.sendGroupInvite = functions.https.onCall(async (data, context) => {
         body: 'You have been invited to join a group',
       },
       data: { type: 'groupInvite', groupId },
+    });
+  }
+  return { success: true };
+});
+
+exports.sendReceiptInvite = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'user not authenticated');
+  }
+  const receiptId = (data.receiptId || '').trim();
+  const to = (data.to || '').trim();
+  if (!receiptId || !to) {
+    throw new functions.https.HttpsError('invalid-argument', 'missing info');
+  }
+  const from = context.auth.uid;
+  const invite = { from, createdAt: admin.firestore.FieldValue.serverTimestamp() };
+  await db.collection('receipts').doc(receiptId).collection('invites').doc(to).set(invite);
+  await db.collection('users').doc(to).collection('receiptInvites').doc(receiptId).set({ from, receiptId, createdAt: admin.firestore.FieldValue.serverTimestamp() });
+  const toDoc = await db.collection('users').doc(to).get();
+  const token = toDoc.data()?.fcmToken;
+  const allow = toDoc.data()?.notificationSettings?.receiptInvite !== false;
+  if (token && allow) {
+    await admin.messaging().send({
+      token,
+      notification: {
+        title: 'Receipt Invite',
+        body: 'A receipt was shared with you',
+      },
+      data: { type: 'receiptInvite', receiptId },
     });
   }
   return { success: true };
@@ -259,6 +322,53 @@ exports.leaveGroup = functions.https.onCall(async (data, context) => {
   }
   await ref.update({ members: admin.firestore.FieldValue.arrayRemove(uid) });
   await db.collection('users').doc(uid).collection('groups').doc(groupId).delete();
+  return { success: true };
+});
+
+exports.addGroupMembers = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'user not authenticated');
+  }
+  const groupId = (data.groupId || '').trim();
+  const members = Array.isArray(data.members) ? data.members : [];
+  if (!groupId || members.length === 0) {
+    throw new functions.https.HttpsError('invalid-argument', 'missing info');
+  }
+  const ref = db.collection('groups').doc(groupId);
+  const snap = await ref.get();
+  if (!snap.exists) {
+    throw new functions.https.HttpsError('not-found', 'group not found');
+  }
+  if (snap.data().owner !== context.auth.uid) {
+    throw new functions.https.HttpsError('permission-denied', 'only owner can add');
+  }
+  await ref.update({ members: admin.firestore.FieldValue.arrayUnion(...members) });
+  await Promise.all(
+    members.map(uid =>
+      db.collection('users').doc(uid).collection('groups').doc(groupId).set({ groupId })
+    )
+  );
+  return { success: true };
+});
+
+exports.addReceiptFriends = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'user not authenticated');
+  }
+  const receiptId = (data.receiptId || '').trim();
+  const members = Array.isArray(data.members) ? data.members : [];
+  if (!receiptId || members.length === 0) {
+    throw new functions.https.HttpsError('invalid-argument', 'missing info');
+  }
+  const ref = db.collection('receipts').doc(receiptId);
+  const snap = await ref.get();
+  if (!snap.exists) {
+    throw new functions.https.HttpsError('not-found', 'receipt not found');
+  }
+  if (snap.data().payer !== context.auth.uid) {
+    throw new functions.https.HttpsError('permission-denied', 'only payer can add');
+  }
+  await ref.update({ participants: admin.firestore.FieldValue.arrayUnion(...members) });
   return { success: true };
 });
 

@@ -51,14 +51,24 @@ const token = tokenRes.result?.token || tokenRes.token;
 if (!token) throw new Error('missing terms of service token');
 
 const addr = data?.address;
+const govId = data?.ssn
+  ? {
+      governmentID: {
+        ssn:
+          String(data.ssn).length === 4
+            ? { lastFour: data.ssn }
+            : { full: data.ssn },
+      },
+    }
+  : {};
 const profile = {
   individual: {
     name: { firstName: first, lastName: last },
     ...(addr && { address: addr }),
-    ...(data?.dob && { dob: data.dob }),
+    ...(data?.dob && { birthDate: data.dob }),
     ...(data?.email && { email: data.email }),
     ...(data?.phone && { phone: data.phone }),
-    ...(data?.ssn && { ssn: data.ssn }),
+    ...govId,
   },
 };
 
@@ -147,15 +157,25 @@ exports.completeMoovKYC = functions.https.onCall(async (data, context) => {
   const { accountId } = snap.data();
   try {
     const addr = data.address;
+    const gov = data.ssn
+      ? {
+          governmentID: {
+            ssn:
+              String(data.ssn).length === 4
+                ? { lastFour: data.ssn }
+                : { full: data.ssn },
+          },
+        }
+      : {};
     await client.accounts.update({
       accountID: accountId,
       profile: {
         individual: {
           ...(addr && { address: addr }),
-          ...(data.dob && { dob: data.dob }),
+          ...(data.dob && { birthDate: data.dob }),
           ...(data.email && { email: data.email }),
           ...(data.phone && { phone: data.phone }),
-          ...(data.ssn && { ssn: data.ssn }),
+          ...gov,
         },
       },
     });

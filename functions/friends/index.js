@@ -23,6 +23,12 @@ exports.sendFriendRequest = functions.https.onCall(async (data, context) => {
     .set({ from, createdAt: admin.firestore.FieldValue.serverTimestamp() });
   await db
     .collection('users')
+    .doc(from)
+    .collection('sentRequests')
+    .doc(to)
+    .set({ to, createdAt: admin.firestore.FieldValue.serverTimestamp() });
+  await db
+    .collection('users')
     .doc(to)
     .collection('notifications')
     .add({
@@ -34,7 +40,8 @@ exports.sendFriendRequest = functions.https.onCall(async (data, context) => {
 
   const toDoc = await db.collection('users').doc(to).get();
   const token = toDoc.data()?.fcmToken;
-  if (token) {
+  const allow = toDoc.data()?.notificationSettings?.friendReq !== false;
+  if (token && allow) {
     await admin.messaging().send({
       token,
       notification: {
@@ -59,10 +66,38 @@ exports.respondFriendRequest = functions.https.onCall(async (data, context) => {
   const to = context.auth.uid;
   const reqRef = db.collection('users').doc(to).collection('friendRequests').doc(from);
   await reqRef.delete();
+  await db.collection('users').doc(from).collection('sentRequests').doc(to).delete();
   if (accept) {
     await db.collection('users').doc(to).collection('friends').doc(from).set({ createdAt: admin.firestore.FieldValue.serverTimestamp() });
     await db.collection('users').doc(from).collection('friends').doc(to).set({ createdAt: admin.firestore.FieldValue.serverTimestamp() });
+    const fromDoc = await db.collection('users').doc(from).get();
+    const token = fromDoc.data()?.fcmToken;
+    const allow = fromDoc.data()?.notificationSettings?.friendAccept !== false;
+    if (token && allow) {
+      await admin.messaging().send({
+        token,
+        notification: {
+          title: 'Friend Request Accepted',
+          body: 'Your friend request was accepted',
+        },
+        data: { type: 'friendAccept', uid: to },
+      });
+    }
   }
+  return { success: true };
+});
+
+exports.withdrawFriendRequest = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'user not authenticated');
+  }
+  const to = (data.to || '').trim();
+  if (!to) {
+    throw new functions.https.HttpsError('invalid-argument', 'missing recipient');
+  }
+  const from = context.auth.uid;
+  await db.collection('users').doc(to).collection('friendRequests').doc(from).delete();
+  await db.collection('users').doc(from).collection('sentRequests').doc(to).delete();
   return { success: true };
 });
 
@@ -72,7 +107,7 @@ exports.createGroup = functions.https.onCall(async (data, context) => {
   }
   const name = (data.name || '').trim();
   const members = Array.isArray(data.members) ? data.members : [];
-  if (!name || members.length === 0) {
+  if (!name) {
     throw new functions.https.HttpsError('invalid-argument', 'missing group info');
   }
   const owner = context.auth.uid;
@@ -89,6 +124,68 @@ exports.createGroup = functions.https.onCall(async (data, context) => {
     )
   );
   return { id: groupRef.id };
+});
+
+exports.sendGroupInvite = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'user not authenticated');
+  }
+  const groupId = (data.groupId || '').trim();
+  const to = (data.to || '').trim();
+  if (!groupId || !to) {
+    throw new functions.https.HttpsError('invalid-argument', 'missing info');
+  }
+  const from = context.auth.uid;
+  const invite = { from, createdAt: admin.firestore.FieldValue.serverTimestamp() };
+  await db.collection('groups').doc(groupId).collection('invites').doc(to).set(invite);
+  await db.collection('users').doc(to).collection('groupInvites').doc(groupId).set({ from, groupId, createdAt: admin.firestore.FieldValue.serverTimestamp() });
+  const toDoc = await db.collection('users').doc(to).get();
+  const token = toDoc.data()?.fcmToken;
+  const allow = toDoc.data()?.notificationSettings?.groupInvite !== false;
+  if (token && allow) {
+    await admin.messaging().send({
+      token,
+      notification: {
+        title: 'Group Invite',
+        body: 'You have been invited to join a group',
+      },
+      data: { type: 'groupInvite', groupId },
+    });
+  }
+  return { success: true };
+});
+
+exports.respondGroupInvite = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'user not authenticated');
+  }
+  const groupId = (data.groupId || '').trim();
+  const accept = !!data.accept;
+  const uid = context.auth.uid;
+  if (!groupId) {
+    throw new functions.https.HttpsError('invalid-argument', 'missing info');
+  }
+  await db.collection('groups').doc(groupId).collection('invites').doc(uid).delete();
+  await db.collection('users').doc(uid).collection('groupInvites').doc(groupId).delete();
+  if (accept) {
+    await db.collection('groups').doc(groupId).update({ members: admin.firestore.FieldValue.arrayUnion(uid) });
+    await db.collection('users').doc(uid).collection('groups').doc(groupId).set({ groupId });
+  }
+  return { success: true };
+});
+
+exports.withdrawGroupInvite = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'user not authenticated');
+  }
+  const groupId = (data.groupId || '').trim();
+  const to = (data.to || '').trim();
+  if (!groupId || !to) {
+    throw new functions.https.HttpsError('invalid-argument', 'missing info');
+  }
+  await db.collection('groups').doc(groupId).collection('invites').doc(to).delete();
+  await db.collection('users').doc(to).collection('groupInvites').doc(groupId).delete();
+  return { success: true };
 });
 
 exports.registerFcmToken = functions.https.onCall(async (data, context) => {

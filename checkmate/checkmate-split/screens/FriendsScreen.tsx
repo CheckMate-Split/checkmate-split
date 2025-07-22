@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, TouchableOpacity, FlatList, Share } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, FlatList, SectionList, Share } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import PageHeader from '../components/PageHeader';
 import Text from '../components/Text';
 import Button from '../components/Button';
+import OutlineButton from '../components/OutlineButton';
 import AddFriendDrawer from '../components/AddFriendDrawer';
 import AddFriendQRDrawer from '../components/AddFriendQRDrawer';
 import { collection, onSnapshot, doc, getDoc } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
 import { useNavigation } from '@react-navigation/native';
-import { db, auth } from '../firebaseConfig';
+import { db, auth, functions } from '../firebaseConfig';
 import { colors, spacing } from '../constants';
 
 export default function FriendsScreen() {
@@ -18,6 +20,9 @@ export default function FriendsScreen() {
   const [qrVisible, setQrVisible] = useState(false);
   const [friends, setFriends] = useState<any[]>([]);
   const [groups, setGroups] = useState<any[]>([]);
+  const [requests, setRequests] = useState<any[]>([]);
+  const [sent, setSent] = useState<any[]>([]);
+  const [groupInvites, setGroupInvites] = useState<any[]>([]);
 
   useEffect(() => {
     const unsub = onSnapshot(
@@ -36,10 +41,52 @@ export default function FriendsScreen() {
   }, []);
 
   useEffect(() => {
+    const uid = auth.currentUser!.uid;
+    const unsub = onSnapshot(collection(db, 'users', uid, 'friendRequests'), async snap => {
+      const arr = await Promise.all(
+        snap.docs.map(async d => {
+          const p = await getDoc(doc(db, 'users', d.id));
+          return { id: d.id, ...(p.exists() ? p.data() : {}) };
+        })
+      );
+      setRequests(arr);
+    });
+    return unsub;
+  }, []);
+
+  useEffect(() => {
+    const uid = auth.currentUser!.uid;
+    const unsub = onSnapshot(collection(db, 'users', uid, 'sentRequests'), async snap => {
+      const arr = await Promise.all(
+        snap.docs.map(async d => {
+          const p = await getDoc(doc(db, 'users', d.id));
+          return { id: d.id, ...(p.exists() ? p.data() : {}) };
+        })
+      );
+      setSent(arr);
+    });
+    return unsub;
+  }, []);
+
+  useEffect(() => {
     const unsub = onSnapshot(
       collection(db, 'users', auth.currentUser!.uid, 'groups'),
       snap => setGroups(snap.docs.map(d => ({ id: d.id, ...d.data() })))
     );
+    return unsub;
+  }, []);
+
+  useEffect(() => {
+    const uid = auth.currentUser!.uid;
+    const unsub = onSnapshot(collection(db, 'users', uid, 'groupInvites'), async snap => {
+      const arr = await Promise.all(
+        snap.docs.map(async d => {
+          const g = await getDoc(doc(db, 'groups', d.id));
+          return { id: d.id, ...(g.exists() ? g.data() : {}), from: d.data().from };
+        })
+      );
+      setGroupInvites(arr);
+    });
     return unsub;
   }, []);
 
@@ -55,6 +102,33 @@ export default function FriendsScreen() {
     else navigation.navigate('AddGroup');
   };
 
+  const acceptRequest = async (uid: string, accept: boolean) => {
+    try {
+      const fn = httpsCallable(functions, 'respondFriendRequest');
+      await fn({ from: uid, accept });
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const withdrawRequest = async (uid: string) => {
+    try {
+      const fn = httpsCallable(functions, 'withdrawFriendRequest');
+      await fn({ to: uid });
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const respondGroup = async (gid: string, accept: boolean) => {
+    try {
+      const fn = httpsCallable(functions, 'respondGroupInvite');
+      await fn({ groupId: gid, accept });
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const renderFriend = ({ item }: { item: any }) => (
     <TouchableOpacity
       onPress={() =>
@@ -66,10 +140,37 @@ export default function FriendsScreen() {
     </TouchableOpacity>
   );
 
+  const renderRequest = ({ item }: { item: any }) => (
+    <View style={styles.row}>
+      <Text>{item.first ? `${item.first} ${item.last}` : item.id}</Text>
+      <View style={styles.actions}>
+        <Button title="Accept" onPress={() => acceptRequest(item.id, true)} style={styles.actionBtn} />
+        <OutlineButton title="Deny" onPress={() => acceptRequest(item.id, false)} style={styles.actionBtn} />
+      </View>
+    </View>
+  );
+
+  const renderSentReq = ({ item }: { item: any }) => (
+    <View style={styles.row}>
+      <Text>{item.first ? `${item.first} ${item.last}` : item.id}</Text>
+      <OutlineButton title="Withdraw" onPress={() => withdrawRequest(item.id)} style={styles.actionBtn} />
+    </View>
+  );
+
   const renderGroup = ({ item }: { item: any }) => (
     <TouchableOpacity onPress={() => navigation.navigate('GroupDetail', { id: item.id })} style={styles.row}>
       <Text>{item.name || item.id}</Text>
     </TouchableOpacity>
+  );
+
+  const renderGroupInvite = ({ item }: { item: any }) => (
+    <View style={styles.row}>
+      <Text>{item.name || item.id}</Text>
+      <View style={styles.actions}>
+        <Button title="Join" onPress={() => respondGroup(item.id, true)} style={styles.actionBtn} />
+        <OutlineButton title="Decline" onPress={() => respondGroup(item.id, false)} style={styles.actionBtn} />
+      </View>
+    </View>
   );
 
   return (
@@ -90,19 +191,41 @@ export default function FriendsScreen() {
         </TouchableOpacity>
       </View>
       {tab === 'friends' ? (
-        <FlatList
-          data={friends}
-          renderItem={renderFriend}
-          keyExtractor={item => item.id}
-          ListEmptyComponent={<Text style={styles.empty}>no friends yet</Text>}
-        />
+        <>
+          {requests.length > 0 && (
+            <>
+              <Text style={styles.sectionTitle}>Invites Received</Text>
+              <FlatList data={requests} renderItem={renderRequest} keyExtractor={i => i.id} />
+            </>
+          )}
+          {sent.length > 0 && (
+            <>
+              <Text style={styles.sectionTitle}>Invites Sent</Text>
+              <FlatList data={sent} renderItem={renderSentReq} keyExtractor={i => i.id} />
+            </>
+          )}
+          <FlatList
+            data={friends}
+            renderItem={renderFriend}
+            keyExtractor={item => item.id}
+            ListEmptyComponent={<Text style={styles.empty}>no friends yet</Text>}
+          />
+        </>
       ) : (
-        <FlatList
-          data={groups}
-          renderItem={renderGroup}
-          keyExtractor={item => item.id}
-          ListEmptyComponent={<Text style={styles.empty}>no groups yet</Text>}
-        />
+        <>
+          {groupInvites.length > 0 && (
+            <>
+              <Text style={styles.sectionTitle}>Group Invites</Text>
+              <FlatList data={groupInvites} renderItem={renderGroupInvite} keyExtractor={i => i.id} />
+            </>
+          )}
+          <FlatList
+            data={groups}
+            renderItem={renderGroup}
+            keyExtractor={item => item.id}
+            ListEmptyComponent={<Text style={styles.empty}>no groups yet</Text>}
+          />
+        </>
       )}
       <View style={styles.footer}>
         <Button title={tab === 'friends' ? 'Add Friend' : 'Add Group'} onPress={openAdd} />
@@ -160,4 +283,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: '#eee',
   },
+  sectionTitle: { marginTop: spacing.m, marginBottom: spacing.s, fontWeight: '600' },
+  actions: { flexDirection: 'row' },
+  actionBtn: { marginLeft: spacing.s },
 });

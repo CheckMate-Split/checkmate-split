@@ -28,7 +28,7 @@ export default function AddGroupScreen() {
   const create = async () => {
     try {
       const members = Object.keys(selected).filter(k => selected[k]);
-      if (name && members.length) {
+      if (name) {
         const fn = httpsCallable(functions, 'createGroup');
         await fn({ name, members });
         navigation.goBack();

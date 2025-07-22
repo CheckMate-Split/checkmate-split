@@ -57,6 +57,14 @@ export default function ManageReceiptScreen() {
   if (!totals[receipt.payer]) {
     totals[receipt.payer] = 0;
   }
+  const participants: string[] = Array.isArray(receipt.participants)
+    ? receipt.participants
+    : [];
+  participants.forEach(uid => {
+    if (!totals[uid]) {
+      totals[uid] = 0;
+    }
+  });
   const people = Object.keys(totals).map(id => ({
     id,
     name: id === auth.currentUser?.uid ? 'You' : 'Person',

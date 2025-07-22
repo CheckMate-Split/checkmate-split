@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -21,7 +21,7 @@ import { auth, db } from '../firebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../firebaseConfig';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, getDoc } from 'firebase/firestore';
 
 
 export type ManageReceiptParams = {
@@ -40,6 +40,7 @@ export default function ManageReceiptScreen() {
     [receipt.payer]: true,
     ...(receipt.payments || {}),
   });
+  const [profiles, setProfiles] = useState<Record<string, any>>({});
 
   const created = receipt.createdAt
     ? new Date(receipt.createdAt.seconds
@@ -65,12 +66,44 @@ export default function ManageReceiptScreen() {
       totals[uid] = 0;
     }
   });
-  const people = Object.keys(totals).map(id => ({
-    id,
-    name: id === auth.currentUser?.uid ? 'You' : 'Person',
-    amount: totals[id],
-    status: paid[id] ? 'Paid' : 'Not Paid',
-  }));
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      try {
+        const ids = Object.keys(totals);
+        const arr = await Promise.all(
+          ids.map(async id => {
+            const snap = await getDoc(doc(db, 'users', id));
+            return { id, ...(snap.exists() ? snap.data() : {}) } as any;
+          })
+        );
+        if (active) {
+          const obj: Record<string, any> = {};
+          arr.forEach(u => {
+            obj[u.id] = u;
+          });
+          setProfiles(obj);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    load();
+    return () => {
+      active = false;
+    };
+  }, [receipt]);
+
+  const people = Object.keys(totals).map(id => {
+    const prof = profiles[id];
+    const name =
+      id === auth.currentUser?.uid
+        ? 'You'
+        : prof
+        ? `${prof.first || ''} ${prof.last || ''}`.trim() || prof.username || 'Person'
+        : 'Person';
+    return { id, name, amount: totals[id], status: paid[id] ? 'Paid' : 'Not Paid' };
+  });
 
   let you = people.find(p => p.id === auth.currentUser?.uid);
   if (!you && auth.currentUser) {

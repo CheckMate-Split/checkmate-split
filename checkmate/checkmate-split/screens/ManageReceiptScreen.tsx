@@ -120,6 +120,10 @@ export default function ManageReceiptScreen() {
   const yourTotal = you ? you.amount : 0;
   const yourPaid = paidAmounts[auth.currentUser?.uid || ''] || 0;
   const yourDue = yourTotal - yourPaid;
+  const hasClaimed = items.some(
+    i => i.responsible === auth.currentUser?.uid || i.split?.[auth.currentUser?.uid || '']
+  );
+  const hasShared = items.some(i => i.shared);
 
   const handleEdit = () => {
     navigation.navigate('Tabs', {
@@ -286,7 +290,7 @@ export default function ManageReceiptScreen() {
         )}
       </ScrollView>
       {!isOwner && (
-        yourDue > 0 ? (
+        hasClaimed || hasShared || yourDue > 0 ? (
           <Button title="Pay" onPress={() => setPayVisible(true)} style={styles.payButton} />
         ) : (
           <Button

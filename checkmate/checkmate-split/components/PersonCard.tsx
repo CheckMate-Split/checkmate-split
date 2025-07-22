@@ -6,9 +6,10 @@ import { colors, spacing } from '../constants';
 interface Props {
   user: any;
   onPress?: () => void;
+  tag?: string;
 }
 
-export default function PersonCard({ user, onPress }: Props) {
+export default function PersonCard({ user, onPress, tag }: Props) {
   return (
     <TouchableOpacity
       style={styles.card}
@@ -26,6 +27,11 @@ export default function PersonCard({ user, onPress }: Props) {
         <Text style={styles.name}>{user.first} {user.last}</Text>
         <Text style={styles.username}>@{user.username}</Text>
       </View>
+      {tag ? (
+        <View style={styles.tagWrapper}>
+          <Text style={styles.tag}>{tag}</Text>
+        </View>
+      ) : null}
     </TouchableOpacity>
   );
 }
@@ -62,4 +68,11 @@ const styles = StyleSheet.create({
   info: { flex: 1 },
   name: { fontSize: 18, fontWeight: '600', color: colors.text },
   username: { color: '#666' },
+  tagWrapper: {
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+    paddingHorizontal: spacing.s,
+    paddingVertical: spacing.s / 2,
+  },
+  tag: { color: '#fff', fontSize: 12, textTransform: 'uppercase' },
 });

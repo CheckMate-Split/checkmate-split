@@ -212,6 +212,56 @@ exports.updateGroup = functions.https.onCall(async (data, context) => {
   return { success: true };
 });
 
+exports.deleteGroup = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'user not authenticated');
+  }
+  const id = (data.id || '').trim();
+  if (!id) {
+    throw new functions.https.HttpsError('invalid-argument', 'missing group id');
+  }
+  const ref = db.collection('groups').doc(id);
+  const snap = await ref.get();
+  if (!snap.exists) {
+    throw new functions.https.HttpsError('not-found', 'group not found');
+  }
+  const group = snap.data();
+  if (group.owner !== context.auth.uid) {
+    throw new functions.https.HttpsError('permission-denied', 'only owner can delete');
+  }
+  const members = group.members || [];
+  await Promise.all(
+    members.map(uid =>
+      db.collection('users').doc(uid).collection('groups').doc(id).delete()
+    )
+  );
+  await ref.delete();
+  return { success: true };
+});
+
+exports.leaveGroup = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'user not authenticated');
+  }
+  const groupId = (data.groupId || '').trim();
+  if (!groupId) {
+    throw new functions.https.HttpsError('invalid-argument', 'missing group id');
+  }
+  const uid = context.auth.uid;
+  const ref = db.collection('groups').doc(groupId);
+  const snap = await ref.get();
+  if (!snap.exists) {
+    throw new functions.https.HttpsError('not-found', 'group not found');
+  }
+  const group = snap.data();
+  if (group.owner === uid) {
+    throw new functions.https.HttpsError('failed-precondition', 'owner cannot leave');
+  }
+  await ref.update({ members: admin.firestore.FieldValue.arrayRemove(uid) });
+  await db.collection('users').doc(uid).collection('groups').doc(groupId).delete();
+  return { success: true };
+});
+
 exports.registerFcmToken = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'user not authenticated');

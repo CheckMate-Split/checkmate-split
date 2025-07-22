@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, FlatList, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, FlatList, View, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { doc, onSnapshot, getDoc } from 'firebase/firestore';
@@ -7,7 +7,11 @@ import PageHeader from '../components/PageHeader';
 import Text from '../components/Text';
 import MemberDrawer from '../components/MemberDrawer';
 import PersonCard from '../components/PersonCard';
-import { db, auth } from '../firebaseConfig';
+import Button from '../components/Button';
+import OutlineButton from '../components/OutlineButton';
+import { Ionicons } from '@expo/vector-icons';
+import { db, auth, functions } from '../firebaseConfig';
+import { httpsCallable } from 'firebase/functions';
 import { colors, spacing } from '../constants';
 
 export type GroupDetailParams = {
@@ -48,8 +52,26 @@ export default function GroupDetailScreen() {
     <PersonCard
       user={item}
       onPress={() => setSelected(item.id)}
+      tag={item.id === group?.owner ? 'owner' : undefined}
     />
   );
+
+  const leave = async () => {
+    try {
+      const fn = httpsCallable(functions, 'leaveGroup');
+      await fn({ groupId: id });
+      navigation.goBack();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const confirmLeave = () => {
+    Alert.alert('Leave Group', 'Are you sure?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Leave', style: 'destructive', onPress: leave },
+    ]);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -59,7 +81,7 @@ export default function GroupDetailScreen() {
         right={
           group?.owner === auth.currentUser?.uid ? (
             <TouchableOpacity onPress={() => navigation.navigate('EditGroup', { id })}>
-              <Text style={styles.edit}>Edit</Text>
+              <Ionicons name="pencil" size={20} color={colors.primary} />
             </TouchableOpacity>
           ) : undefined
         }
@@ -69,12 +91,22 @@ export default function GroupDetailScreen() {
           {group.description ? (
             <Text style={styles.desc}>{group.description}</Text>
           ) : null}
-          <Text style={styles.owner}>{`Owner: ${members.find(m => m.id === group.owner)?.first || ''} ${members.find(m => m.id === group.owner)?.last || ''}`}</Text>
+          <Text style={styles.section}>Members</Text>
           <FlatList
             data={members}
             renderItem={renderItem}
             keyExtractor={m => m.id}
           />
+          <View style={styles.actions}>
+            <Button title="Send Request" onPress={() => {}} style={styles.actionBtn} />
+            {group.owner !== auth.currentUser?.uid && (
+              <OutlineButton
+                title="Leave Group"
+                onPress={confirmLeave}
+                style={styles.actionBtn}
+              />
+            )}
+          </View>
         </>
       )}
       <MemberDrawer
@@ -90,7 +122,9 @@ export default function GroupDetailScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background, padding: spacing.m },
   row: { paddingVertical: spacing.s, borderBottomWidth: 1, borderColor: '#eee' },
-  owner: { marginBottom: spacing.m },
   desc: { marginBottom: spacing.m, color: '#666' },
-  edit: { color: colors.primary, fontWeight: '600' },
+  edit: { color: colors.primary },
+  section: { marginBottom: spacing.s, fontWeight: '600' },
+  actions: { marginTop: spacing.m },
+  actionBtn: { marginTop: spacing.s },
 });

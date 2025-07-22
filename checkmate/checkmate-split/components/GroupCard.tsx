@@ -21,9 +21,7 @@ export default function GroupCard({ group, onPress }: Props) {
       </View>
       <View style={styles.info}>
         <Text style={styles.name}>{group.name}</Text>
-        {group.description ? (
-          <Text style={styles.desc}>{group.description}</Text>
-        ) : null}
+        <Text style={styles.desc}>{(group.members?.length || 0)} members</Text>
       </View>
     </TouchableOpacity>
   );

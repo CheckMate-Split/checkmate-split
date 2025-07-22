@@ -6,6 +6,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import PageHeader from '../components/PageHeader';
 import Button from '../components/Button';
+import OutlineButton from '../components/OutlineButton';
 import Text from '../components/Text';
 import { db, functions } from '../firebaseConfig';
 import { colors, spacing } from '../constants';
@@ -41,6 +42,16 @@ export default function EditGroupScreen() {
     }
   };
 
+  const remove = async () => {
+    try {
+      const fn = httpsCallable(functions, 'deleteGroup');
+      await fn({ id });
+      navigation.goBack();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <PageHeader title="Edit Group" onBack={navigation.goBack} />
@@ -59,6 +70,13 @@ export default function EditGroupScreen() {
         style={styles.input}
       />
       <Button title="Save" onPress={save} style={styles.button} disabled={!name} />
+      <OutlineButton
+        title="Delete Group"
+        onPress={remove}
+        style={styles.deleteButton}
+        textColor={colors.pinkRed}
+        borderColor={colors.pinkRed}
+      />
     </SafeAreaView>
   );
 }
@@ -68,4 +86,5 @@ const styles = StyleSheet.create({
   input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: spacing.m, marginBottom: spacing.m },
   label: { fontWeight: '600', marginBottom: spacing.s },
   button: { marginTop: spacing.l },
+  deleteButton: { marginTop: spacing.m },
 });

@@ -58,6 +58,8 @@ export default function AddReceiptFriendsScreen() {
     </View>
   );
 
+  const selectedCount = Object.values(selected).filter(Boolean).length;
+
   return (
     <SafeAreaView style={styles.container}>
       <PageHeader title="Add Friends" onBack={navigation.goBack} />
@@ -67,7 +69,12 @@ export default function AddReceiptFriendsScreen() {
         keyExtractor={item => item.id}
         ListEmptyComponent={<Text style={styles.empty}>no friends</Text>}
       />
-      <Button title="Add to Receipt" onPress={addFriends} style={styles.button} />
+      <Button
+        title="Add to Receipt"
+        onPress={addFriends}
+        style={styles.button}
+        disabled={!selectedCount}
+      />
     </SafeAreaView>
   );
 }

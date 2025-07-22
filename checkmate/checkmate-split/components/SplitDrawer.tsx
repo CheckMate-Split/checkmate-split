@@ -45,7 +45,11 @@ export default function SplitDrawer({
             <>
               <Text style={styles.message}>Split item?</Text>
               <Button title="Split Equally" onPress={() => { close(); onSplitEqual(); }} style={styles.button} />
-              <Button title="Claim Portion" onPress={() => setMode('portion')} style={styles.button} />
+              <OutlineButton
+                title="Claim Portion"
+                onPress={() => setMode('portion')}
+                style={styles.button}
+              />
               <OutlineButton
                 title="Cancel"
                 onPress={close}

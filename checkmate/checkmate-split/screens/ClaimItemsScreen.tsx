@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
   },
   itemText: { flex: 0.75, fontSize: 20 },
   actionRow: { flexDirection: 'row' },
-  buttonRow: { flexDirection: 'row' },
+  buttonRow: { flexDirection: 'row', alignItems: 'center' },
   smallBtn: {
     backgroundColor: '#fff',
     borderColor: '#ccc',
@@ -214,6 +214,12 @@ const styles = StyleSheet.create({
     marginLeft: spacing.s / 2,
   },
   btnText: { color: colors.primary, fontWeight: '500' },
-  percent: { fontWeight: '600', marginLeft: spacing.s, fontSize: 20 },
+  percent: {
+    fontWeight: '600',
+    marginLeft: spacing.s,
+    marginRight: spacing.m,
+    fontSize: 20,
+    alignSelf: 'center',
+  },
   footer: { padding: spacing.m },
 });

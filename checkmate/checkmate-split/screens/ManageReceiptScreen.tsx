@@ -7,6 +7,7 @@ import {
   Share,
   TouchableOpacity,
   Image,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
@@ -16,10 +17,11 @@ import OutlineButton from '../components/OutlineButton';
 import QRCode from 'react-native-qrcode-svg';
 import { colors, spacing } from '../constants';
 import Button from '../components/Button';
-import { auth } from '../firebaseConfig';
+import { auth, db } from '../firebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../firebaseConfig';
+import { doc, updateDoc } from 'firebase/firestore';
 
 
 export type ManageReceiptParams = {
@@ -34,6 +36,10 @@ export default function ManageReceiptScreen() {
   const [qrVisible, setQrVisible] = useState(false);
   const [payVisible, setPayVisible] = useState(false);
   const [imageVisible, setImageVisible] = useState(false);
+  const [paid, setPaid] = useState<Record<string, boolean>>({
+    [receipt.payer]: true,
+    ...(receipt.payments || {}),
+  });
 
   const created = receipt.createdAt
     ? new Date(receipt.createdAt.seconds
@@ -55,7 +61,7 @@ export default function ManageReceiptScreen() {
     id,
     name: id === auth.currentUser?.uid ? 'You' : 'Person',
     amount: totals[id],
-    status: id === receipt.payer ? 'Paid' : 'Not Paid',
+    status: paid[id] ? 'Paid' : 'Not Paid',
   }));
 
   let you = people.find(p => p.id === auth.currentUser?.uid);
@@ -96,14 +102,47 @@ export default function ManageReceiptScreen() {
     navigation.navigate('AddReceiptFriends', { id: receipt.id });
   };
 
+  const togglePaid = async (uid: string) => {
+    const newVal = !paid[uid];
+    try {
+      await updateDoc(doc(db, 'receipts', receipt.id), {
+        [`payments.${uid}`]: newVal,
+      });
+      setPaid({ ...paid, [uid]: newVal });
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
 
   const renderPerson = (p: any) => {
     const isYou = p.id === auth.currentUser?.uid;
-    const Container: any = isYou ? TouchableOpacity : View;
-    const props = isYou
+    const canEdit = isOwner || isYou;
+    const Container: any = canEdit ? TouchableOpacity : View;
+    const props = canEdit
       ? {
-          onPress: () =>
-            navigation.navigate('ClaimItems', { receipt, fromManage: true }),
+          onPress: () => {
+            if (isOwner && !isYou) {
+              Alert.alert(p.name, undefined, [
+                {
+                  text: paid[p.id] ? 'Mark Unpaid' : 'Mark Paid',
+                  onPress: () => togglePaid(p.id),
+                },
+                {
+                  text: 'Edit Items',
+                  onPress: () =>
+                    navigation.navigate('ClaimItems', {
+                      receipt,
+                      fromManage: true,
+                      uid: p.id,
+                    }),
+                },
+                { text: 'Cancel', style: 'cancel' },
+              ]);
+            } else {
+              navigation.navigate('ClaimItems', { receipt, fromManage: true });
+            }
+          },
         }
       : {};
     return (

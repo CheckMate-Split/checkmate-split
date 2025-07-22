@@ -325,6 +325,53 @@ exports.leaveGroup = functions.https.onCall(async (data, context) => {
   return { success: true };
 });
 
+exports.addGroupMembers = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'user not authenticated');
+  }
+  const groupId = (data.groupId || '').trim();
+  const members = Array.isArray(data.members) ? data.members : [];
+  if (!groupId || members.length === 0) {
+    throw new functions.https.HttpsError('invalid-argument', 'missing info');
+  }
+  const ref = db.collection('groups').doc(groupId);
+  const snap = await ref.get();
+  if (!snap.exists) {
+    throw new functions.https.HttpsError('not-found', 'group not found');
+  }
+  if (snap.data().owner !== context.auth.uid) {
+    throw new functions.https.HttpsError('permission-denied', 'only owner can add');
+  }
+  await ref.update({ members: admin.firestore.FieldValue.arrayUnion(...members) });
+  await Promise.all(
+    members.map(uid =>
+      db.collection('users').doc(uid).collection('groups').doc(groupId).set({ groupId })
+    )
+  );
+  return { success: true };
+});
+
+exports.addReceiptFriends = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'user not authenticated');
+  }
+  const receiptId = (data.receiptId || '').trim();
+  const members = Array.isArray(data.members) ? data.members : [];
+  if (!receiptId || members.length === 0) {
+    throw new functions.https.HttpsError('invalid-argument', 'missing info');
+  }
+  const ref = db.collection('receipts').doc(receiptId);
+  const snap = await ref.get();
+  if (!snap.exists) {
+    throw new functions.https.HttpsError('not-found', 'receipt not found');
+  }
+  if (snap.data().payer !== context.auth.uid) {
+    throw new functions.https.HttpsError('permission-denied', 'only payer can add');
+  }
+  await ref.update({ participants: admin.firestore.FieldValue.arrayUnion(...members) });
+  return { success: true };
+});
+
 exports.registerFcmToken = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'user not authenticated');

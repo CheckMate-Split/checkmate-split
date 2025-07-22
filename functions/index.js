@@ -28,6 +28,8 @@ const {
   respondGroupInvite,
   withdrawGroupInvite,
   sendReceiptInvite,
+  addGroupMembers,
+  addReceiptFriends,
   registerFcmToken,
 } = require('./friends');
 
@@ -51,6 +53,8 @@ exports.sendGroupInvite = sendGroupInvite;
 exports.respondGroupInvite = respondGroupInvite;
 exports.withdrawGroupInvite = withdrawGroupInvite;
 exports.sendReceiptInvite = sendReceiptInvite;
+exports.addGroupMembers = addGroupMembers;
+exports.addReceiptFriends = addReceiptFriends;
 exports.createMoovWallet = createMoovWallet;
 exports.getMoovBalance = getMoovBalance;
 exports.createMoovPayment = createMoovPayment;

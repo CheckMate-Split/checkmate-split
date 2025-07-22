@@ -7,6 +7,7 @@ import { httpsCallable } from 'firebase/functions';
 import PageHeader from '../components/PageHeader';
 import Text from '../components/Text';
 import Checkbox from '../components/Checkbox';
+import PersonCard from '../components/PersonCard';
 import Button from '../components/Button';
 import { db, auth, functions } from '../firebaseConfig';
 import { colors, spacing } from '../constants';
@@ -27,11 +28,11 @@ export default function AddGroupMembersScreen() {
     );
   }, []);
 
-  const sendInvites = async () => {
+  const addMembers = async () => {
     try {
-      const fn = httpsCallable(functions, 'sendGroupInvite');
+      const fn = httpsCallable(functions, 'addGroupMembers');
       const list = Object.keys(selected).filter(k => selected[k]);
-      await Promise.all(list.map(uid => fn({ groupId: id, to: uid })));
+      await fn({ groupId: id, members: list });
       navigation.goBack();
     } catch (e) {
       console.error(e);
@@ -40,10 +41,11 @@ export default function AddGroupMembersScreen() {
 
   const renderItem = ({ item }: { item: any }) => (
     <View style={styles.row}>
-      <Text>{item.name || item.id}</Text>
+      <PersonCard user={item} />
       <Checkbox
         value={!!selected[item.id]}
         onValueChange={v => setSelected({ ...selected, [item.id]: v })}
+        style={styles.check}
       />
     </View>
   );
@@ -57,7 +59,7 @@ export default function AddGroupMembersScreen() {
         keyExtractor={item => item.id}
         ListEmptyComponent={<Text style={styles.empty}>no friends</Text>}
       />
-      <Button title="Send Invites" onPress={sendInvites} style={styles.button} />
+      <Button title="Add to Group" onPress={addMembers} style={styles.button} />
     </SafeAreaView>
   );
 }
@@ -70,6 +72,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.s,
   },
+  check: { marginLeft: spacing.m },
   empty: { textAlign: 'center', marginTop: spacing.l },
   button: { marginTop: spacing.l },
 });

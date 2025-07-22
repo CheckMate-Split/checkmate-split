@@ -207,20 +207,23 @@ export default function ManageReceiptScreen() {
 
   const renderPerson = (p: any) => {
     const isYou = p.id === auth.currentUser?.uid;
-    const Container: any = TouchableOpacity;
-    const props = {
-      onPress: () => {
-        if (isOwner && !isYou) {
-          setPersonDrawer(p);
-        } else if (isYou) {
-          navigation.navigate('ClaimItems', {
-            receipt,
-            fromManage: true,
-            uid: auth.currentUser?.uid,
-          });
-        }
-      },
-    };
+    const Container: any = isYou || isOwner ? TouchableOpacity : View;
+    const props =
+      isYou || (isOwner && !isYou)
+        ? {
+            onPress: () => {
+              if (isOwner && !isYou) {
+                setPersonDrawer(p);
+              } else if (isYou) {
+                navigation.navigate('ClaimItems', {
+                  receipt,
+                  fromManage: true,
+                  uid: auth.currentUser?.uid,
+                });
+              }
+            },
+          }
+        : {};
     return (
       <Container key={p.id} style={styles.personContainer} {...props}>
         <View style={styles.personRow}>

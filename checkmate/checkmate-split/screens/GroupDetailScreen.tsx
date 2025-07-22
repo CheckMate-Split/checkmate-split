@@ -101,6 +101,13 @@ export default function GroupDetailScreen() {
           />
           <View style={styles.actions}>
             <Button title="Send Request" onPress={() => {}} style={styles.actionBtn} />
+            {group.owner === auth.currentUser?.uid && (
+              <OutlineButton
+                title="Add Friends"
+                onPress={() => navigation.navigate('AddGroupMembers', { id })}
+                style={styles.actionBtn}
+              />
+            )}
             {group.owner !== auth.currentUser?.uid && (
               <OutlineButton
                 title="Leave Group"

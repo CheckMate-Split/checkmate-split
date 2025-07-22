@@ -121,6 +121,20 @@ exports.withdrawFriendRequest = functions.https.onCall(async (data, context) => 
   return { success: true };
 });
 
+exports.removeFriend = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'user not authenticated');
+  }
+  const other = (data.uid || '').trim();
+  if (!other) {
+    throw new functions.https.HttpsError('invalid-argument', 'missing uid');
+  }
+  const uid = context.auth.uid;
+  await db.collection('users').doc(uid).collection('friends').doc(other).delete();
+  await db.collection('users').doc(other).collection('friends').doc(uid).delete();
+  return { success: true };
+});
+
 exports.createGroup = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'user not authenticated');
@@ -172,6 +186,35 @@ exports.sendGroupInvite = functions.https.onCall(async (data, context) => {
         body: 'You have been invited to join a group',
       },
       data: { type: 'groupInvite', groupId },
+    });
+  }
+  return { success: true };
+});
+
+exports.sendReceiptInvite = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'user not authenticated');
+  }
+  const receiptId = (data.receiptId || '').trim();
+  const to = (data.to || '').trim();
+  if (!receiptId || !to) {
+    throw new functions.https.HttpsError('invalid-argument', 'missing info');
+  }
+  const from = context.auth.uid;
+  const invite = { from, createdAt: admin.firestore.FieldValue.serverTimestamp() };
+  await db.collection('receipts').doc(receiptId).collection('invites').doc(to).set(invite);
+  await db.collection('users').doc(to).collection('receiptInvites').doc(receiptId).set({ from, receiptId, createdAt: admin.firestore.FieldValue.serverTimestamp() });
+  const toDoc = await db.collection('users').doc(to).get();
+  const token = toDoc.data()?.fcmToken;
+  const allow = toDoc.data()?.notificationSettings?.receiptInvite !== false;
+  if (token && allow) {
+    await admin.messaging().send({
+      token,
+      notification: {
+        title: 'Receipt Invite',
+        body: 'A receipt was shared with you',
+      },
+      data: { type: 'receiptInvite', receiptId },
     });
   }
   return { success: true };

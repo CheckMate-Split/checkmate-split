@@ -92,6 +92,10 @@ export default function ManageReceiptScreen() {
   const payApple = pay;
   const payAch = pay;
 
+  const addFriends = () => {
+    navigation.navigate('AddReceiptFriends', { id: receipt.id });
+  };
+
 
   const renderPerson = (p: any) => {
     const isYou = p.id === auth.currentUser?.uid;
@@ -165,6 +169,9 @@ export default function ManageReceiptScreen() {
       </ScrollView>
       {!isOwner && (
         <Button title="Pay" onPress={() => setPayVisible(true)} style={styles.payButton} />
+      )}
+      {isOwner && (
+        <Button title="Add Friends" onPress={addFriends} style={styles.addButton} />
       )}
       <View style={styles.footer}>
         <OutlineButton
@@ -294,6 +301,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.m,
   },
   shareButton: { flex: 1, marginHorizontal: spacing.s / 2 },
+  addButton: { marginHorizontal: spacing.m, marginBottom: spacing.s },
   modalOverlay: {
     flex: 1,
     justifyContent: 'flex-end',

@@ -17,14 +17,14 @@ import Text from '../components/Text';
 import { auth, db, storage, functions } from '../firebaseConfig';
 import { httpsCallable } from 'firebase/functions';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { ref, uploadString, getDownloadURL } from 'firebase/storage';
-import * as FileSystem from 'expo-file-system';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { updateProfile } from 'firebase/auth';
 
 export default function AccountScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const initial = route.params?.initial;
+  const fromSettings = route.params?.fromSettings;
   const user = auth.currentUser;
   const [first, setFirst] = useState('');
   const [last, setLast] = useState('');
@@ -87,52 +87,61 @@ export default function AccountScreen() {
         setSaving(false);
         return;
       }
+
+      let photoURL = photo || null;
+      if (photo && !photo.startsWith('https://')) {
+        try {
+          const response = await fetch(photo);
+          const blob = await response.blob();
+          const storageRef = ref(storage, `avatars/${user.uid}`);
+          await uploadBytes(storageRef, blob);
+          photoURL = await getDownloadURL(storageRef);
+        } catch (err) {
+          console.error('upload failed', err);
+          setError('Failed to upload image');
+          setSaving(false);
+          return;
+        }
+      }
+      if (photoURL !== photo) {
+        setPhoto(photoURL);
+      }
+      if (photoURL && user.photoURL !== photoURL) {
+        await updateProfile(user, { photoURL });
+      }
+      await setDoc(
+        doc(db, 'users', user.uid),
+        {
+          first,
+          last,
+          username: uname,
+          email,
+          venmo,
+          cashapp,
+          photo: photoURL,
+        },
+        { merge: true }
+      );
+      if (fromSettings) {
+        navigation.goBack();
+      } else if (initial) {
+        navigation.reset({ index: 0, routes: [{ name: 'Tabs' }] });
+      } else {
+        navigation.goBack();
+      }
     } catch (e) {
       console.error(e);
-      setError('Failed to validate username');
-      setSaving(false);
-      return;
-    }
-    let photoURL = photo || null;
-    if (photo && !photo.startsWith('https://')) {
-      const base64 = await FileSystem.readAsStringAsync(photo, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-      const storageRef = ref(storage, `avatars/${user.uid}`);
-      const dataUrl = `data:image/jpeg;base64,${base64}`;
-      await uploadString(storageRef, dataUrl, 'data_url');
-      photoURL = await getDownloadURL(storageRef);
-    }
-    if (photoURL !== photo) {
-      setPhoto(photoURL);
-    }
-    if (photoURL && user.photoURL !== photoURL) {
-      await updateProfile(user, { photoURL });
-    }
-    await setDoc(
-      doc(db, 'users', user.uid),
-      {
-        first,
-        last,
-        username: uname,
-        email,
-        venmo,
-        cashapp,
-        photo: photoURL,
-      },
-      { merge: true }
-    );
-    if (initial) {
-      navigation.reset({ index: 0, routes: [{ name: 'Tabs' }] });
-    } else {
-      navigation.goBack();
+      setError('Failed to save changes');
     }
     setSaving(false);
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <PageHeader title="Account" onBack={initial ? undefined : navigation.goBack} />
+      <PageHeader
+        title="Account"
+        onBack={initial && !fromSettings ? undefined : navigation.goBack}
+      />
       <TouchableOpacity onPress={pickPhoto} style={styles.avatarWrapper}>
         <Image
           source={photo ? { uri: photo } : require('../assets/icon.png')}

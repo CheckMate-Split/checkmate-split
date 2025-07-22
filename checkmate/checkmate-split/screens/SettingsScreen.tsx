@@ -42,7 +42,7 @@ export default function SettingsScreen() {
       <MenuItem
         title="Account"
         icon="person"
-        onPress={() => navigation.navigate('Account')}
+        onPress={() => navigation.navigate('Account', { fromSettings: true })}
       />
       <MenuItem
         title="Payments & Balance"

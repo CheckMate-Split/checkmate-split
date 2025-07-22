@@ -24,6 +24,7 @@ export default function AccountScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const initial = route.params?.initial;
+  const fromSettings = route.params?.fromSettings;
   const user = auth.currentUser;
   const [first, setFirst] = useState('');
   const [last, setLast] = useState('');
@@ -121,7 +122,9 @@ export default function AccountScreen() {
         },
         { merge: true }
       );
-      if (initial) {
+      if (fromSettings) {
+        navigation.goBack();
+      } else if (initial) {
         navigation.reset({ index: 0, routes: [{ name: 'Tabs' }] });
       } else {
         navigation.goBack();
@@ -135,7 +138,10 @@ export default function AccountScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <PageHeader title="Account" onBack={initial ? undefined : navigation.goBack} />
+      <PageHeader
+        title="Account"
+        onBack={initial && !fromSettings ? undefined : navigation.goBack}
+      />
       <TouchableOpacity onPress={pickPhoto} style={styles.avatarWrapper}>
         <Image
           source={photo ? { uri: photo } : require('../assets/icon.png')}

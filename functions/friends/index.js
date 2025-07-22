@@ -31,6 +31,19 @@ exports.sendFriendRequest = functions.https.onCall(async (data, context) => {
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       read: false,
     });
+
+  const toDoc = await db.collection('users').doc(to).get();
+  const token = toDoc.data()?.fcmToken;
+  if (token) {
+    await admin.messaging().send({
+      token,
+      notification: {
+        title: 'New Friend Request',
+        body: 'You have a new friend request',
+      },
+      data: { type: 'friendRequest', from },
+    });
+  }
   return { success: true };
 });
 
@@ -76,4 +89,16 @@ exports.createGroup = functions.https.onCall(async (data, context) => {
     )
   );
   return { id: groupRef.id };
+});
+
+exports.registerFcmToken = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'user not authenticated');
+  }
+  const token = (data.token || '').trim();
+  if (!token) {
+    throw new functions.https.HttpsError('invalid-argument', 'missing token');
+  }
+  await db.collection('users').doc(context.auth.uid).update({ fcmToken: token });
+  return { success: true };
 });

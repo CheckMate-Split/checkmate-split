@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, TextInput, View, FlatList, TouchableOpacity } from 'react-native';
+import { StyleSheet, TextInput, View, FlatList, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { collection, query, where, onSnapshot, getDocs } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
@@ -35,9 +35,11 @@ export default function AddFriendSearchScreen() {
     try {
       const fn = httpsCallable(functions, 'sendFriendRequest');
       await fn({ to: uid });
+      Alert.alert('Sent', 'Friend request sent');
       navigation.goBack();
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
+      Alert.alert('Error', e?.message || 'Failed to send request');
     }
   };
 

@@ -15,7 +15,7 @@ const {
   checkWalletStatus,
 } = require('./moov');
 const { checkUsername } = require('./username');
-const { sendFriendRequest, respondFriendRequest, createGroup } = require('./friends');
+const { sendFriendRequest, respondFriendRequest, createGroup, registerFcmToken } = require('./friends');
 
 exports.parseReciept = scanReceipt;
 exports.createStripeConnectLink = createStripeConnectLink;
@@ -33,3 +33,4 @@ exports.getMoovBalance = getMoovBalance;
 exports.createMoovPayment = createMoovPayment;
 exports.completeMoovKYC = completeMoovKYC;
 exports.checkWalletStatus = checkWalletStatus;
+exports.registerFcmToken = registerFcmToken;

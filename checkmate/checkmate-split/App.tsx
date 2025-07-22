@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import * as Notifications from 'expo-notifications';
 import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
 import * as Linking from 'expo-linking';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -27,7 +28,8 @@ import ClaimItemsScreen from './screens/ClaimItemsScreen';
 import ManageReceiptScreen from './screens/ManageReceiptScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import { colors } from './constants';
-import { auth, db } from './firebaseConfig';
+import { auth, db, functions } from './firebaseConfig';
+import { httpsCallable } from 'firebase/functions';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore';
 
@@ -214,6 +216,26 @@ export default function App() {
       navigationRef.reset({ index: 0, routes: [{ name: 'Tabs' }] });
     }
   }, [user, profile, loading, navReady, navigationRef]);
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const perm = await Notifications.getPermissionsAsync();
+      if (perm.status !== 'granted') {
+        const req = await Notifications.requestPermissionsAsync();
+        if (req.status !== 'granted') return;
+      }
+      const { data: token } = await Notifications.getDevicePushTokenAsync();
+      if (token) {
+        try {
+          const fn = httpsCallable(functions, 'registerFcmToken');
+          await fn({ token });
+        } catch (e) {
+          console.log('register token failed', e);
+        }
+      }
+    })();
+  }, [user]);
 
   if (loading) return null;
 

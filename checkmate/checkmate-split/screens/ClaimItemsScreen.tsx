@@ -7,26 +7,49 @@ import PageHeader from '../components/PageHeader';
 import Button from '../components/Button';
 import SplitDrawer from '../components/SplitDrawer';
 import { colors, spacing } from '../constants';
+import { auth, db } from '../firebaseConfig';
+import { doc, updateDoc } from 'firebase/firestore';
 
 export type ClaimItemsParams = {
-  ClaimItems: { receipt: any; fromManage?: boolean };
+  ClaimItems: { receipt: any; fromManage?: boolean; uid?: string };
 };
 
 interface Item {
   description: string;
   amount: { data: number };
+  shared?: boolean;
+  responsible?: string;
+  __index: number;
 }
 
 export default function ClaimItemsScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<RouteProp<ClaimItemsParams, 'ClaimItems'>>();
-  const { receipt, fromManage } = route.params;
-  const initial = receipt.data?.lineItems || [];
+  const { receipt, fromManage, uid } = route.params;
+  const userId = uid || auth.currentUser?.uid || '';
+  const payer = receipt.payer;
 
-  const joinable = initial.filter((i: any) => i.shared);
-  const [unclaimed, setUnclaimed] = useState<Item[]>(initial.filter((i: any) => !i.shared));
+  const withIndex: Item[] = (receipt.data?.lineItems || []).map((i: any, idx: number) => ({
+    ...i,
+    __index: idx,
+  }));
+
+  const joinable = withIndex.filter(i => i.shared);
+  const initialUnclaimed = withIndex.filter(
+    i => !i.shared && ((i.responsible || payer) === payer)
+  );
+  const initialClaimed = withIndex.filter(
+    i => !i.shared && (i.responsible || payer) === userId
+  );
+  const others = withIndex.filter(
+    i =>
+      !i.shared &&
+      (i.responsible || payer) !== userId &&
+      (i.responsible || payer) !== payer
+  );
+  const [unclaimed, setUnclaimed] = useState<Item[]>(initialUnclaimed);
   const [availableSplits, setAvailableSplits] = useState<Item[]>(joinable);
-  const [claimed, setClaimed] = useState<Item[]>([]);
+  const [claimed, setClaimed] = useState<Item[]>(initialClaimed);
   const [shared, setShared] = useState<Item[]>([]);
   const [split, setSplit] = useState<{ item: Item; percent: number }[]>([]);
 
@@ -161,13 +184,48 @@ export default function ClaimItemsScreen() {
             )}
           </View>
         )}
+        {others.length > 0 && (
+          <View>
+            <Text style={styles.section}>Others</Text>
+            {others.map(i => renderRow(i, null))}
+          </View>
+        )}
       </ScrollView>
       <View style={styles.footer}>
         <Button
           title="Confirm"
-          onPress={() => {
-            if (fromManage) navigation.goBack();
-            else navigation.navigate('ManageReceipt', { receipt, fromCreate: true });
+          onPress={async () => {
+            try {
+              const updated = [...withIndex];
+              claimed.forEach(it => {
+                updated[it.__index] = { ...updated[it.__index], responsible: userId };
+              });
+              unclaimed.forEach(it => {
+                updated[it.__index] = { ...updated[it.__index], responsible: payer };
+              });
+              await updateDoc(doc(db, 'receipts', receipt.id), {
+                'data.lineItems': updated.map(({ __index, ...rest }) => rest),
+                participants: Array.from(
+                  new Set([...(receipt.participants || []), userId])
+                ),
+              });
+              const newReceipt = {
+                ...receipt,
+                data: { ...receipt.data, lineItems: updated.map(({ __index, ...rest }) => rest) },
+                participants: Array.from(
+                  new Set([...(receipt.participants || []), userId])
+                ),
+              };
+              if (fromManage) {
+                navigation.navigate('ManageReceipt', { receipt: newReceipt });
+              } else {
+                navigation.navigate('ManageReceipt', { receipt: newReceipt, fromCreate: true });
+              }
+            } catch (e) {
+              console.error(e);
+              if (fromManage) navigation.goBack();
+              else navigation.navigate('ManageReceipt', { receipt, fromCreate: true });
+            }
           }}
         />
       </View>

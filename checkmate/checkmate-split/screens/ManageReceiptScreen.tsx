@@ -212,8 +212,12 @@ export default function ManageReceiptScreen() {
       onPress: () => {
         if (isOwner && !isYou) {
           setPersonDrawer(p);
-        } else {
-          navigation.navigate('ClaimItems', { receipt, fromManage: true });
+        } else if (isYou) {
+          navigation.navigate('ClaimItems', {
+            receipt,
+            fromManage: true,
+            uid: auth.currentUser?.uid,
+          });
         }
       },
     };
@@ -282,7 +286,17 @@ export default function ManageReceiptScreen() {
         yourDue > 0 ? (
           <Button title="Pay" onPress={() => setPayVisible(true)} style={styles.payButton} />
         ) : (
-          <Button title="Claim Items" onPress={() => navigation.navigate('ClaimItems', { receipt, fromManage: true })} style={styles.payButton} />
+          <Button
+            title="Claim Items"
+            onPress={() =>
+              navigation.navigate('ClaimItems', {
+                receipt,
+                fromManage: true,
+                uid: auth.currentUser?.uid,
+              })
+            }
+            style={styles.payButton}
+          />
         )
       )}
       {isOwner && (

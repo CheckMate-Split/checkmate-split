@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, FlatList, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { collection, onSnapshot } from 'firebase/firestore';
+import { collection, onSnapshot, doc, getDoc } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import PageHeader from '../components/PageHeader';
 import Text from '../components/Text';
@@ -24,7 +24,15 @@ export default function AddGroupMembersScreen() {
   useEffect(() => {
     return onSnapshot(
       collection(db, 'users', auth.currentUser!.uid, 'friends'),
-      snap => setFriends(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+      async snap => {
+        const arr = await Promise.all(
+          snap.docs.map(async d => {
+            const prof = await getDoc(doc(db, 'users', d.id));
+            return { id: d.id, ...(prof.exists() ? prof.data() : {}) } as any;
+          })
+        );
+        setFriends(arr);
+      }
     );
   }, []);
 

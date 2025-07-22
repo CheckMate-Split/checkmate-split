@@ -40,6 +40,7 @@ export type RootStackParamList = {
   Tabs: undefined;
   Receipt: { id: string; receipt: any };
   ManageReceipt: { receipt: any };
+  ClaimItems: { receipt: any; fromManage?: boolean };
 };
 
 export type HomeStackParamList = {
@@ -254,6 +255,7 @@ export default function App() {
         <RootStack.Screen name="Tabs" component={MainTabs} />
         <RootStack.Screen name="Receipt" component={ReceiptScreen} />
         <RootStack.Screen name="ManageReceipt" component={ManageReceiptScreen} />
+        <RootStack.Screen name="ClaimItems" component={ClaimItemsScreen} />
       </RootStack.Navigator>
     </NavigationContainer>
   );

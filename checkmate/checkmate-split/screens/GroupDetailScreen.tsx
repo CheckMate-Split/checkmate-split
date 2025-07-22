@@ -83,7 +83,7 @@ export default function GroupDetailScreen() {
         right={
           group?.owner === auth.currentUser?.uid ? (
             <TouchableOpacity onPress={() => navigation.navigate('EditGroup', { id })}>
-              <Ionicons name="pencil" size={20} color={colors.primary} />
+              <Ionicons name="pencil" size={20} color={colors.text} />
             </TouchableOpacity>
           ) : undefined
         }

@@ -9,7 +9,7 @@ import SplitDrawer from '../components/SplitDrawer';
 import { colors, spacing } from '../constants';
 
 export type ClaimItemsParams = {
-  ClaimItems: { receipt: any };
+  ClaimItems: { receipt: any; fromManage?: boolean };
 };
 
 interface Item {
@@ -20,7 +20,7 @@ interface Item {
 export default function ClaimItemsScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<RouteProp<ClaimItemsParams, 'ClaimItems'>>();
-  const { receipt } = route.params;
+  const { receipt, fromManage } = route.params;
   const initial = receipt.data?.lineItems || [];
 
   const joinable = initial.filter((i: any) => i.shared);
@@ -165,7 +165,10 @@ export default function ClaimItemsScreen() {
       <View style={styles.footer}>
         <Button
           title="Confirm"
-          onPress={() => navigation.navigate('ManageReceipt', { receipt })}
+          onPress={() => {
+            if (fromManage) navigation.goBack();
+            else navigation.navigate('ManageReceipt', { receipt });
+          }}
         />
       </View>
       <SplitDrawer

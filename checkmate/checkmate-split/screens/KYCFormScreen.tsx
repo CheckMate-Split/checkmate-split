@@ -10,6 +10,8 @@ import Text from '../components/Text';
 import { colors, spacing } from '../constants';
 import { useConnectLink } from '../connectLink';
 
+const DEMO_FULL_SSN = '123456789';
+
 export default function KYCFormScreen() {
   const navigation = useNavigation<any>();
   const { refresh } = useConnectLink();
@@ -87,7 +89,8 @@ export default function KYCFormScreen() {
         month: dob.getMonth() + 1,
         year: dob.getFullYear(),
       },
-      ssn,
+      ssnFull: DEMO_FULL_SSN,
+      ssnLast4: DEMO_FULL_SSN.slice(-4),
       phone: { number: phone.replace(/\D/g, ''), countryCode: '1' },
       email,
     };

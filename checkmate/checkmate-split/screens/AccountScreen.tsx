@@ -87,45 +87,44 @@ export default function AccountScreen() {
         setSaving(false);
         return;
       }
+
+      let photoURL = photo || null;
+      if (photo && !photo.startsWith('https://')) {
+        const base64 = await FileSystem.readAsStringAsync(photo, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        const storageRef = ref(storage, `avatars/${user.uid}`);
+        const dataUrl = `data:image/jpeg;base64,${base64}`;
+        await uploadString(storageRef, dataUrl, 'data_url');
+        photoURL = await getDownloadURL(storageRef);
+      }
+      if (photoURL !== photo) {
+        setPhoto(photoURL);
+      }
+      if (photoURL && user.photoURL !== photoURL) {
+        await updateProfile(user, { photoURL });
+      }
+      await setDoc(
+        doc(db, 'users', user.uid),
+        {
+          first,
+          last,
+          username: uname,
+          email,
+          venmo,
+          cashapp,
+          photo: photoURL,
+        },
+        { merge: true }
+      );
+      if (initial) {
+        navigation.reset({ index: 0, routes: [{ name: 'Tabs' }] });
+      } else {
+        navigation.goBack();
+      }
     } catch (e) {
       console.error(e);
-      setError('Failed to validate username');
-      setSaving(false);
-      return;
-    }
-    let photoURL = photo || null;
-    if (photo && !photo.startsWith('https://')) {
-      const base64 = await FileSystem.readAsStringAsync(photo, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-      const storageRef = ref(storage, `avatars/${user.uid}`);
-      const dataUrl = `data:image/jpeg;base64,${base64}`;
-      await uploadString(storageRef, dataUrl, 'data_url');
-      photoURL = await getDownloadURL(storageRef);
-    }
-    if (photoURL !== photo) {
-      setPhoto(photoURL);
-    }
-    if (photoURL && user.photoURL !== photoURL) {
-      await updateProfile(user, { photoURL });
-    }
-    await setDoc(
-      doc(db, 'users', user.uid),
-      {
-        first,
-        last,
-        username: uname,
-        email,
-        venmo,
-        cashapp,
-        photo: photoURL,
-      },
-      { merge: true }
-    );
-    if (initial) {
-      navigation.reset({ index: 0, routes: [{ name: 'Tabs' }] });
-    } else {
-      navigation.goBack();
+      setError('Failed to save changes');
     }
     setSaving(false);
   };

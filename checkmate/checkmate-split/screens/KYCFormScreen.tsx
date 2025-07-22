@@ -38,7 +38,7 @@ export default function KYCFormScreen() {
   const phoneDigits = phone.replace(/\D/g, '');
   const validate = () => {
     const newErrors: any = {};
-    if (street.trim().length < 3) newErrors.street = 'Street is required';
+    if (street.trim().length < 3) newErrors.street = 'Street must be at least 3 characters';
     if (!city.trim()) newErrors.city = 'City is required';
     if (!/^[A-Za-z]{2}$/.test(state.trim())) newErrors.state = 'State must be 2 letters';
     if (!/^[A-Za-z]{2}$/.test(country.trim())) newErrors.country = 'Country code must be 2 letters';
@@ -106,7 +106,7 @@ export default function KYCFormScreen() {
           value={street}
           onChangeText={(t) => {
             setStreet(t);
-            if (errors.street) validate();
+            validate();
           }}
           onBlur={validate}
         />
@@ -117,7 +117,7 @@ export default function KYCFormScreen() {
           value={city}
           onChangeText={(t) => {
             setCity(t);
-            if (errors.city) validate();
+            validate();
           }}
           onBlur={validate}
         />
@@ -128,7 +128,7 @@ export default function KYCFormScreen() {
           value={state}
           onChangeText={(t) => {
             setState(t);
-            if (errors.state) validate();
+            validate();
           }}
           onBlur={validate}
         />
@@ -139,7 +139,7 @@ export default function KYCFormScreen() {
           value={country}
           onChangeText={(t) => {
             setCountry(t);
-            if (errors.country) validate();
+            validate();
           }}
           onBlur={validate}
         />
@@ -150,14 +150,14 @@ export default function KYCFormScreen() {
           value={postal}
           onChangeText={(t) => {
             setPostal(t);
-            if (errors.postal) validate();
+            validate();
           }}
           keyboardType="number-pad"
           onBlur={validate}
         />
         {errors.postal ? <Text style={styles.error}>{errors.postal}</Text> : null}
         <Text style={styles.label}>Date of Birth</Text>
-        <DateInput value={dob} onChange={(d) => { setDob(d); if (errors.dob) validate(); }} />
+        <DateInput value={dob} onChange={(d) => { setDob(d); validate(); }} />
         {errors.dob ? <Text style={styles.error}>{errors.dob}</Text> : null}
         <Text style={styles.label}>SSN (last 4)</Text>
         <TextInput
@@ -165,7 +165,7 @@ export default function KYCFormScreen() {
           value={ssn}
           onChangeText={(t) => {
             setSsn(t);
-            if (errors.ssn) validate();
+            validate();
           }}
           keyboardType="number-pad"
           onBlur={validate}
@@ -177,7 +177,7 @@ export default function KYCFormScreen() {
           value={phone}
           onChangeText={(t) => {
             setPhone(t);
-            if (errors.phone) validate();
+            validate();
           }}
           keyboardType="phone-pad"
           onBlur={validate}
@@ -189,7 +189,7 @@ export default function KYCFormScreen() {
           value={email}
           onChangeText={(t) => {
             setEmail(t);
-            if (errors.email) validate();
+            validate();
           }}
           keyboardType="email-address"
           autoCapitalize="none"

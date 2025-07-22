@@ -13,6 +13,7 @@ interface Props {
 
 export default function ReceiptCard({ receipt, onPress }: Props) {
   const [photo, setPhoto] = useState<string | null>(null);
+  const [payerName, setPayerName] = useState<string>('');
   const isPayer = receipt.payer === auth.currentUser?.uid;
   useEffect(() => {
     let active = true;
@@ -20,7 +21,11 @@ export default function ReceiptCard({ receipt, onPress }: Props) {
       try {
         const snap = await getDoc(doc(db, 'users', receipt.payer));
         if (active && snap.exists()) {
-          setPhoto(snap.data().photo || null);
+          const data = snap.data();
+          setPhoto(data.photo || null);
+          const first = data.first || '';
+          const last = data.last || '';
+          setPayerName(`${first} ${last}`.trim());
         }
       } catch (e) {
         console.error(e);
@@ -46,6 +51,16 @@ export default function ReceiptCard({ receipt, onPress }: Props) {
     .filter(id => id !== auth.currentUser?.uid)
     .reduce((sum, id) => sum + totals[id], 0);
   const owed = isPayer ? othersTotal : youTotal;
+  const created = receipt.createdAt
+    ? new Date(
+        receipt.createdAt.seconds
+          ? receipt.createdAt.seconds * 1000
+          : receipt.createdAt
+      )
+    : null;
+  const dateStr = created
+    ? created.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+    : '';
   return (
     <TouchableOpacity style={styles.card} onPress={onPress}>
       <View style={styles.iconWrapper}>
@@ -58,12 +73,15 @@ export default function ReceiptCard({ receipt, onPress }: Props) {
       <View style={styles.info}>
         <View style={styles.row}>
           <Text style={styles.title}>
-            {receipt.name || receipt.data?.merchantName || 'Receipt'}
+            {(receipt.name || receipt.data?.merchantName || 'Receipt') +
+              (dateStr ? ` - ${dateStr}` : '')}
           </Text>
           <Text style={styles.amount}>{`$${owed.toFixed(2)}`}</Text>
         </View>
         <View style={styles.row}>
-          <Text style={styles.label}>{isPayer ? 'Others Owe' : 'You Owe'}</Text>
+          <Text style={styles.label}>
+            {(payerName || 'Someone') + ' - ' + (isPayer ? 'Others Owe' : 'You Owe')}
+          </Text>
           <Text style={styles.action}>{isPayer ? 'Collect' : 'Settle Up'}</Text>
         </View>
       </View>

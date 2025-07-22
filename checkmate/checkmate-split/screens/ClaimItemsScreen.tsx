@@ -167,7 +167,7 @@ export default function ClaimItemsScreen() {
           title="Confirm"
           onPress={() => {
             if (fromManage) navigation.goBack();
-            else navigation.navigate('ManageReceipt', { receipt });
+            else navigation.navigate('ManageReceipt', { receipt, fromCreate: true });
           }}
         />
       </View>

@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import * as Linking from 'expo-linking';
+import { useStripe } from '@stripe/stripe-react-native';
 import Text from '../components/Text';
 import PageHeader from '../components/PageHeader';
 import OutlineButton from '../components/OutlineButton';
@@ -25,22 +27,18 @@ import PersonActionDrawer from '../components/PersonActionDrawer';
 
 
 export type ManageReceiptParams = {
-  ManageReceipt: { receipt: any };
+  ManageReceipt: { receipt: any; fromCreate?: boolean };
 };
 
 export default function ManageReceiptScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<RouteProp<ManageReceiptParams, 'ManageReceipt'>>();
-  const { receipt } = route.params;
+  const { receipt, fromCreate } = route.params;
 
   const [qrVisible, setQrVisible] = useState(false);
   const [payVisible, setPayVisible] = useState(false);
   const [imageVisible, setImageVisible] = useState(false);
   const [personDrawer, setPersonDrawer] = useState<any | null>(null);
-  const [paid, setPaid] = useState<Record<string, boolean>>({
-    [receipt.payer]: true,
-    ...(receipt.payments || {}),
-  });
   const [profiles, setProfiles] = useState<Record<string, any>>({});
 
   const created = receipt.createdAt
@@ -67,6 +65,11 @@ export default function ManageReceiptScreen() {
       totals[uid] = 0;
     }
   });
+  const initialPayments: Record<string, number> = {
+    [receipt.payer]: totals[receipt.payer] || 0,
+    ...(receipt.payments || {}),
+  };
+  const [paidAmounts, setPaidAmounts] = useState<Record<string, number>>(initialPayments);
   useEffect(() => {
     let active = true;
     const load = async () => {
@@ -101,9 +104,10 @@ export default function ManageReceiptScreen() {
       id === auth.currentUser?.uid
         ? 'You'
         : prof
-        ? `${prof.first || ''} ${prof.last || ''}`.trim() || prof.username || 'Person'
-        : 'Person';
-    return { id, name, amount: totals[id], status: paid[id] ? 'Paid' : 'Not Paid' };
+        ? `${prof.first || ''} ${prof.last || ''}`.trim() || prof.username || 'Unknown'
+        : '...';
+    const isPaid = (paidAmounts[id] || 0) >= totals[id];
+    return { id, name, amount: totals[id], status: isPaid ? 'Paid' : 'Not Paid' };
   });
 
   let you = people.find(p => p.id === auth.currentUser?.uid);
@@ -114,6 +118,8 @@ export default function ManageReceiptScreen() {
   const isOwner = receipt.payer === auth.currentUser?.uid;
   const othersTotal = others.reduce((sum, p) => sum + p.amount, 0);
   const yourTotal = you ? you.amount : 0;
+  const yourPaid = paidAmounts[auth.currentUser?.uid || ''] || 0;
+  const yourDue = yourTotal - yourPaid;
 
   const handleEdit = () => {
     navigation.navigate('Tabs', {
@@ -125,32 +131,74 @@ export default function ManageReceiptScreen() {
     });
   };
 
-  const pay = async () => {
+  const { initPaymentSheet, presentPaymentSheet, confirmPayment } = useStripe();
+
+  const createIntent = async (cashApp?: boolean) => {
     try {
-      const fn = httpsCallable(functions, 'createMoovPayment');
-      await fn({ amount: Math.round(yourTotal), destWallet: receipt.payer });
+      const fn = httpsCallable(functions, 'createPaymentIntent');
+      const due = yourDue;
+      const res: any = await fn({ amount: Math.round(due * 100), cashAppOnly: cashApp });
+      return res?.data?.clientSecret as string | undefined;
     } catch (e) {
       console.error(e);
+      return undefined;
+    }
+  };
+
+  const payCard = async () => {
+    const clientSecret = await createIntent(false);
+    if (!clientSecret) return;
+    const { error } = await initPaymentSheet({
+      merchantDisplayName: 'CheckMate',
+      paymentIntentClientSecret: clientSecret,
+      applePay: { merchantCountryCode: 'US' },
+      allowsDelayedPaymentMethods: true,
+    });
+    if (!error) {
+      const { error: presentError } = await presentPaymentSheet();
+      if (!presentError) {
+        const amt = (paidAmounts[auth.currentUser?.uid || ''] || 0) + yourDue;
+        await updateDoc(doc(db, 'receipts', receipt.id), {
+          [`payments.${auth.currentUser?.uid}`]: amt,
+        });
+        setPaidAmounts({ ...paidAmounts, [auth.currentUser?.uid || '']: amt });
+      }
     }
     setPayVisible(false);
   };
 
-  const payCard = pay;
-  const payCash = pay;
-  const payApple = pay;
-  const payAch = pay;
+  const payCash = async () => {
+    const clientSecret = await createIntent(true);
+    if (!clientSecret) return;
+    const { error } = await confirmPayment(clientSecret, {
+      paymentMethodType: 'CashApp',
+      returnURL: Linking.createURL('/payment-complete'),
+    } as any);
+    if (!error) {
+      const amt = (paidAmounts[auth.currentUser?.uid || ''] || 0) + yourDue;
+      await updateDoc(doc(db, 'receipts', receipt.id), {
+        [`payments.${auth.currentUser?.uid}`]: amt,
+      });
+      setPaidAmounts({ ...paidAmounts, [auth.currentUser?.uid || '']: amt });
+    }
+    setPayVisible(false);
+  };
+
+  const payApple = payCard;
+  const payAch = payCard;
 
   const addFriends = () => {
     navigation.navigate('AddReceiptFriends', { id: receipt.id });
   };
 
   const togglePaid = async (uid: string) => {
-    const newVal = !paid[uid];
+    const isPaid = (paidAmounts[uid] || 0) >= totals[uid];
+    const newVal = isPaid ? 0 : totals[uid];
     try {
       await updateDoc(doc(db, 'receipts', receipt.id), {
         [`payments.${uid}`]: newVal,
       });
-      setPaid({ ...paid, [uid]: newVal });
+      setPaidAmounts({ ...paidAmounts, [uid]: newVal });
     } catch (e) {
       console.error(e);
     }
@@ -198,7 +246,7 @@ export default function ManageReceiptScreen() {
     <SafeAreaView style={styles.container}>
       <PageHeader
         title={receipt.name || 'Receipt'}
-        onBack={navigation.goBack}
+        onBack={fromCreate ? () => navigation.navigate('Tabs', { screen: 'Friends', params: { screen: 'FriendsHome' } }) : navigation.goBack}
         right={
           isOwner && (
             <TouchableOpacity onPress={handleEdit} style={styles.iconButton}>
@@ -231,7 +279,11 @@ export default function ManageReceiptScreen() {
         )}
       </ScrollView>
       {!isOwner && (
-        <Button title="Pay" onPress={() => setPayVisible(true)} style={styles.payButton} />
+        yourDue > 0 ? (
+          <Button title="Pay" onPress={() => setPayVisible(true)} style={styles.payButton} />
+        ) : (
+          <Button title="Claim Items" onPress={() => navigation.navigate('ClaimItems', { receipt, fromManage: true })} style={styles.payButton} />
+        )
       )}
       {isOwner && (
         <Button title="Add Friends" onPress={addFriends} style={styles.addButton} />
@@ -310,7 +362,7 @@ export default function ManageReceiptScreen() {
       <PersonActionDrawer
         visible={!!personDrawer}
         name={personDrawer?.name || ''}
-        paid={personDrawer ? paid[personDrawer.id] : false}
+        paid={personDrawer ? (paidAmounts[personDrawer.id] || 0) >= totals[personDrawer.id] : false}
         onTogglePaid={() => {
           if (personDrawer) togglePaid(personDrawer.id);
           setPersonDrawer(null);

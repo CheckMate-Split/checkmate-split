@@ -139,8 +139,9 @@ exports.getConnectStatus = functions.https.onCall(async (data, context) => {
 exports.createPaymentIntent = functions.https.onCall(async (data, context) => {
   try {
     const cashAppOnly = data && data.cashAppOnly;
+    const amount = Math.round(Number(data?.amount) || 100);
     const params = {
-      amount: 1000,
+      amount,
       currency: 'usd',
     };
     if (cashAppOnly) {

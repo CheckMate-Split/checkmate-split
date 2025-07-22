@@ -99,10 +99,7 @@ export default function ManageReceiptScreen() {
     const props = isYou
       ? {
           onPress: () =>
-            navigation.navigate('Tabs', {
-              screen: 'HomeTab',
-              params: { screen: 'ClaimItems', params: { receipt } },
-            }),
+            navigation.navigate('ClaimItems', { receipt, fromManage: true }),
         }
       : {};
     return (

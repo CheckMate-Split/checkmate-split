@@ -15,6 +15,7 @@ export default function AddGroupScreen() {
   const navigation = useNavigation<any>();
   const [friends, setFriends] = useState<any[]>([]);
   const [name, setName] = useState('');
+  const [desc, setDesc] = useState('');
   const [selected, setSelected] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
@@ -28,9 +29,9 @@ export default function AddGroupScreen() {
   const create = async () => {
     try {
       const members = Object.keys(selected).filter(k => selected[k]);
-      if (name && members.length) {
+      if (name) {
         const fn = httpsCallable(functions, 'createGroup');
-        await fn({ name, members });
+        await fn({ name, description: desc, members });
         navigation.goBack();
       }
     } catch (e) {
@@ -56,6 +57,13 @@ export default function AddGroupScreen() {
         placeholder="Group Name"
         value={name}
         onChangeText={setName}
+        style={styles.input}
+      />
+      <Text style={styles.label}>Description (optional)</Text>
+      <TextInput
+        placeholder="Description"
+        value={desc}
+        onChangeText={setDesc}
         style={styles.input}
       />
       <Text style={styles.section}>Add Friends</Text>

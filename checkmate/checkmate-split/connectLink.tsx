@@ -1,42 +1,59 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { Alert } from 'react-native';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from './firebaseConfig';
 import { TEST_MODE } from './testMode';
 
 interface Context {
-  link: string | null;
-  refresh: (test?: boolean) => Promise<string | null>;
+  walletId: string | null;
+  refresh: (info?: any) => Promise<string | null>;
 }
 
 const ConnectLinkContext = createContext<Context>({
-  link: null,
+  walletId: null,
   refresh: async () => null,
 });
 
 export const ConnectLinkProvider = ({ children }: { children: React.ReactNode }) => {
-  const [link, setLink] = useState<string | null>(null);
+  const [walletId, setWalletId] = useState<string | null>(null);
 
-  const refresh = async (test = TEST_MODE) => {
+  const refresh = async (info?: any) => {
     try {
-      const callable = httpsCallable(functions, 'createStripeConnectLink');
-      const res: any = await callable({ test });
-      const url = res?.data?.url || null;
-      if (!test) {
-        setLink(url);
+      const callable = httpsCallable(functions, 'createMoovWallet');
+      const res: any = await callable(info);
+      console.log('createMoovWallet result', res);
+      if (res?.data?.walletPending) {
+        Alert.alert('Info', 'Verifying wallet...');
+        let id: string | null = null;
+        for (let i = 0; i < 12 && !id; i++) {
+          await new Promise(r => setTimeout(r, 5000));
+          const check: any = await httpsCallable(functions, 'checkWalletStatus')();
+          console.log('checkWalletStatus result', check);
+          id = check?.data?.walletId || null;
+        }
+        if (id) {
+          Alert.alert('Success', 'Wallet created');
+          setWalletId(id);
+          return id;
+        }
+        Alert.alert('Info', 'Wallet pending verification.');
+        return null;
       }
-      return url;
-    } catch (e) {
+      const id = res?.data?.walletId || null;
+      if (id) Alert.alert('Success', 'Wallet created');
+      setWalletId(id);
+      return id;
+    } catch (e: any) {
       console.error(e);
+      const msg = e?.details || e?.message || 'failed to create wallet';
+      Alert.alert('Error', msg);
       return null;
     }
   };
 
-  useEffect(() => {
-    refresh(TEST_MODE);
-  }, []);
 
   return (
-    <ConnectLinkContext.Provider value={{ link, refresh }}>
+    <ConnectLinkContext.Provider value={{ walletId, refresh }}>
       {children}
     </ConnectLinkContext.Provider>
   );

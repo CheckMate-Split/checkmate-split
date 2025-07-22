@@ -1,9 +1,10 @@
-import React from 'react';
-import { TouchableOpacity, StyleSheet, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { TouchableOpacity, StyleSheet, View, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Text from './Text';
 import { colors, spacing } from '../constants';
-import { auth } from '../firebaseConfig';
+import { auth, db } from '../firebaseConfig';
+import { doc, getDoc } from 'firebase/firestore';
 
 interface Props {
   receipt: any;
@@ -11,7 +12,25 @@ interface Props {
 }
 
 export default function ReceiptCard({ receipt, onPress }: Props) {
+  const [photo, setPhoto] = useState<string | null>(null);
   const isPayer = receipt.payer === auth.currentUser?.uid;
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      try {
+        const snap = await getDoc(doc(db, 'users', receipt.payer));
+        if (active && snap.exists()) {
+          setPhoto(snap.data().photo || null);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    if (receipt.payer) load();
+    return () => {
+      active = false;
+    };
+  }, [receipt.payer]);
   const items: any[] = receipt.data?.lineItems || [];
   const totals: Record<string, number> = {};
   items.forEach((item: any) => {
@@ -30,7 +49,11 @@ export default function ReceiptCard({ receipt, onPress }: Props) {
   return (
     <TouchableOpacity style={styles.card} onPress={onPress}>
       <View style={styles.iconWrapper}>
-        <Ionicons name="receipt" size={24} color={colors.primary} />
+        {photo ? (
+          <Image source={{ uri: photo }} style={styles.avatar} />
+        ) : (
+          <Ionicons name="receipt" size={24} color={colors.primary} />
+        )}
       </View>
       <View style={styles.info}>
         <View style={styles.row}>
@@ -70,6 +93,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: spacing.m,
   },
+  avatar: { width: 48, height: 48, borderRadius: 24 },
   info: {
     flex: 1,
   },

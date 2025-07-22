@@ -18,6 +18,8 @@ import { colors, spacing } from '../constants';
 import Button from '../components/Button';
 import { auth } from '../firebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '../firebaseConfig';
 
 
 export type ManageReceiptParams = {
@@ -75,10 +77,36 @@ export default function ManageReceiptScreen() {
     });
   };
 
+  const pay = async () => {
+    try {
+      const fn = httpsCallable(functions, 'createMoovPayment');
+      await fn({ amount: Math.round(yourTotal), destWallet: receipt.payer });
+    } catch (e) {
+      console.error(e);
+    }
+    setPayVisible(false);
+  };
 
-  const renderPerson = (p: any) => (
-    <View key={p.id}>
-      <View style={styles.personContainer}>
+  const payCard = pay;
+  const payCash = pay;
+  const payApple = pay;
+  const payAch = pay;
+
+
+  const renderPerson = (p: any) => {
+    const isYou = p.id === auth.currentUser?.uid;
+    const Container: any = isYou ? TouchableOpacity : View;
+    const props = isYou
+      ? {
+          onPress: () =>
+            navigation.navigate('Tabs', {
+              screen: 'HomeTab',
+              params: { screen: 'ClaimItems', params: { receipt } },
+            }),
+        }
+      : {};
+    return (
+      <Container key={p.id} style={styles.personContainer} {...props}>
         <View style={styles.personRow}>
           <View style={styles.avatar} />
           <Text style={styles.personName}>{p.name}</Text>
@@ -98,21 +126,9 @@ export default function ManageReceiptScreen() {
             </Text>
           </View>
         </View>
-      </View>
-      {p.id === auth.currentUser?.uid && (
-        <Button
-          title="Claim More"
-          onPress={() =>
-            navigation.navigate('Tabs', {
-              screen: 'HomeTab',
-              params: { screen: 'ClaimItems', params: { receipt } },
-            })
-          }
-          style={styles.claimButton}
-        />
-      )}
-    </View>
-  );
+      </Container>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -127,7 +143,7 @@ export default function ManageReceiptScreen() {
           )
         }
       />
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
         <Text style={styles.subheader}>{`Receipt Date ${created.toLocaleDateString()}`}</Text>
         {receipt.description ? (
           <>
@@ -182,10 +198,16 @@ export default function ManageReceiptScreen() {
       >
         <TouchableOpacity style={styles.modalOverlay} onPress={() => setPayVisible(false)}>
           <View style={styles.modalContent}>
-            <Button title="Card" onPress={() => setPayVisible(false)} style={styles.payOption} />
-            <Button title="Cash App" onPress={() => setPayVisible(false)} style={styles.payOption} />
-            <Button title="Apple Pay" onPress={() => setPayVisible(false)} style={styles.payOption} />
-            <Button title="Balance / ACH" onPress={() => setPayVisible(false)} style={styles.payOption} />
+            <Button title="Card" onPress={payCard} style={[styles.payOption, styles.payCard]} />
+            <Button title="Cash App" onPress={payCash} style={[styles.payOption, styles.payCash]} />
+            <Button title="Apple Pay" onPress={payApple} style={[styles.payOption, styles.payApple]} />
+            <OutlineButton
+              title="Balance / ACH"
+              onPress={payAch}
+              style={[styles.payOption, styles.payBalance]}
+              textColor={colors.primary}
+              borderColor={colors.primary}
+            />
             <OutlineButton title="Close" onPress={() => setPayVisible(false)} style={styles.closeButton} />
           </View>
         </TouchableOpacity>
@@ -224,7 +246,8 @@ export default function ManageReceiptScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  scroll: { paddingHorizontal: spacing.m, paddingBottom: spacing.m },
+  scroll: { flex: 1 },
+  scrollContent: { paddingHorizontal: spacing.m, paddingBottom: spacing.m },
   subheader: { color: '#666', fontSize: 28 },
   desc: { marginTop: spacing.s, fontSize: 28 },
   descHeader: {
@@ -262,13 +285,6 @@ const styles = StyleSheet.create({
   tagViewed: { backgroundColor: '#f88' },
   tagPaid: { backgroundColor: '#4c9a4c' },
   payButton: { marginHorizontal: spacing.m, marginTop: spacing.l },
-  claimButton: {
-    alignSelf: 'center',
-    marginTop: spacing.l,
-    marginBottom: spacing.m,
-    width: '70%',
-    paddingVertical: spacing.m,
-  },
   iconButton: { marginRight: spacing.l },
   footer: {
     flexDirection: 'row',
@@ -294,6 +310,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   payOption: { alignSelf: 'stretch', marginTop: spacing.s },
+  payCard: { backgroundColor: colors.primary },
+  payCash: { backgroundColor: '#00C244' },
+  payApple: { backgroundColor: '#000' },
+  payBalance: { borderWidth: 1, borderColor: colors.primary, backgroundColor: colors.primaryBackground },
   closeButton: {
     marginTop: spacing.l,
     alignSelf: 'stretch',

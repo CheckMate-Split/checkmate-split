@@ -10,6 +10,7 @@
     "firebase-functions": "^4.0.0",
     "node-fetch": "^2.7.0",
     "stripe": "^18.3.0",
-    "form-data": "^2.5.0"
+    "form-data": "^2.5.0",
+    "@moovio/sdk": "^0.14.12"
   }
 }

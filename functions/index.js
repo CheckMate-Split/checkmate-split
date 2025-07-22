@@ -7,7 +7,15 @@ const {
   getConnectStatus,
   createPaymentIntent,
 } = require('./stripeConnect');
+const {
+  createMoovWallet,
+  getMoovBalance,
+  createMoovPayment,
+  completeMoovKYC,
+  checkWalletStatus,
+} = require('./moov');
 const { checkUsername } = require('./username');
+const { sendFriendRequest, respondFriendRequest, createGroup, registerFcmToken } = require('./friends');
 
 exports.parseReciept = scanReceipt;
 exports.createStripeConnectLink = createStripeConnectLink;
@@ -17,3 +25,12 @@ exports.getBalance = getBalance;
 exports.getConnectStatus = getConnectStatus;
 exports.createPaymentIntent = createPaymentIntent;
 exports.checkUsername = checkUsername;
+exports.sendFriendRequest = sendFriendRequest;
+exports.respondFriendRequest = respondFriendRequest;
+exports.createGroup = createGroup;
+exports.createMoovWallet = createMoovWallet;
+exports.getMoovBalance = getMoovBalance;
+exports.createMoovPayment = createMoovPayment;
+exports.completeMoovKYC = completeMoovKYC;
+exports.checkWalletStatus = checkWalletStatus;
+exports.registerFcmToken = registerFcmToken;

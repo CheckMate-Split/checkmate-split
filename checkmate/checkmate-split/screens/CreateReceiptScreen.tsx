@@ -6,10 +6,11 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { addDoc, collection, serverTimestamp, doc, deleteDoc, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, serverTimestamp, doc, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Button from '../components/Button';
 import OutlineButton from '../components/OutlineButton';
@@ -17,6 +18,7 @@ import Text from '../components/Text';
 import PageHeader from '../components/PageHeader';
 import DateInput from '../components/DateInput';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { colors, spacing } from '../constants';
 import { db, storage } from '../firebaseConfig';
 import { auth } from '../firebaseConfig';
@@ -38,6 +40,7 @@ export default function CreateReceiptScreen() {
   const manualMode = edit || manual !== false;
   const [name, setName] = useState(receipt?.name || '');
   const [description, setDescription] = useState(receipt?.description || '');
+  const [newImage, setNewImage] = useState<string | null>(null);
   const [items, setItems] = useState<{ name: string; price: string; shared: boolean }[]>(
     receipt?.data?.lineItems?.map((i: any) => ({
       name: i.description,
@@ -63,6 +66,14 @@ export default function CreateReceiptScreen() {
       : new Date(data?.date?.data || Date.now())
   );
   const valid = name && items.every(i => i.name && i.price);
+
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') return;
+    const pick = await ImagePicker.launchImageLibraryAsync({ base64: true });
+    if (pick.canceled) return;
+    setNewImage(pick.assets[0].base64 as string);
+  };
 
   const handleSave = async () => {
     const user = auth.currentUser;
@@ -101,6 +112,14 @@ export default function CreateReceiptScreen() {
           date: date.toISOString(),
           data: sanitizedData,
         });
+        if (newImage) {
+          const imgRef = ref(storage, `receipts/${id}.jpg`);
+          const dataUrl = `data:image/jpeg;base64,${newImage}`;
+          const blob = await (await fetch(dataUrl)).blob();
+          await uploadBytes(imgRef, blob);
+          imageUrl = await getDownloadURL(imgRef);
+          await updateDoc(doc(db, 'receipts', id), { imageUrl });
+        }
       } else {
         const docRef = await addDoc(collection(db, 'receipts'), {
           name,
@@ -143,7 +162,9 @@ export default function CreateReceiptScreen() {
         style: 'destructive',
         onPress: async () => {
           try {
-            await deleteDoc(doc(db, 'receipts', receipt.id));
+            await updateDoc(doc(db, 'receipts', receipt.id), {
+              endedAt: serverTimestamp(),
+            });
             navigation.goBack();
           } catch (e) {
             console.error(e);
@@ -159,6 +180,26 @@ export default function CreateReceiptScreen() {
     <SafeAreaView style={styles.container}>
       <PageHeader title={title} onBack={navigation.goBack} />
       <ScrollView contentContainerStyle={styles.scroll}>
+        {edit && (
+          <>
+            {(newImage || receipt?.imageUrl) && (
+              <Image
+                source={{
+                  uri: newImage
+                    ? `data:image/jpeg;base64,${newImage}`
+                    : receipt.imageUrl,
+                }}
+                style={styles.preview}
+                resizeMode="contain"
+              />
+            )}
+            <OutlineButton
+              title={newImage || receipt?.imageUrl ? 'Replace Image' : 'Upload Image'}
+              onPress={pickImage}
+              style={{ marginTop: spacing.m }}
+            />
+          </>
+        )}
         {manualMode ? (
           <>
             <Text style={styles.sectionHeader}>Receipt Info</Text>
@@ -236,10 +277,12 @@ export default function CreateReceiptScreen() {
         <View style={styles.footer}>
           <Button title="Save" onPress={handleSave} disabled={!valid} style={styles.saveButton} />
           {edit && (
-            <Button
+            <OutlineButton
               title="End Request"
               onPress={handleDelete}
-              style={[styles.saveButton, styles.deleteButton]}
+              style={[styles.saveButton, styles.endButton]}
+              textColor={colors.pinkRed}
+              borderColor={colors.pinkRed}
             />
           )}
         </View>
@@ -301,10 +344,16 @@ const styles = StyleSheet.create({
     padding: spacing.m,
     alignItems: 'center',
   },
-  saveButton: { width: '90%', alignSelf: 'center' },
-  deleteButton: {
-    backgroundColor: '#ff3b30',
+  preview: {
+    width: '100%',
+    height: 200,
     marginTop: spacing.m,
+  },
+  saveButton: { width: '90%', alignSelf: 'center' },
+  endButton: {
+    marginTop: spacing.m,
+    alignSelf: 'center',
+    width: '90%',
   },
   datePicker: { marginTop: spacing.m },
 });

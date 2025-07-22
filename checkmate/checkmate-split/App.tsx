@@ -1,15 +1,22 @@
 import React, { useEffect, useState } from 'react';
+import * as Notifications from 'expo-notifications';
 import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
 import * as Linking from 'expo-linking';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import HomeScreen from './screens/HomeScreen';
-import HistoryScreen from './screens/HistoryScreen';
+import FriendsScreen from './screens/FriendsScreen';
+import AddFriendSearchScreen from './screens/AddFriendSearchScreen';
+import AddGroupScreen from './screens/AddGroupScreen';
+import FriendDetailScreen from './screens/FriendDetailScreen';
+import GroupDetailScreen from './screens/GroupDetailScreen';
+import DeeplinkAddFriendScreen from './screens/DeeplinkAddFriendScreen';
 import ReceiptsScreen from './screens/ReceiptsScreen';
 import AccountScreen from './screens/AccountScreen';
 import LoginScreen from './screens/LoginScreen';
 import PaymentMethodsScreen from './screens/PaymentMethodsScreen';
+import KYCFormScreen from './screens/KYCFormScreen';
 import NotificationsScreen from './screens/NotificationsScreen';
 import TermsPrivacyScreen from './screens/TermsPrivacyScreen';
 import SupportFaqScreen from './screens/SupportFaqScreen';
@@ -21,7 +28,8 @@ import ClaimItemsScreen from './screens/ClaimItemsScreen';
 import ManageReceiptScreen from './screens/ManageReceiptScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import { colors } from './constants';
-import { auth, db } from './firebaseConfig';
+import { auth, db, functions } from './firebaseConfig';
+import { httpsCallable } from 'firebase/functions';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore';
 
@@ -52,6 +60,7 @@ export type SettingsStackParamList = {
   SettingsHome: undefined;
   Account: undefined;
   PaymentMethods: undefined;
+  KYCForm: undefined;
   Notifications: undefined;
   Terms: undefined;
   Support: undefined;
@@ -61,19 +70,33 @@ export type ReceiptsStackParamList = {
   ReceiptsHome: undefined;
 };
 
-export type HistoryStackParamList = {
-  HistoryHome: undefined;
+export type FriendsStackParamList = {
+  FriendsHome: undefined;
+  AddFriendSearch: undefined;
+  AddGroup: undefined;
+  FriendDetail: { uid: string; name: string };
+  GroupDetail: { id: string };
+  DeeplinkAddFriend: { uid: string };
 };
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const HomeStackNav = createNativeStackNavigator<HomeStackParamList>();
 const SettingsStackNav = createNativeStackNavigator<SettingsStackParamList>();
-const HistoryStackNav = createNativeStackNavigator<HistoryStackParamList>();
+const FriendsStackNav = createNativeStackNavigator<FriendsStackParamList>();
 const ReceiptsStackNav = createNativeStackNavigator<ReceiptsStackParamList>();
 const Tab = createBottomTabNavigator();
 
 const linking = {
   prefixes: [Linking.createURL('/')],
+  config: {
+    screens: {
+      Friends: {
+        screens: {
+          DeeplinkAddFriend: 'add-friend',
+        },
+      },
+    },
+  },
 };
 
 function HomeStack() {
@@ -95,6 +118,7 @@ function SettingsStack() {
       <SettingsStackNav.Screen name="SettingsHome" component={SettingsScreen} />
       <SettingsStackNav.Screen name="Account" component={AccountScreen} />
       <SettingsStackNav.Screen name="PaymentMethods" component={PaymentMethodsScreen} />
+      <SettingsStackNav.Screen name="KYCForm" component={KYCFormScreen} />
       <SettingsStackNav.Screen name="Notifications" component={NotificationsScreen} />
       <SettingsStackNav.Screen name="Terms" component={TermsPrivacyScreen} />
       <SettingsStackNav.Screen name="Support" component={SupportFaqScreen} />
@@ -110,11 +134,16 @@ function ReceiptsStack() {
   );
 }
 
-function HistoryStack() {
+function FriendsStack() {
   return (
-    <HistoryStackNav.Navigator screenOptions={{ headerShown: false }}>
-      <HistoryStackNav.Screen name="HistoryHome" component={HistoryScreen} />
-    </HistoryStackNav.Navigator>
+    <FriendsStackNav.Navigator screenOptions={{ headerShown: false }}>
+      <FriendsStackNav.Screen name="FriendsHome" component={FriendsScreen} />
+      <FriendsStackNav.Screen name="AddFriendSearch" component={AddFriendSearchScreen} />
+      <FriendsStackNav.Screen name="AddGroup" component={AddGroupScreen} />
+      <FriendsStackNav.Screen name="FriendDetail" component={FriendDetailScreen} />
+      <FriendsStackNav.Screen name="GroupDetail" component={GroupDetailScreen} />
+      <FriendsStackNav.Screen name="DeeplinkAddFriend" component={DeeplinkAddFriendScreen} />
+    </FriendsStackNav.Navigator>
   );
 }
 
@@ -125,7 +154,7 @@ function MainTabs() {
         tabBarIcon: ({ color, size }) => {
           let icon = 'home';
           if (route.name === 'Receipts') icon = 'receipt';
-          else if (route.name === 'History') icon = 'time';
+          else if (route.name === 'Friends') icon = 'people';
           else if (route.name === 'Settings') icon = 'settings';
           return <Ionicons name={icon as any} size={size} color={color} />;
         },
@@ -139,7 +168,7 @@ function MainTabs() {
         options={{ title: 'Home', headerShown: false }}
       />
       <Tab.Screen name="Receipts" component={ReceiptsStack} options={{ headerShown: false }} />
-      <Tab.Screen name="History" component={HistoryStack} options={{ headerShown: false }} />
+      <Tab.Screen name="Friends" component={FriendsStack} options={{ headerShown: false }} />
       <Tab.Screen name="Settings" component={SettingsStack} options={{ headerShown: false }} />
     </Tab.Navigator>
   );
@@ -187,6 +216,26 @@ export default function App() {
       navigationRef.reset({ index: 0, routes: [{ name: 'Tabs' }] });
     }
   }, [user, profile, loading, navReady, navigationRef]);
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const perm = await Notifications.getPermissionsAsync();
+      if (perm.status !== 'granted') {
+        const req = await Notifications.requestPermissionsAsync();
+        if (req.status !== 'granted') return;
+      }
+      const { data: token } = await Notifications.getDevicePushTokenAsync();
+      if (token) {
+        try {
+          const fn = httpsCallable(functions, 'registerFcmToken');
+          await fn({ token });
+        } catch (e) {
+          console.log('register token failed', e);
+        }
+      }
+    })();
+  }, [user]);
 
   if (loading) return null;
 

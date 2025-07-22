@@ -73,14 +73,13 @@ export default function ReceiptCard({ receipt, onPress }: Props) {
       <View style={styles.info}>
         <View style={styles.row}>
           <Text style={styles.title}>
-            {(receipt.name || receipt.data?.merchantName || 'Receipt') +
-              (dateStr ? ` - ${dateStr}` : '')}
+            {receipt.name || receipt.data?.merchantName || 'Receipt'}
           </Text>
           <Text style={styles.amount}>{`$${owed.toFixed(2)}`}</Text>
         </View>
         <View style={styles.row}>
           <Text style={styles.label}>
-            {(payerName || 'Someone') + ' - ' + (isPayer ? 'Others Owe' : 'You Owe')}
+            {(payerName || 'Someone') + (dateStr ? ` - ${dateStr}` : '')}
           </Text>
           <Text style={styles.action}>{isPayer ? 'Collect' : 'Settle Up'}</Text>
         </View>

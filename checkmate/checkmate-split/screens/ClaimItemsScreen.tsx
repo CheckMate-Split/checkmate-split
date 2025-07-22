@@ -65,8 +65,15 @@ export default function ClaimItemsScreen() {
   };
 
   const unclaimSplit = (entry: { item: Item; percent: number }) => {
-    setSplit(split.filter(s => s !== entry));
-    setAvailableSplits([...availableSplits, entry.item]);
+    const remaining = split.filter(s => s !== entry);
+    setSplit(remaining);
+    const stillClaimed = remaining.some(s => s.item === entry.item);
+    if (stillClaimed) {
+      setAvailableSplits([...availableSplits, entry.item]);
+    } else {
+      setAvailableSplits(availableSplits.filter(i => i !== entry.item));
+      setUnclaimed([...unclaimed, entry.item]);
+    }
   };
 
   const openDrawer = (item: Item, mode: 'claim' | 'join' = 'claim') => {
@@ -184,7 +191,7 @@ export default function ClaimItemsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   scroll: { padding: spacing.m },
-  section: { marginTop: spacing.m, fontWeight: '600', fontSize: 32 },
+  section: { marginTop: spacing.m, fontWeight: '600', fontSize: 28 },
   itemRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -194,7 +201,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: '#eee',
   },
-  itemText: { flex: 1, fontSize: 24 },
+  itemText: { flex: 0.75, fontSize: 20 },
   actionRow: { flexDirection: 'row' },
   buttonRow: { flexDirection: 'row' },
   smallBtn: {
@@ -207,6 +214,6 @@ const styles = StyleSheet.create({
     marginLeft: spacing.s / 2,
   },
   btnText: { color: colors.primary, fontWeight: '500' },
-  percent: { fontWeight: '600', marginLeft: spacing.s },
+  percent: { fontWeight: '600', marginLeft: spacing.s, fontSize: 20 },
   footer: { padding: spacing.m },
 });

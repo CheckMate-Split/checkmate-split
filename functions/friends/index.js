@@ -68,8 +68,18 @@ exports.respondFriendRequest = functions.https.onCall(async (data, context) => {
   await reqRef.delete();
   await db.collection('users').doc(from).collection('sentRequests').doc(to).delete();
   if (accept) {
-    await db.collection('users').doc(to).collection('friends').doc(from).set({ createdAt: admin.firestore.FieldValue.serverTimestamp() });
-    await db.collection('users').doc(from).collection('friends').doc(to).set({ createdAt: admin.firestore.FieldValue.serverTimestamp() });
+    await db
+      .collection('users')
+      .doc(to)
+      .collection('friends')
+      .doc(from)
+      .set({ createdAt: admin.firestore.FieldValue.serverTimestamp() });
+    await db
+      .collection('users')
+      .doc(from)
+      .collection('friends')
+      .doc(to)
+      .set({ createdAt: admin.firestore.FieldValue.serverTimestamp() });
     const fromDoc = await db.collection('users').doc(from).get();
     const token = fromDoc.data()?.fcmToken;
     const allow = fromDoc.data()?.notificationSettings?.friendAccept !== false;
@@ -83,6 +93,16 @@ exports.respondFriendRequest = functions.https.onCall(async (data, context) => {
         data: { type: 'friendAccept', uid: to },
       });
     }
+    await db
+      .collection('users')
+      .doc(from)
+      .collection('notifications')
+      .add({
+        type: 'friendAccept',
+        from: to,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        read: false,
+      });
   }
   return { success: true };
 });

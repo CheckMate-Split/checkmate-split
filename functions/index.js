@@ -20,6 +20,7 @@ const {
   respondFriendRequest,
   withdrawFriendRequest,
   createGroup,
+  updateGroup,
   sendGroupInvite,
   respondGroupInvite,
   withdrawGroupInvite,
@@ -38,6 +39,7 @@ exports.sendFriendRequest = sendFriendRequest;
 exports.respondFriendRequest = respondFriendRequest;
 exports.withdrawFriendRequest = withdrawFriendRequest;
 exports.createGroup = createGroup;
+exports.updateGroup = updateGroup;
 exports.sendGroupInvite = sendGroupInvite;
 exports.respondGroupInvite = respondGroupInvite;
 exports.withdrawGroupInvite = withdrawGroupInvite;

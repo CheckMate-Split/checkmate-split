@@ -106,6 +106,7 @@ exports.createGroup = functions.https.onCall(async (data, context) => {
     throw new functions.https.HttpsError('unauthenticated', 'user not authenticated');
   }
   const name = (data.name || '').trim();
+  const description = (data.description || '').trim();
   const members = Array.isArray(data.members) ? data.members : [];
   if (!name) {
     throw new functions.https.HttpsError('invalid-argument', 'missing group info');
@@ -114,6 +115,7 @@ exports.createGroup = functions.https.onCall(async (data, context) => {
   if (!members.includes(owner)) members.push(owner);
   const groupRef = await db.collection('groups').add({
     name,
+    description,
     owner,
     members,
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -185,6 +187,28 @@ exports.withdrawGroupInvite = functions.https.onCall(async (data, context) => {
   }
   await db.collection('groups').doc(groupId).collection('invites').doc(to).delete();
   await db.collection('users').doc(to).collection('groupInvites').doc(groupId).delete();
+  return { success: true };
+});
+
+exports.updateGroup = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'user not authenticated');
+  }
+  const id = (data.id || '').trim();
+  const name = (data.name || '').trim();
+  const description = (data.description || '').trim();
+  if (!id || !name) {
+    throw new functions.https.HttpsError('invalid-argument', 'missing info');
+  }
+  const ref = db.collection('groups').doc(id);
+  const snap = await ref.get();
+  if (!snap.exists) {
+    throw new functions.https.HttpsError('not-found', 'group not found');
+  }
+  if (snap.data().owner !== context.auth.uid) {
+    throw new functions.https.HttpsError('permission-denied', 'only owner can edit');
+  }
+  await ref.update({ name, description });
   return { success: true };
 });
 

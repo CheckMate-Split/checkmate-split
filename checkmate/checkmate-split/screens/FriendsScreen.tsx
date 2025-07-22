@@ -7,6 +7,8 @@ import Button from '../components/Button';
 import OutlineButton from '../components/OutlineButton';
 import AddFriendDrawer from '../components/AddFriendDrawer';
 import AddFriendQRDrawer from '../components/AddFriendQRDrawer';
+import PersonCard from '../components/PersonCard';
+import GroupCard from '../components/GroupCard';
 import { collection, onSnapshot, doc, getDoc } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { useNavigation } from '@react-navigation/native';
@@ -130,14 +132,12 @@ export default function FriendsScreen() {
   };
 
   const renderFriend = ({ item }: { item: any }) => (
-    <TouchableOpacity
+    <PersonCard
+      user={item}
       onPress={() =>
         navigation.navigate('FriendDetail', { uid: item.id, name: `${item.first} ${item.last}` })
       }
-      style={styles.row}
-    >
-      <Text>{item.first ? `${item.first} ${item.last}` : item.id}</Text>
-    </TouchableOpacity>
+    />
   );
 
   const renderRequest = ({ item }: { item: any }) => (
@@ -158,9 +158,10 @@ export default function FriendsScreen() {
   );
 
   const renderGroup = ({ item }: { item: any }) => (
-    <TouchableOpacity onPress={() => navigation.navigate('GroupDetail', { id: item.id })} style={styles.row}>
-      <Text>{item.name || item.id}</Text>
-    </TouchableOpacity>
+    <GroupCard
+      group={item}
+      onPress={() => navigation.navigate('GroupDetail', { id: item.id })}
+    />
   );
 
   const renderGroupInvite = ({ item }: { item: any }) => (

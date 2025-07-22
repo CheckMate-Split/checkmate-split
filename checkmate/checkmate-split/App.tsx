@@ -11,6 +11,7 @@ import AddFriendSearchScreen from './screens/AddFriendSearchScreen';
 import AddGroupScreen from './screens/AddGroupScreen';
 import FriendDetailScreen from './screens/FriendDetailScreen';
 import GroupDetailScreen from './screens/GroupDetailScreen';
+import EditGroupScreen from './screens/EditGroupScreen';
 import DeeplinkAddFriendScreen from './screens/DeeplinkAddFriendScreen';
 import ReceiptsScreen from './screens/ReceiptsScreen';
 import AccountScreen from './screens/AccountScreen';
@@ -76,6 +77,7 @@ export type FriendsStackParamList = {
   AddGroup: undefined;
   FriendDetail: { uid: string; name: string };
   GroupDetail: { id: string };
+  EditGroup: { id: string };
   DeeplinkAddFriend: { uid: string };
 };
 
@@ -142,6 +144,7 @@ function FriendsStack() {
       <FriendsStackNav.Screen name="AddGroup" component={AddGroupScreen} />
       <FriendsStackNav.Screen name="FriendDetail" component={FriendDetailScreen} />
       <FriendsStackNav.Screen name="GroupDetail" component={GroupDetailScreen} />
+      <FriendsStackNav.Screen name="EditGroup" component={EditGroupScreen} />
       <FriendsStackNav.Screen name="DeeplinkAddFriend" component={DeeplinkAddFriendScreen} />
     </FriendsStackNav.Navigator>
   );

@@ -83,7 +83,8 @@ const profile = {
     const msg = err && err.message ? err.message : String(err);
     throw new functions.https.HttpsError(
       'internal',
-      `failed to create wallet: ${msg}`,
+      'failed to create wallet',
+      msg,
     );
   }
 });
@@ -164,7 +165,8 @@ exports.completeMoovKYC = functions.https.onCall(async (data, context) => {
     return { submitted: true };
   } catch (err) {
     console.error(err);
-    throw new functions.https.HttpsError('internal', 'failed to submit info');
+    const msg = err && err.message ? err.message : String(err);
+    throw new functions.https.HttpsError('internal', 'failed to submit info', msg);
   }
 });
 

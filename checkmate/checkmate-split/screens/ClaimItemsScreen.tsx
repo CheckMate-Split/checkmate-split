@@ -23,12 +23,15 @@ export default function ClaimItemsScreen() {
   const { receipt } = route.params;
   const initial = receipt.data?.lineItems || [];
 
-  const [unclaimed, setUnclaimed] = useState<Item[]>(initial);
+  const joinable = initial.filter((i: any) => i.shared);
+  const [unclaimed, setUnclaimed] = useState<Item[]>(initial.filter((i: any) => !i.shared));
+  const [availableSplits, setAvailableSplits] = useState<Item[]>(joinable);
   const [claimed, setClaimed] = useState<Item[]>([]);
   const [shared, setShared] = useState<Item[]>([]);
   const [split, setSplit] = useState<{ item: Item; percent: number }[]>([]);
 
   const [drawerItem, setDrawerItem] = useState<Item | null>(null);
+  const [drawerMode, setDrawerMode] = useState<'claim' | 'join'>('claim');
   const [drawerVisible, setDrawerVisible] = useState(false);
 
   const claim = (item: Item) => {
@@ -51,8 +54,24 @@ export default function ClaimItemsScreen() {
     setSplit([...split, { item, percent }]);
   };
 
-  const openDrawer = (item: Item) => {
+  const joinPortion = (item: Item, percent: number) => {
+    setAvailableSplits(availableSplits.filter(i => i !== item));
+    setSplit([...split, { item, percent }]);
+  };
+
+  const joinEqual = (item: Item) => {
+    setAvailableSplits(availableSplits.filter(i => i !== item));
+    setShared([...shared, item]);
+  };
+
+  const unclaimSplit = (entry: { item: Item; percent: number }) => {
+    setSplit(split.filter(s => s !== entry));
+    setAvailableSplits([...availableSplits, entry.item]);
+  };
+
+  const openDrawer = (item: Item, mode: 'claim' | 'join' = 'claim') => {
     setDrawerItem(item);
+    setDrawerMode(mode);
     setDrawerVisible(true);
   };
 
@@ -87,6 +106,19 @@ export default function ClaimItemsScreen() {
             )}
           </View>
         )}
+        {availableSplits.length > 0 && (
+          <View>
+            <Text style={styles.section}>Split</Text>
+            {availableSplits.map(i =>
+              renderRow(
+                i,
+                <TouchableOpacity onPress={() => openDrawer(i, 'join')} style={styles.smallBtn}>
+                  <Text style={styles.btnText}>Join Split</Text>
+                </TouchableOpacity>
+              )
+            )}
+          </View>
+        )}
         {claimed.length > 0 && (
           <View>
             <Text style={styles.section}>Claimed By Me</Text>
@@ -108,11 +140,16 @@ export default function ClaimItemsScreen() {
         )}
         {split.length > 0 && (
           <View>
-            <Text style={styles.section}>Split</Text>
+            <Text style={styles.section}>My Splits</Text>
             {split.map(s =>
               renderRow(
                 s.item,
-                <Text style={styles.percent}>{s.percent}%</Text>
+                <View style={styles.buttonRow}>
+                  <Text style={styles.percent}>{s.percent}%</Text>
+                  <TouchableOpacity onPress={() => unclaimSplit(s)} style={styles.smallBtn}>
+                    <Text style={styles.btnText}>Unclaim</Text>
+                  </TouchableOpacity>
+                </View>
               )
             )}
           </View>
@@ -127,11 +164,15 @@ export default function ClaimItemsScreen() {
       <SplitDrawer
         visible={drawerVisible}
         onSplitEqual={() => {
-          if (drawerItem) splitEqually(drawerItem);
+          if (!drawerItem) return;
+          if (drawerMode === 'join') joinEqual(drawerItem);
+          else splitEqually(drawerItem);
           setDrawerVisible(false);
         }}
         onClaimPortion={pct => {
-          if (drawerItem) claimPortion(drawerItem, pct);
+          if (!drawerItem) return;
+          if (drawerMode === 'join') joinPortion(drawerItem, pct);
+          else claimPortion(drawerItem, pct);
           setDrawerVisible(false);
         }}
         onClose={() => setDrawerVisible(false)}

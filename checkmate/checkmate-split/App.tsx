@@ -48,13 +48,14 @@ export type RootStackParamList = {
 
 export type HomeStackParamList = {
   Home: undefined;
-  Scan: undefined;
+  Scan: { groupId?: string } | undefined;
   CreateReceipt: {
     data?: any;
     image?: string;
     manual?: boolean;
     edit?: boolean;
     receipt?: any;
+    groupId?: string;
   };
   Confirm: { result: any };
   ClaimItems: { receipt: any };

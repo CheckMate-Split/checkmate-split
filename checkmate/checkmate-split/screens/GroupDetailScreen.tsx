@@ -12,7 +12,9 @@ import OutlineButton from '../components/OutlineButton';
 import { Ionicons } from '@expo/vector-icons';
 import { db, auth, functions } from '../firebaseConfig';
 import { httpsCallable } from 'firebase/functions';
+import * as ImagePicker from 'expo-image-picker';
 import { colors, spacing } from '../constants';
+import NewReceiptDrawer from '../components/NewReceiptDrawer';
 
 export type GroupDetailParams = {
   GroupDetail: { id: string };
@@ -25,6 +27,7 @@ export default function GroupDetailScreen() {
   const [group, setGroup] = useState<any>(null);
   const [selected, setSelected] = useState<any | null>(null);
   const [members, setMembers] = useState<any[]>([]);
+  const [drawerVisible, setDrawerVisible] = useState(false);
 
   useEffect(() => {
     return onSnapshot(doc(db, 'groups', id), snap => setGroup(snap.data() || null));
@@ -75,6 +78,48 @@ export default function GroupDetailScreen() {
     ]);
   };
 
+  const startScan = () => {
+    setDrawerVisible(false);
+    navigation.navigate('Tabs', {
+      screen: 'HomeTab',
+      params: { screen: 'Scan', params: { groupId: id } },
+    });
+  };
+
+  const startManual = () => {
+    setDrawerVisible(false);
+    navigation.navigate('Tabs', {
+      screen: 'HomeTab',
+      params: {
+        screen: 'CreateReceipt',
+        params: { data: {}, image: '', manual: true, groupId: id },
+      },
+    });
+  };
+
+  const startUpload = async () => {
+    setDrawerVisible(false);
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') return;
+    const pick = await ImagePicker.launchImageLibraryAsync({ base64: true });
+    if (pick.canceled) return;
+    const base64 = pick.assets[0].base64 as string;
+    try {
+      const scan = httpsCallable(functions, 'parseReciept');
+      const res: any = await scan({ image: base64 });
+      const parsed = res.data?.data ?? res.data;
+      navigation.navigate('Tabs', {
+        screen: 'HomeTab',
+        params: {
+          screen: 'CreateReceipt',
+          params: { data: parsed, image: base64, groupId: id },
+        },
+      });
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <PageHeader
@@ -100,7 +145,7 @@ export default function GroupDetailScreen() {
             keyExtractor={m => m.id}
           />
           <View style={styles.actions}>
-            <Button title="Send Request" onPress={() => {}} style={styles.actionBtn} />
+            <Button title="Send Request" onPress={() => setDrawerVisible(true)} style={styles.actionBtn} />
             {group.owner === auth.currentUser?.uid && (
               <OutlineButton
                 title="Add Friends"
@@ -123,6 +168,13 @@ export default function GroupDetailScreen() {
         visible={!!selected}
         groupOwner={group?.owner === auth.currentUser?.uid}
         onClose={() => setSelected(null)}
+      />
+      <NewReceiptDrawer
+        visible={drawerVisible}
+        onScan={startScan}
+        onUpload={startUpload}
+        onManual={startManual}
+        onClose={() => setDrawerVisible(false)}
       />
     </SafeAreaView>
   );

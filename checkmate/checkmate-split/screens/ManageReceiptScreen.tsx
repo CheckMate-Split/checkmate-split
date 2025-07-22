@@ -7,7 +7,6 @@ import {
   Share,
   TouchableOpacity,
   Image,
-  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
@@ -22,6 +21,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../firebaseConfig';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
+import PersonActionDrawer from '../components/PersonActionDrawer';
 
 
 export type ManageReceiptParams = {
@@ -36,6 +36,7 @@ export default function ManageReceiptScreen() {
   const [qrVisible, setQrVisible] = useState(false);
   const [payVisible, setPayVisible] = useState(false);
   const [imageVisible, setImageVisible] = useState(false);
+  const [personDrawer, setPersonDrawer] = useState<any | null>(null);
   const [paid, setPaid] = useState<Record<string, boolean>>({
     [receipt.payer]: true,
     ...(receipt.payments || {}),
@@ -158,34 +159,16 @@ export default function ManageReceiptScreen() {
 
   const renderPerson = (p: any) => {
     const isYou = p.id === auth.currentUser?.uid;
-    const canEdit = isOwner || isYou;
-    const Container: any = canEdit ? TouchableOpacity : View;
-    const props = canEdit
-      ? {
-          onPress: () => {
-            if (isOwner && !isYou) {
-              Alert.alert(p.name, undefined, [
-                {
-                  text: paid[p.id] ? 'Mark Unpaid' : 'Mark Paid',
-                  onPress: () => togglePaid(p.id),
-                },
-                {
-                  text: 'Edit Items',
-                  onPress: () =>
-                    navigation.navigate('ClaimItems', {
-                      receipt,
-                      fromManage: true,
-                      uid: p.id,
-                    }),
-                },
-                { text: 'Cancel', style: 'cancel' },
-              ]);
-            } else {
-              navigation.navigate('ClaimItems', { receipt, fromManage: true });
-            }
-          },
+    const Container: any = TouchableOpacity;
+    const props = {
+      onPress: () => {
+        if (isOwner && !isYou) {
+          setPersonDrawer(p);
+        } else {
+          navigation.navigate('ClaimItems', { receipt, fromManage: true });
         }
-      : {};
+      },
+    };
     return (
       <Container key={p.id} style={styles.personContainer} {...props}>
         <View style={styles.personRow}>
@@ -324,6 +307,21 @@ export default function ManageReceiptScreen() {
           </View>
         </TouchableOpacity>
       </Modal>
+      <PersonActionDrawer
+        visible={!!personDrawer}
+        name={personDrawer?.name || ''}
+        paid={personDrawer ? paid[personDrawer.id] : false}
+        onTogglePaid={() => {
+          if (personDrawer) togglePaid(personDrawer.id);
+          setPersonDrawer(null);
+        }}
+        onEdit={() => {
+          if (personDrawer)
+            navigation.navigate('ClaimItems', { receipt, fromManage: true, uid: personDrawer.id });
+          setPersonDrawer(null);
+        }}
+        onClose={() => setPersonDrawer(null)}
+      />
     </SafeAreaView>
   );
 }

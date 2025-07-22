@@ -20,7 +20,8 @@ export default function KYCFormScreen() {
   const [state, setState] = useState('');
   const [country, setCountry] = useState('US');
   const [postal, setPostal] = useState('');
-  const [dob, setDob] = useState(new Date());
+  // Default to a reasonable past date so we never send today's date by mistake
+  const [dob, setDob] = useState(new Date(1990, 0, 1));
   const [ssn, setSsn] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -45,7 +46,8 @@ export default function KYCFormScreen() {
     if (!/^[A-Za-z]{2}$/.test(state.trim())) newErrors.state = 'State must be 2 letters';
     if (!/^[A-Za-z]{2}$/.test(country.trim())) newErrors.country = 'Country code must be 2 letters';
     if (!/^\d{5}$/.test(postal)) newErrors.postal = 'Postal code must be 5 digits';
-    if (dob.getTime() > Date.now()) newErrors.dob = 'DOB cannot be in the future';
+    // The birth date must be strictly in the past per the Moov API
+    if (dob.getTime() >= Date.now()) newErrors.dob = 'DOB must be in the past';
     if (!/^\d{4}$|^\d{9}$/.test(ssn)) newErrors.ssn = 'Enter 4 or 9 digits';
     if (phoneDigits.length !== 10) newErrors.phone = 'Phone must be 10 digits';
     if (!/^\S+@\S+\.\S+$/.test(email.trim())) newErrors.email = 'Enter a valid email';
@@ -71,7 +73,7 @@ export default function KYCFormScreen() {
     phoneDigits.length === 10 &&
     /^\d{4}$|^\d{9}$/.test(ssn) &&
     email.trim().length > 0 &&
-    dob.getTime() <= Date.now();
+    dob.getTime() < Date.now();
   const formValid = basicValid && Object.values(errors).every((e) => !e);
 
   const submit = async () => {

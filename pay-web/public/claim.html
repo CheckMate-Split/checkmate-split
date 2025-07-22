@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Claim Items</title>
-  <script src="https://js.stripe.com/v3/"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -49,6 +48,12 @@
       margin-left: 8px;
       cursor: pointer;
       font-size: 14px;
+    }
+    .action-btn:focus,
+    .input:focus {
+      outline: none;
+      border-color: #041036;
+      box-shadow: 0 0 0 2px #041036;
     }
     .input {
       width: 100%;
@@ -120,6 +125,13 @@
     const nameInput = document.getElementById('name');
     nameInput.addEventListener('input', updateTotal);
 
+    function renderItem(item, label, claimBtn) {
+      let text = `${item.description} - $${item.price.toFixed(2)}`;
+      if (item.split && item.split < 100) text += ` (${item.split}%)`;
+      label.textContent = text;
+      claimBtn.textContent = item.claimed ? 'Unclaim' : 'Claim';
+    }
+
     loadReceipt(receiptId).then(items => {
       const container = document.getElementById('items');
       itemsData = items.map(it => ({ ...it, claimed: true }));
@@ -127,12 +139,10 @@
         const div = document.createElement('div');
         div.className = 'item';
         const label = document.createElement('span');
-        label.textContent = `${item.description} - $${item.price.toFixed(2)}`;
         div.appendChild(label);
         const actions = document.createElement('div');
         const claimBtn = document.createElement('button');
         claimBtn.className = 'action-btn';
-        claimBtn.textContent = 'Unclaim';
         const splitBtn = document.createElement('button');
         splitBtn.className = 'action-btn';
         splitBtn.textContent = 'Split';
@@ -143,32 +153,27 @@
 
         claimBtn.addEventListener('click', () => {
           item.claimed = !item.claimed;
-          claimBtn.textContent = item.claimed ? 'Unclaim' : 'Claim';
+          renderItem(item, label, claimBtn);
           updateTotal();
         });
 
         splitBtn.addEventListener('click', () => {
-          const pct = parseFloat(prompt('Percent to claim (1-100)?', '100'));
+          const pct = parseFloat(prompt('Percent to claim (1-100)?', item.split || '100'));
           if (!isNaN(pct) && pct > 0 && pct <= 100) {
             item.split = pct;
             item.claimed = true;
-            claimBtn.textContent = 'Unclaim';
+            renderItem(item, label, claimBtn);
             updateTotal();
           }
         });
+
+        renderItem(item, label, claimBtn);
       });
       updateTotal();
     });
 
-    const stripe = Stripe('pk_test_placeholder');
-    payBtn.addEventListener('click', async () => {
-      const { error } = await stripe.redirectToCheckout({
-        lineItems: [{ price: 'price_placeholder', quantity: 1 }],
-        mode: 'payment',
-        successUrl: window.location.href + '?success=true',
-        cancelUrl: window.location.href,
-      });
-      if (error) alert(error.message);
+    payBtn.addEventListener('click', () => {
+      alert('Stripe checkout would open here.');
     });
   </script>
 </body>
